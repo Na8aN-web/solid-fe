@@ -1,10 +1,11 @@
-import './App.css';
+import { Routes, Route } from "react-router-dom";
+//example import, import Home from "./pages/Home";
 
 function App() {
   return (
-    <div>
-      Home
-    </div>
+    <Routes>
+      {/* example route <Route path="/" element={<Home />} /> */}
+    </Routes>
   );
 }
 
