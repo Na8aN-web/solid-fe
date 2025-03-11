@@ -16,7 +16,7 @@ import steering from "../images/steering.svg";
 import filters from "../images/filter.svg";
 import coolingHeat from "../images/cooling-heat.svg";
 import airCondition from "../images/air-conditioner.svg";
-import "./Navbar.css";
+
 
 const Navbar = () => {
   return (
