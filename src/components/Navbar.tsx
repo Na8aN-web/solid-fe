@@ -24,18 +24,18 @@ const Navbar = () => {
       <header>
         <div className="flex justify-between items-center py-11 px-5 border-b">
           <div className="flex gap-20">
-            <img src={solidLogo} alt="" />
+            <img src={solidLogo} alt="solid-logo" />
             {/* dropdown */}
             <div className="flex gap-4">
               <div className="flex">
                 <div className="flex justify-around items-center w-44 h-12 border border-r-0 rounded-l-lg">
                   <p className="text-sm">All Categories</p>
-                  <img src={arrowDown} alt="" className="w-3" />
+                  <img src={arrowDown} alt="arrow-down" className="w-3" />
                 </div>
                 <div className="relative">
                   <img
                     src={search}
-                    alt=""
+                    alt="search"
                     className="absolute top-4 left-5 w-5"
                   />
                   <input
@@ -61,7 +61,7 @@ const Navbar = () => {
               </select>
             </div>
             <div className="flex gap-1">
-              <img src={cart} alt="" className="w-8" />
+              <img src={cart} alt="cart" className="w-8" />
               <p className="text-sm">My Cart</p>
             </div>
             <button
@@ -88,47 +88,47 @@ const Navbar = () => {
                 <div className="h-screen">
                   <div className="flex justify-around items-center w-72 h-14 bg-primary">
                     <p className="text-base text-white font-normal">All Categories</p>
-                    <img src={arrowDownWhite} alt="" className="w-3" />
+                    <img src={arrowDownWhite} alt="arrow-down" className="w-3" />
                   </div>
                   <ul className="flex flex-col justify-around items-start gap h-3/4 px-11 py-3 bg-white text-gray-500 text-sm font-normal">
                     <li className="flex items-center gap-4">
-                      <img src={bodyParts} alt="" />
+                      <img src={bodyParts} alt="body-part" />
                       <span>Body Parts</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={electronics} alt="" />
+                      <img src={electronics} alt="electronics" />
                       <span>Electronics</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={performanceParts} alt="" />
+                      <img src={performanceParts} alt="performance-parts" />
                       <span>Performance Parts</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={repairParts} alt="" />
+                      <img src={repairParts} alt="repair-parts" />
                       <span>Repairs Parts</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={wheelsTyres} alt="" />
+                      <img src={wheelsTyres} alt="wheels-tyres" />
                       <span>Wheels & Tyres</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={toolsEquip} alt="" />
+                      <img src={toolsEquip} alt="tools-equip" />
                       <span>Tools & Equipments</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={steering} alt="" />
+                      <img src={steering} alt="steering" />
                       <span>Steering Systems</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={filters} alt="" />
+                      <img src={filters} alt="filters" />
                       <span>Filters</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={coolingHeat} alt="" />
+                      <img src={coolingHeat} alt="cooling-heat" />
                       <span>Cooling & Heating Systems</span>
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={airCondition} alt="" />
+                      <img src={airCondition} alt="air-condition" />
                       <span>Air Conditioning</span>
                     </li>
                     <li>See More +</li>
@@ -147,7 +147,7 @@ const Navbar = () => {
                 <li>Kia</li>
                 <li>Mazda</li>
                 <li>
-                  <img src={arrowRight} alt="" className="w-4" />
+                  <img src={arrowRight} alt="arrow-right" className="w-4" />
                 </li>
               </ul>
             </div>
