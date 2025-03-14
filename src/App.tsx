@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
+import HomeGuest from "./pages/HomeGuest";
 //example import, import Home from "./pages/Home";
 
 function App() {
@@ -7,7 +8,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* <Route index element={<Home />} /> */}
+          <Route index element={<HomeGuest />} />
         </Route>
       </Routes>
     </Router>
