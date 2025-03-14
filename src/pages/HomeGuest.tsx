@@ -1,4 +1,14 @@
-// import React from "react";
+import React, { useRef, useState } from "react";
+// Import Swiper React components
+import { Swiper, SwiperSlide } from "swiper/react";
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/free-mode";
+import "swiper/css/pagination";
+import "./styles.css";
+// import required modules
+import { FreeMode } from "swiper/modules";
+import Navbar from "../components/Navbar";
 import arrowRight from "../images/arrowright.svg";
 import doubleRight from "../images/double-right.svg";
 import passengerCars from "../images/passenger-car.svg";
@@ -17,24 +27,52 @@ import carEngine from "../images/car-engine.svg";
 import halfCar from "../images/half-car.svg";
 import ProductCard from "../product/ProductCard";
 import DealsCard from "../product/DealsCard";
+import carHeader from "../images/car-header.svg";
 
-import React, { useRef, useState } from "react";
-// Import Swiper React components
-import { Swiper, SwiperSlide } from "swiper/react";
 
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/free-mode";
-import "swiper/css/pagination";
-
-import "./styles.css";
-
-// import required modules
-import { FreeMode, Pagination } from "swiper/modules";
 
 const HomeGuest = () => {
   return (
-    <div className="px-10 py-16">
+    <div className="pb-16">
+      <Navbar />
+      <div className="px-10">
+          {/* Hero content */}
+          <section className="bg-white pr-8">
+          <div className="flex justify-between w-full items-center bg-customLight pt-0">
+            <div className="bg-white flex items-center justify-between w-full h-3/4 pl-14 ml-0 overflow-hidden">
+              <div>
+                <p className="text-sm text-customBrown font-normal pb-6">
+                  WELCOME TO SOLID SPARE PARTS
+                </p>
+                <h1 className="text-4xl text-customBrown font-semibold w-80 leading-tight pb-8">
+                  Quality Auto Spare Parts at a go!
+                </h1>
+                <button className="border h-12 w-28 rounded-lg bg-primary text-white text-sm font-semibold">
+                  Shop Now
+                </button>
+              </div>
+              <div className="flex-shrink-0">
+                <img src={carHeader} alt="" className="w-[580px]" />
+              </div>
+            </div>
+            <div className="flex flex-col justify-between gap-6 pl-5">
+              <div className="bg-white flex flex-col items-center justify-center w-[300px] h-64">
+                <p className="text-base text-customBrown font-normal">
+                  ONLY THIS WEEK
+                </p>
+                <p className="text-4xl text-customBrown font-bold">
+                  HUGE SALES
+                </p>
+              </div>
+              <div className="bg-primary flex flex-col items-center justify-center w-full h-64">
+                <p className="text-base text-white font-normal">
+                  ONLY THIS WEEK
+                </p>
+                <p className="text-4xl text-white font-bold">HUGE SALES</p>
+              </div>
+            </div>
+          </div>
+        </section>
       <main>
         {/* Popular Vehicle type */}
         <section className="py-8">
@@ -467,6 +505,7 @@ const HomeGuest = () => {
           </div>
         </section>
       </main>
+      </div>
     </div>
   );
 };
