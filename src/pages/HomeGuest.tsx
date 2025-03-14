@@ -14,9 +14,9 @@ import fuelFilter from "../images/fuel-filter.svg";
 import exhaust from "../images/performance-exhaust.svg";
 import radiator from "../images/radiator.svg";
 import carEngine from "../images/car-engine.svg";
+import halfCar from "../images/half-car.svg";
 import ProductCard from "../product/ProductCard";
-import DealsCard from "../product/DealsCard"; 
-
+import DealsCard from "../product/DealsCard";
 
 import React, { useRef, useState } from "react";
 // Import Swiper React components
@@ -37,41 +37,97 @@ const HomeGuest = () => {
     <div className="px-10 py-16">
       <main>
         {/* Popular Vehicle type */}
-        <section>
-          <div className="flex justify-between items-center">
+        <section className="py-8">
+          <div className="flex justify-between items-center pb-6">
             <div className="flex gap-0 items-center">
               <img src={doubleRight} alt="" />
-              <h2>Popular Vehicle Types</h2>
+              <h2 className="text-2xl text-customGray1 font-semibold">
+                Popular Vehicles Types
+              </h2>
             </div>
             <div className="flex gap-2 items-center">
-              <p>See All</p>
+              <p className="text-base font-semibold text-customGray1">
+                See All
+              </p>
               <img src={arrowRight} alt="" />
             </div>
           </div>
           <div className="flex justify-between items-center">
             <div className="flex flex-col items-center">
               <img src={passengerCars} alt="" />
-              <p>Passengers Cars</p>
+              <p className="text-sm text-customBrown font-normal pt-4">
+                Passengers Cars
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <img src={suvs} alt="" />
-              <p>SUVs and Crossovers</p>
+              <p className="text-sm text-customBrown font-normal pt-4">
+                SUVs and Crossovers
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <img src={trucks} alt="" />
-              <p>Trucks</p>
+              <p className="text-sm text-customBrown font-normal pt-4">
+                Trucks
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <img src={heavy} alt="" />
-              <p>Heavy Equipment and Machinery</p>
+              <p className="text-sm text-customBrown font-normal pt-4">
+                Heavy Equipment and Machinery
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <img src={tricycles} alt="" />
-              <p>Tricycles</p>
+              <p className="text-sm text-customBrown font-normal pt-4">
+                Tricycles
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <img src={buses} alt="" />
-              <p>Buses</p>
+              <p className="text-sm text-customBrown font-normal pt-4">Buses</p>
+            </div>
+          </div>
+        </section>
+        <section className="flex justify-between gap-4 py-1">
+          <div className="w-full">
+            <div className="inline-flex bg-black items-center gap-4 pl-7">
+              <div>
+                <p className="text-white text-2xl font-bold">BODY PARTS</p>
+                <p className="text-base font-normal text-white">
+                  FOR ANY VEHICLE
+                </p>
+                <p className="text-base font-normal text-white pt-4">
+                  COUPE, SEDAN, SUV AND
+                </p>
+                <p className="text-base font-normal text-customGold pb-4">
+                  MANY MORE
+                </p>
+                <button className="bg-primary text-white w-28 h-12 rounded-lg">
+                  Shop Now
+                </button>
+              </div>
+              <img src={halfCar} alt="" className="w-auto h-auto" />
+            </div>
+          </div>
+          <div className="w-full">
+            <div className="inline-flex bg-black items-center gap-4 pl-7">
+              <div>
+                <p className="text-white text-2xl font-bold">BODY PARTS</p>
+                <p className="text-base font-normal text-white">
+                  FOR ANY VEHICLE
+                </p>
+                <p className="text-base font-normal text-white pt-4">
+                  COUPE, SEDAN, SUV AND
+                </p>
+                <p className="text-base font-normal text-customGold pb-4">
+                  MANY MORE
+                </p>
+                <button className="bg-primary text-white w-28 h-12 rounded-lg">
+                  Shop Now
+                </button>
+              </div>
+              <img src={halfCar} alt="" className="w-auto h-auto" />
             </div>
           </div>
         </section>
@@ -381,29 +437,33 @@ const HomeGuest = () => {
               </h2>
             </div>
             <ul className="flex gap-6 items-center">
-             <li><img src={arrowRight} alt="" /></li>
-             <li><img src={arrowRight} alt="" /></li>
+              <li>
+                <img src={arrowRight} alt="" />
+              </li>
+              <li>
+                <img src={arrowRight} alt="" />
+              </li>
             </ul>
           </div>
           <div className="flex justify-between gap-4">
-          <DealsCard
-                image={tyres}
-                title="Shock Absorber"
-                category="PERFORMANCE PARTS"
-                price="N60,000.00"
-                oldPrice="N80,000.00"
-                discount="-18%"
-                reviews="88"
-              />
-               <DealsCard
-                image={tyres}
-                title="Shock Absorber"
-                category="PERFORMANCE PARTS"
-                price="N60,000.00"
-                oldPrice="N80,000.00"
-                discount="-18%"
-                reviews="88"
-              />
+            <DealsCard
+              image={tyres}
+              title="Shock Absorber"
+              category="PERFORMANCE PARTS"
+              price="N60,000.00"
+              oldPrice="N80,000.00"
+              discount="-18%"
+              reviews="88"
+            />
+            <DealsCard
+              image={tyres}
+              title="Shock Absorber"
+              category="PERFORMANCE PARTS"
+              price="N60,000.00"
+              oldPrice="N80,000.00"
+              discount="-18%"
+              reviews="88"
+            />
           </div>
         </section>
       </main>
