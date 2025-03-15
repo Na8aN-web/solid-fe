@@ -1,7 +1,4 @@
 import React from "react";
-import stars from "../images/stars.svg";
-import addCart from "../images/add-cart.svg";
-import favourite from "../images/favourite.svg";
 
 interface ProductCardProps {
   image: string;
@@ -30,7 +27,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             {discount}
           </span>
         )}
-        <img src={image} alt="" className="px-4 h-36" />
+        <img src={image} alt={title} className="px-4 h-36" />
       </div>
       <p className="text-[10px] font-semibold text-customGray2 leading-normal">
         {category}
@@ -39,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {title}
       </h3>
       <div className="flex items-center gap-1 py-2">
-        <img src={stars} alt="" />
+        <img src="/stars.svg" alt="stars" />
         <span className="text-sm font-medium text-customGray3">
           ({reviews} Reviews)
         </span>
@@ -54,11 +51,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </div>
       <div className="flex gap-3 pt-4">
         <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full">
-          <img src={addCart} alt="" />
+          <img src="/cart.svg" alt="cart" />
           <span className="text-sm text-primary font-normal">Add to cart</span>
         </button>
         <button className="border rounded border-primary py-2 px-3">
-          <img src={favourite} alt="" className="w-6" />
+          <img src="/favourite.svg" alt="favourite" className="w-6" />
         </button>
       </div>
     </div>

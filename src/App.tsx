@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from './pages/public/home/Home'
 import Layout from "./Layout";
 import HomeGuest from "./pages/HomeGuest";
+import HomeGuest from "./pages/private/home/HomeGuest";
+
 
 function App() {
   return (

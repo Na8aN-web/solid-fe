@@ -1,8 +1,4 @@
 import React from "react";
-import stars from "../images/stars.svg";
-import addCart from "../images/add-cart.svg";
-import favourite from "../images/favourite.svg";
-
 
 
 interface ProductCardProps {
@@ -37,13 +33,13 @@ const DealsCard: React.FC<ProductCardProps> = ({
         </div>
         <div className="flex flex-col items-center gap-6">
           <div className="border p-3 rounded-2xl">
-            <img src={image} alt="" className="w-10" />
+            <img src={image} alt={title} className="w-10" />
           </div>
           <div className="border p-3 rounded-2xl">
-            <img src={image} alt="" className="w-10" />
+          <img src={image} alt={title} className="w-10" />
           </div>
           <div className="border p-3 rounded-2xl">
-            <img src={image} alt="" className="w-10" />
+          <img src={image} alt={title} className="w-10" />
           </div>
         </div>
       </div>
@@ -55,7 +51,7 @@ const DealsCard: React.FC<ProductCardProps> = ({
           {title}
         </h3>
         <div className="flex items-center gap-1 py-2">
-          <img src={stars} alt="" />
+          <img src="/stars.svg" alt="stars" />
           <span className="text-sm font-medium text-customGray3">
             ({reviews} Reviews)
           </span>
@@ -70,13 +66,13 @@ const DealsCard: React.FC<ProductCardProps> = ({
         </div>
         <div className="flex gap-3 pt-4">
           <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full">
-            <img src={addCart} alt="" />
+            <img src="/add-cart.svg" alt="cart" />
             <span className="text-sm text-primary font-normal">
               Add to cart
             </span>
           </button>
           <button className="border rounded border-primary py-2 px-3">
-            <img src={favourite} alt="" className="w-6" />
+            <img src="/favourite.svg" alt="favourite" className="w-6" />
           </button>
         </div>
         <hr className="border-t border-gray-200 my-6" />
