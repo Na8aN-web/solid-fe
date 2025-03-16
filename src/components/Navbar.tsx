@@ -17,6 +17,24 @@ import filters from "../images/filter.svg";
 import coolingHeat from "../images/cooling-heat.svg";
 import airCondition from "../images/air-conditioner.svg";
 import carHeader from "../images/car-header.svg";
+// import solidLogo from "../images/Frame 47.svg";
+// import help from "../images/help.svg";
+// import cart from "../images/cart.svg";
+// import arrowDown from "../images/arrow-down.svg";
+// import arrowDownWhite from "../images/arrow-right-white.svg";
+// import arrowRight from "../images/arrowright.svg";
+// import search from "../images/search.svg";
+// import bodyParts from "../images/game-icons_race-car.svg";
+// import electronics from "../images/iconoir_electronics-chip.svg";
+// import performanceParts from "../images/performance-part.svg";
+// import repairParts from "../images/repair-parts.svg";
+// import wheelsTyres from "../images/wheels-tyres.svg";
+// import toolsEquip from "../images/tools-equip.png";
+// import steering from "../images/steering.svg";
+// import filters from "../images/filter.svg";
+// import coolingHeat from "../images/cooling-heat.svg";
+// import airCondition from "../images/air-conditioner.svg";
+
 
 const Navbar = () => {
   return (
@@ -24,17 +42,17 @@ const Navbar = () => {
       <header className="border-b">
         <div className="flex justify-between items-center py-11 px-5 border-b">
           <div className="flex gap-20">
-            <img src={solidLogo} alt="solid-logo" />
+            <img src="/Frame 47.svg" alt="solid-logo" />
             {/* dropdown */}
             <div className="flex gap-4">
               <div className="flex">
                 <div className="flex justify-around items-center w-44 h-12 border border-r-0 rounded-l-lg">
                   <p className="text-sm">All Categories</p>
-                  <img src={arrowDown} alt="arrow-down" className="w-3" />
+                  <img src="/arrow-down.svg" alt="arrow-down" className="w-3" />
                 </div>
                 <div className="relative">
                   <img
-                    src={search}
+                    src="/search.svg"
                     alt="search"
                     className="absolute top-4 left-5 w-5"
                   />
@@ -56,13 +74,13 @@ const Navbar = () => {
           {/* User Options */}
           <div className="flex gap-4 items-center">
             <div className="flex gap-1">
-              <img src={help} alt="" className="w-8" />
-              <select name="" id="" className="text-sm">
+              <img src="/help.svg" alt="help" className="w-8" />
+              <select defaultValue="" name="" id="" className="text-sm">
                 <option value="">Help</option>
               </select>
             </div>
             <div className="flex gap-1">
-              <img src={cart} alt="cart" className="w-8" />
+              <img src="cart.svg" alt="cart" className="w-8" />
               <p className="text-sm">My Cart</p>
             </div>
             <button
@@ -92,7 +110,7 @@ const Navbar = () => {
                       All Categories
                     </p>
                     <img
-                      src={arrowDownWhite}
+                      src="/arrow-right-white.svg"
                       alt="arrow-down"
                       className="w-3"
                     />
@@ -157,7 +175,7 @@ const Navbar = () => {
                 <li>Mazda</li>
                 <li>Audi</li>
                 <li>
-                  <img src={arrowRight} alt="arrow-right" className="w-4" />
+                  <img src="/arrowright.svg" alt="arrow-right" className="w-4" />
                 </li>
               </ul>
             </div>
