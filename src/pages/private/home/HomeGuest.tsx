@@ -19,25 +19,39 @@ const HomeGuest = () => {
       <Navbar />
       <div className="px-5 sm:px-8 lg:px-10">
         {/* Hero content */}
-        <section className="bg-white pr-8">
-          <div className="flex justify-between w-full items-center bg-customLight pt-0">
-            <div className="bg-white flex items-center justify-between w-full h-3/4 pl-14 ml-0 overflow-hidden">
+        <section className="bg-white pt-12 lg:pt-0">
+          <div className="flex justify-between w-full items-center gap-2 bg-customLight lg:bg-white">
+            <div className="flex items-center justify-between w-full sm:overflow-hidden pl-8 py-8 lg:py-0">
               <div>
-                <p className="text-sm text-customBrown font-normal pb-6">
+                <p className="text-xs sm:text-sm text-customBrown font-normal pb-2 sm:pb-6">
                   WELCOME TO SOLID SPARE PARTS
                 </p>
-                <h1 className="text-4xl text-customBrown font-semibold w-80 leading-tight pb-8">
+                <h1 className="text-xl sm:text-4xl text-customBrown font-semibold w-56 sm:w-80 leading-tight pb-4 sm:pb-8">
                   Quality Auto Spare Parts at a go!
                 </h1>
                 <button className="border h-12 w-28 rounded-lg bg-primary text-white text-sm font-semibold">
                   Shop Now
                 </button>
               </div>
-              <div className="flex-shrink-0">
-                <img src="/car-header.svg" alt="car" className="w-[580px]" />
+              <div className="sm:flex-shrink-0">
+                <picture>
+                  <source
+                    media="(min-width: 768px)"
+                    srcSet="/car-header.svg"
+                  />
+                  <source
+                    media="(max-width: 1023px)"
+                    srcSet="/herosmall-car.svg"
+                  />
+                  <img
+                    src="/herosmall-car.svg"
+                    alt="car"
+                    className="w-full md:max-w-[570px]"
+                  />
+                </picture>
               </div>
             </div>
-            <div className="flex flex-col justify-between gap-6 pl-5">
+            <div className="hidden lg:flex flex-col justify-between gap-6 pl-5">
               <div className="bg-white flex flex-col items-center justify-center w-[300px] h-64">
                 <p className="text-base text-customBrown font-normal">
                   ONLY THIS WEEK
@@ -58,7 +72,7 @@ const HomeGuest = () => {
         <main>
           {/* Popular Vehicle type */}
           <section className="py-8">
-            <div className="flex justify-between items-center pb-6">
+            <div className="flex justify-between items-center pb-2 sm:pb-6">
               <div className="flex gap-0 items-center">
                 <img
                   src="/double-right.svg"
