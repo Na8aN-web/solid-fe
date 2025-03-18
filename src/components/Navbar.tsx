@@ -1,4 +1,14 @@
-import React from "react";
+// import React from "react";
+
+import { useEffect, useRef } from "react";
+// Import Swiper React components
+import { Swiper, SwiperSlide } from "swiper/react";
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/navigation";
+// import required modules
+import { Navigation } from "swiper/modules";
+
 
 const Navbar = () => {
   return (
@@ -83,11 +93,11 @@ const Navbar = () => {
         {/* Main Navigation with Sidebar Dropdown */}
         <div>
           <nav>
-            <div className="flex flex-col lg:flex-row items-start w-full gap-5 pt-6 pb-4  pr-20">
+            <div className="flex flex-col items-center lg:flex-row w-full gap-5 pt-6 pb-4">
               {/* Sidebar Contents */}
               <aside>
                 <div className="w-full">
-                  <div className="flex items-center justify-between gap-4 w-screen px-8 sm:w-72 h-14 bg-primary">
+                  <div className="flex items-center justify-between gap-4 w-screen px-8 lg:w-72 h-14 bg-primary">
                     <div className="flex items-center gap-4">
                       <p className="text-base text-white font-normal">
                         All Categories
@@ -148,7 +158,7 @@ const Navbar = () => {
                 </div>
               </aside>
               {/* main navigation */}
-              <ul className="flex w-full justify-between items-center text-customGray1 text-sm font-semibold">
+              {/* <ul className="flex w-full justify-between items-center text-customGray1 text-sm font-semibold">
                 <li className="bg-gray-100 rounded-3xl px-6 py-3">
                   All Brands
                 </li>
@@ -168,7 +178,44 @@ const Navbar = () => {
                     className="w-4"
                   />
                 </li>
-              </ul>
+              </ul> */}
+              <div className="w-full lg:w-3/4 relative">
+                <button className="custom-next w-9 h-9 absolute right-0 top-[-7px] z-10">
+                  ❯
+                </button>
+                <Swiper
+                  slidesPerView={4}
+                  spaceBetween={20}
+                  modules={[Navigation]}
+                  navigation={{
+                    nextEl: ".custom-next",
+                    prevEl: ".custom-prev",
+                  }}
+                  breakpoints={{
+                    // 320: { slidesPerView: 1 }, // Small phones
+                    640: { slidesPerView: 6 }, // Small tablets
+                    768: { slidesPerView: 7 }, // Tablets
+                    1280: { slidesPerView: 10 }, // Desktops
+                  }}
+                >
+                  {[
+                    "All Brands",
+                    "Toyota",
+                    "Mercedes",
+                    "BMW",
+                    "Ford",
+                    "Honda",
+                    "Hyundai",
+                    "Kia",
+                    "Mazda",
+                    "Audi",
+                  ].map((brand, index) => (
+                    <SwiperSlide key={index}>
+                      <p className="text-sm">{brand}</p>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              </div>
             </div>
           </nav>
         </div>
