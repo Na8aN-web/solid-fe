@@ -9,7 +9,7 @@ import "swiper/css/navigation";
 import "./styles.css";
 // import required modules
 import { FreeMode, Navigation } from "swiper/modules";
-import Navbar from "../../../components/Navbar";
+import Navbar from "./components/Navbar";
 import ProductCard from "./components/ProductCard";
 import DealsCard from "./components/DealsCard";
 

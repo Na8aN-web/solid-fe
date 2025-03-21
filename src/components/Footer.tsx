@@ -4,7 +4,7 @@ import React from "react";
 const Footer = () => {
   return (
     <div>
-      <section className="bg-customDark flex justify-between px-10 py-14 h-96 w-full">
+      <section className="hidden bg-customDark lg:flex justify-between gap-8 px-10 py-14 h-96 w-full">
         <div className="flex flex-col justify-between">
           <img src="/solid-footer-logo.svg" alt="solid-logo" />
           <div>
@@ -29,8 +29,8 @@ const Footer = () => {
               Subscribe to our newsletter to get updates on our latest offres
             </p>
             <div>
-              <div className="flex gap-6 items-center">
-                <div className="relative">
+              <div className="flex gap-4 items-center">
+                <div className="relative w-full">
                   <img
                     src="/message-icon.svg"
                     alt="message-icon"
@@ -38,7 +38,7 @@ const Footer = () => {
                   />
                   <input
                     type="text"
-                    className="border h-12 w-96 p-2 rounded-lg text-sm pl-12"
+                    className="border h-12 w-full p-2 rounded-lg text-sm pl-12"
                     placeholder="Enter your email address"
                   />
                 </div>
@@ -86,8 +86,9 @@ const Footer = () => {
           </div>
         </div>
       </section>
-      <section className="bg-customBrown flex justify-between px-10 py-14 w-full">
-        <div className="w-full max-w-xs">
+      <section className="bg-customBrown flex justify-between px-5 sm:px-10 py-14 w-full">
+        {/* contact us */}
+        <div className="hidden w-full max-w-xs lg:block">
           <div className="pb-6">
             <h3 className="text-white font-semibold text-base pb-1">
               Contact Us
@@ -119,14 +120,15 @@ const Footer = () => {
             </p>
           </div>
         </div>
+        {/* information */}
         <div>
-          <div className="pb-6">
+          <div className="hidden sm:block pb-6">
             <h3 className="text-white font-semibold text-base pb-1">
               Information
             </h3>
             <span className="bg-customGold rounded block w-12 h-[4px]"></span>
           </div>
-          <p className="text-customLight font-normal text-sm pb-3">About Us</p>
+          <p className="hidden sm:block text-customLight font-normal text-sm pb-3">About Us</p>
           <p className="text-customLight font-normal text-sm pb-3">
             Customer Service
           </p>
@@ -137,8 +139,9 @@ const Footer = () => {
             Contact Us
           </p>
         </div>
+        {/* support */}
         <div>
-          <div className="pb-6">
+          <div className="hidden sm:block pb-6">
             <h3 className="text-white font-semibold text-base pb-1">Support</h3>
             <span className="bg-customGold rounded block w-12 h-[4px]"></span>
           </div>
@@ -153,8 +156,9 @@ const Footer = () => {
             Privacy Policy
           </p>
         </div>
+        {/* quick links */}
         <div>
-          <div className="pb-6">
+          <div className="hidden sm:block pb-6">
             <h3 className="text-white font-semibold text-base pb-1">
               Quick Links
             </h3>
@@ -167,7 +171,7 @@ const Footer = () => {
           </p>
           <p className="text-customLight font-normal text-sm pb-3">Blog</p>
         </div>
-        <div>
+        <div className="hidden md:block">
           <div className="pb-6">
             <h3 className="text-white font-semibold text-base pb-1">Gallery</h3>
             <span className="bg-customGold rounded block w-12 h-[4px]"></span>
