@@ -20,6 +20,7 @@ export default {
         customGray1: "#3D3D3D",
         customGray2: "#9A9A9A",
         customGray3: "#827E7E",
+        shadeGray: "#5E5E5E",
         customDark: "#1E1E1E",
         customBrown: "#2D2828",
         customLight: "#F9F9F9",

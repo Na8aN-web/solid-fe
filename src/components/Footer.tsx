@@ -4,7 +4,7 @@ import React from "react";
 const Footer = () => {
   return (
     <div>
-      <section className="hidden bg-customDark lg:flex justify-between px-10 py-14 h-96 w-full">
+      <section className="hidden bg-customDark lg:flex justify-between gap-8 px-10 py-14 h-96 w-full">
         <div className="flex flex-col justify-between">
           <img src="/solid-footer-logo.svg" alt="solid-logo" />
           <div>
@@ -29,8 +29,8 @@ const Footer = () => {
               Subscribe to our newsletter to get updates on our latest offres
             </p>
             <div>
-              <div className="flex gap-6 items-center">
-                <div className="relative">
+              <div className="flex gap-4 items-center">
+                <div className="relative w-full">
                   <img
                     src="/message-icon.svg"
                     alt="message-icon"
@@ -38,7 +38,7 @@ const Footer = () => {
                   />
                   <input
                     type="text"
-                    className="border h-12 w-96 p-2 rounded-lg text-sm pl-12"
+                    className="border h-12 w-full p-2 rounded-lg text-sm pl-12"
                     placeholder="Enter your email address"
                   />
                 </div>
