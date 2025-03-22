@@ -8,15 +8,6 @@ export default {
     extend: {
       colors: {
         primary: "#003366",
-        customGray1: "#3D3D3D"
-      },
-      fontFamily: {
-        'roboto': ['Roboto', 'sans-serif'],
-      }
-    },
-    extend: {
-      colors: {
-        primary: "#003366",
         customGray1: "#3D3D3D",
         customGray2: "#9A9A9A",
         customGray3: "#827E7E",
@@ -25,6 +16,9 @@ export default {
         customBrown: "#2D2828",
         customLight: "#F9F9F9",
         customGold: "#FFC300",
+      },
+      fontFamily: {
+        'roboto': ['Roboto', 'sans-serif'],
       }
     },
   },
