@@ -1,14 +1,14 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
-import "swiper/css/pagination";
 import "swiper/css/navigation";
+import "swiper/css/grid";
 import "./styles.css";
 // import required modules
-import { FreeMode, Navigation } from "swiper/modules";
+import { Grid, FreeMode, Navigation } from "swiper/modules";
 import Navbar from "./components/Navbar";
 import ProductCard from "./components/ProductCard";
 import DealsCard from "./components/DealsCard";
@@ -17,59 +17,59 @@ const HomeGuest = () => {
   return (
     <div className="pb-16">
       <Navbar />
-      <div className="px-5 sm:px-8 lg:px-10">
-        {/* Hero content */}
-        <section className="bg-white pt-12 lg:pt-0">
-          <div className="flex justify-between w-full items-center gap-2 bg-customLight lg:bg-white">
-            <div className="flex items-center justify-between w-full sm:overflow-hidden pl-8 py-8 lg:py-0">
-              <div>
-                <p className="text-xs sm:text-sm text-customBrown font-normal pb-2 sm:pb-6">
-                  WELCOME TO SOLID SPARE PARTS
-                </p>
-                <h1 className="text-xl sm:text-4xl text-customBrown font-semibold w-56 sm:w-80 leading-tight pb-4 sm:pb-8">
-                  Quality Auto Spare Parts at a go!
-                </h1>
-                <button className="border h-12 w-28 rounded-lg bg-primary text-white text-sm font-semibold">
-                  Shop Now
-                </button>
+      <main>
+        <div className="px-5 sm:px-8 lg:px-10">
+          {/* Hero content */}
+          <section className="bg-white pt-12 lg:pt-0">
+            <div className="flex justify-between w-full items-center gap-2 bg-customLight lg:bg-white">
+              <div className="flex items-center justify-between w-full sm:overflow-hidden pl-8 py-8 lg:py-0">
+                <div>
+                  <p className="text-xs sm:text-sm text-customBrown font-normal pb-2 sm:pb-6">
+                    WELCOME TO SOLID SPARE PARTS
+                  </p>
+                  <h1 className="text-xl sm:text-4xl text-customBrown font-semibold w-56 sm:w-80 leading-tight pb-4 sm:pb-8">
+                    Quality Auto Spare Parts at a go!
+                  </h1>
+                  <button className="border h-12 w-28 rounded-lg bg-primary text-white text-sm font-semibold">
+                    Shop Now
+                  </button>
+                </div>
+                <div className="sm:flex-shrink-0">
+                  <picture>
+                    <source
+                      media="(min-width: 768px)"
+                      srcSet="/car-header.svg"
+                    />
+                    <source
+                      media="(max-width: 1023px)"
+                      srcSet="/herosmall-car.svg"
+                    />
+                    <img
+                      src="/herosmall-car.svg"
+                      alt="car"
+                      className="w-full md:max-w-[570px]"
+                    />
+                  </picture>
+                </div>
               </div>
-              <div className="sm:flex-shrink-0">
-                <picture>
-                  <source
-                    media="(min-width: 768px)"
-                    srcSet="/car-header.svg"
-                  />
-                  <source
-                    media="(max-width: 1023px)"
-                    srcSet="/herosmall-car.svg"
-                  />
-                  <img
-                    src="/herosmall-car.svg"
-                    alt="car"
-                    className="w-full md:max-w-[570px]"
-                  />
-                </picture>
+              <div className="hidden lg:flex flex-col justify-between gap-6 pl-5">
+                <div className="bg-white flex flex-col items-center justify-center w-[300px] h-64">
+                  <p className="text-base text-customBrown font-normal">
+                    ONLY THIS WEEK
+                  </p>
+                  <p className="text-4xl text-customBrown font-bold">
+                    HUGE SALES
+                  </p>
+                </div>
+                <div className="bg-primary flex flex-col items-center justify-center w-full h-64">
+                  <p className="text-base text-white font-normal">
+                    ONLY THIS WEEK
+                  </p>
+                  <p className="text-4xl text-white font-bold">HUGE SALES</p>
+                </div>
               </div>
             </div>
-            <div className="hidden lg:flex flex-col justify-between gap-6 pl-5">
-              <div className="bg-white flex flex-col items-center justify-center w-[300px] h-64">
-                <p className="text-base text-customBrown font-normal">
-                  ONLY THIS WEEK
-                </p>
-                <p className="text-4xl text-customBrown font-bold">
-                  HUGE SALES
-                </p>
-              </div>
-              <div className="bg-primary flex flex-col items-center justify-center w-full h-64">
-                <p className="text-base text-white font-normal">
-                  ONLY THIS WEEK
-                </p>
-                <p className="text-4xl text-white font-bold">HUGE SALES</p>
-              </div>
-            </div>
-          </div>
-        </section>
-        <main>
+          </section>
           {/* Popular Vehicle type */}
           <section className="py-8">
             <div className="flex justify-between items-center pb-2 sm:pb-6">
@@ -351,12 +351,12 @@ const HomeGuest = () => {
               </div>
             </div>
             <Swiper
-              slidesPerView={2.2} // Shows part of the next slide
-              spaceBetween={15} // Adjust spacing
-              freeMode={true}
-              pagination={{ clickable: true }}
-              modules={[FreeMode]}
-              className="w-full mb-4 lg:mb-6"
+              modules={[Navigation, Grid]}
+              navigation={false}
+              spaceBetween={20}
+              slidesPerView={2.2}
+              grid={{ rows: 2, fill: "row" }}
+              className="w-full"
               breakpoints={{
                 640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
                 768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
@@ -424,20 +424,67 @@ const HomeGuest = () => {
                   reviews="88"
                 />
               </SwiperSlide>
-            </Swiper>
-            <Swiper
-              slidesPerView={2.2} // Shows part of the next slide
-              spaceBetween={15} // Adjust spacing
-              freeMode={true}
-              pagination={{ clickable: true }}
-              modules={[FreeMode]}
-              className="w-full"
-              breakpoints={{
-                640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-                768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-                1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
-              }}
-            >
+              <SwiperSlide>
+                <ProductCard
+                  image="/shock-absorber.svg"
+                  title="Shock Absorber"
+                  category="PERFORMANCE PARTS"
+                  price="N60,000.00"
+                  oldPrice="N80,000.00"
+                  discount="-18%"
+                  reviews="88"
+                />
+              </SwiperSlide>
+              <SwiperSlide>
+                <ProductCard
+                  image="/fuel-pump.svg"
+                  title="Fuel Pump"
+                  category="REPAIR PARTS"
+                  price="N60,000.00"
+                  reviews="88"
+                />
+              </SwiperSlide>
+              <SwiperSlide>
+                <ProductCard
+                  image="/tyres.svg"
+                  title="Michellene Tyres"
+                  category="WHEELS & TYRES"
+                  price="N60,000.00"
+                  oldPrice="N80,000.00"
+                  discount="-18%"
+                  reviews="88"
+                />
+              </SwiperSlide>
+              <SwiperSlide>
+                <ProductCard
+                  image="/fuel-filter.svg"
+                  title="Fuel Filter"
+                  category="FILTERS"
+                  price="N60,000.00"
+                  reviews="88"
+                />
+              </SwiperSlide>
+              <SwiperSlide>
+                <ProductCard
+                  image="/performance-exhaust.svg"
+                  title="Performance Exhaust System"
+                  category="PERFORMANCE PARTS"
+                  price="N60,000.00"
+                  oldPrice="N80,000.00"
+                  discount="-18%"
+                  reviews="88"
+                />
+              </SwiperSlide>
+              <SwiperSlide>
+                <ProductCard
+                  image="/radiator.svg"
+                  title="Radiator"
+                  category="COOLING & HEATING SYSTEMS"
+                  price="N60,000.00"
+                  oldPrice="N80,000.00"
+                  reviews="88"
+                />
+              </SwiperSlide>
               <SwiperSlide>
                 <ProductCard
                   image="/shock-absorber.svg"
@@ -609,8 +656,8 @@ const HomeGuest = () => {
               </Swiper>
             </div>
           </section>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };
