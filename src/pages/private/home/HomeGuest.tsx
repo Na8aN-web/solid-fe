@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "./components/Navbar";
+import BrandNav from "./components/BrandNav";
 import PopularVehicleTypes from "./components/PopularVehicleTypes";
 import NewArrivals from "./components/NewArrivals";
 import FeaturedProducts from "./components/FeaturedProducts";
@@ -9,6 +10,7 @@ const HomeGuest = () => {
   return (
     <div className="pb-16">
       <Navbar />
+      <BrandNav />
       <main>
         <div className="px-5 sm:px-8 lg:px-10">
           {/* Hero content */}
