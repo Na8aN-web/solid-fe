@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import BrandNav from "./BrandNav";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -425,8 +424,6 @@ const Navbar = () => {
             </div>
           </div>
         </section>
-        {/* Main Navigation with Dropdown */}
-        <BrandNav />
         <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
           <div className="flex flex-col items-center">
             <img src="/home.svg" alt="" />
