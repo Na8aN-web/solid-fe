@@ -8,9 +8,14 @@ import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 import { ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 
-const BrandNav = () => {
+
+interface BrandNavProps {
+  isMenuOpen: boolean;
+}
+
+const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
   const [isDropOpen, setIsDropOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <div className="flex flex-col items-center lg:flex-row w-full gap-5 pt-6 pb-4 z-10">
       <div className="w-full lg:w-72 relative">
@@ -39,14 +44,14 @@ const BrandNav = () => {
           <ul className="flex flex-col justify-around items-start gap-3 h-inherit text-gray-500 text-sm font-normal">
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/game-icons_race-car.svg" alt="body-part" />
+                <img src="/game-icons_race-car.svg" alt="body-part" className="w-auto"/>
                 <span>Body Parts</span>
               </div>
               <ChevronRight className="w-5 h-5" />
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/iconoir_electronics-chip.svg" alt="electronics" />
+                <img src="/iconoir_electronics-chip.svg" alt="electronics" className="w-auto"/>
                 <span>Electronics</span>
               </div>
               <img
@@ -57,7 +62,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="performance-part.svg" alt="performance-part" />
+                <img src="performance-part.svg" alt="performance-part" className="w-auto"/>
                 <span>Performance Parts</span>
               </div>
               <img
@@ -68,7 +73,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/repair-parts.svg" alt="repair-parts" />
+                <img src="/repair-parts.svg" alt="repair-parts" className="w-auto"/>
                 <span>Repairs Parts</span>
               </div>
               <img
@@ -79,7 +84,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/wheels-tyres.svg" alt="wheels-tyres" />
+                <img src="/wheels-tyres.svg" alt="wheels-tyres" className="w-auto"/>
                 <span>Wheels & Tyres</span>
               </div>
               <img
@@ -101,7 +106,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/steering.svg" alt="steering" />
+                <img src="/steering.svg" alt="steering" className="w-auto"/>
                 <span>Steering Systems</span>
               </div>
               <img
@@ -112,7 +117,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/filter.svg" alt="filters" />
+                <img src="/filter.svg" alt="filters"className="w-auto" />
                 <span>Filters</span>
               </div>
               <img
@@ -123,7 +128,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/cooling-heat.svg" alt="cooling-heat" />
+                <img src="/cooling-heat.svg" alt="cooling-heat" className="w-auto"/>
                 <span>Cooling & Heating Systems</span>
               </div>
               <img
@@ -134,7 +139,7 @@ const BrandNav = () => {
             </li>
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
-                <img src="/air-conditioner.svg" alt="air-condition" />
+                <img src="/air-conditioner.svg" alt="air-condition" className="w-auto"/>
                 <span>Air Conditioning</span>
               </div>
               <img

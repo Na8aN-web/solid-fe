@@ -1,4 +1,4 @@
-import React from "react";
+import {useState} from "react";
 import Navbar from "./components/Navbar";
 import BrandNav from "./components/BrandNav";
 import PopularVehicleTypes from "./components/PopularVehicleTypes";
@@ -7,10 +7,12 @@ import FeaturedProducts from "./components/FeaturedProducts";
 import DealsOfTheDay from "./components/DealsOfTheDay";
 
 const HomeGuest = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className="pb-16">
-      <Navbar />
-      <BrandNav />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <BrandNav isMenuOpen={isMenuOpen} />
       <main>
         <div className="px-5 sm:px-8 lg:px-10">
           {/* Hero content */}
