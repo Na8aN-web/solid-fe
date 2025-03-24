@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
 
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDropOpen, setIsDropOpen] = useState(false);
+interface NavProps {
+  isMenuOpen: boolean;
+  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isDropOpen, setIsDropOpen] = useState(false);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -26,14 +31,14 @@ const Navbar = () => {
                 {isMenuOpen ? (
                   <img
                     src="/cancel.svg"
-                    alt=""
+                    alt="close"
                     className="w-4 lg:hidden"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   />
                 ) : (
                   <img
                     src="/hamburger.svg"
-                    alt=""
+                    alt="open"
                     className="w-6 lg:hidden"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   />
@@ -45,7 +50,7 @@ const Navbar = () => {
                   className="w-32 lg:w-44"
                 />
               </div>
-              <img src="/cart.svg" alt="" className="w-8 lg:hidden" />
+              <img src="/cart.svg" alt="cart" className="w-8 lg:hidden" />
             </div>
             {/* mobile input */}
             <input
@@ -426,19 +431,19 @@ const Navbar = () => {
         </section>
         <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
           <div className="flex flex-col items-center">
-            <img src="/home.svg" alt="" />
+            <img src="/home.svg" alt="home" className="w-auto"/>
             <p className="text-sm">Home</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/categories.svg" alt="" />
+            <img src="/categories.svg" alt="category" className="w-auto"/>
             <p className="text-sm">Categories</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/you.svg" alt="" />
+            <img src="/you.svg" alt="you" className="w-auto"/>
             <p className="text-sm">You</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/helpp.svg" alt="" />
+            <img src="/helpp.svg" alt="help" className="w-auto"/>
             <p className="text-sm">Help</p>
           </div>
         </section>
