@@ -1,5 +1,4 @@
-// src/components/layout/Header.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Navbar from './components/LandingNavbar';
 import HeroSection from './components/Hero';
 import HowItWorks from './components/HowItWorks';
