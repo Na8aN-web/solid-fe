@@ -86,7 +86,7 @@ const Footer = () => {
           </div>
         </div>
       </section>
-      <section className="bg-customBrown flex justify-between px-5 sm:px-10 py-14 w-full">
+      <section className="bg-customBrown flex justify-between px-5 sm:px-10 pt-14 pb-28 lg:pb-14 w-full">
         {/* contact us */}
         <div className="hidden w-full max-w-xs lg:block">
           <div className="pb-6">

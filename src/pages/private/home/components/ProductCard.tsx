@@ -29,10 +29,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
         <img src={image} alt={title} className="px-4 w-32 m-auto lg:w-36" />
       </div>
-      <p className="text-[10px] font-semibold text-customGray2 leading-normal">
+      <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal">
         {category}
       </p>
-      <h3 className="text-sm font-medium text-customBrown leading-relaxed">
+      <h3 className="text-sm font-medium text-customBrown truncate leading-relaxed">
         {title}
       </h3>
       <div className="flex items-center justify-center gap-1 py-2">
@@ -50,9 +50,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       <div className="flex gap-3 pt-4">
-        <button className="flex items-center justify-center gap-0 border rounded border-primary py-2 px-1 w-full">
+        <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full">
           <img src="/blue-cart.svg" alt="cart" />
-          <span className="text-sm text-primary font-normal">Add to cart</span>
+          <span className="text-[11px] sm:text-sm text-primary font-normal">Add to cart</span>
         </button>
         <button className="border rounded border-primary py-2 px-3">
           <img src="/favourite.svg" alt="favourite" className="w-6" />
