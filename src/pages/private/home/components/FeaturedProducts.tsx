@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
@@ -11,6 +11,17 @@ import { Grid, Navigation } from "swiper/modules";
 import ProductCard from "./ProductCard";
 
 const FeaturedProducts = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const categories = [
+    "Passengers Cars",
+    "SUVs and Crossover",
+    "Trucks",
+    "Buses",
+    "Keke (Tricycles)",
+    "Motorcycles",
+    "Heavy Machinery",
+  ];
   return (
     <div>
       <section>
@@ -28,27 +39,32 @@ const FeaturedProducts = () => {
             </button>
           </div>
           <div className="hidden lg:block">
-            <ul className="flex gap-4 lg:gap-6 items-center text-xs font-semibold text-customGray1 text-center">
-              <li className="bg-primary p-2 rounded-lg text-white">
-                Passengers Cars
-              </li>
-              <li>SUVs and Crossover</li>
-              <li>Trucks</li>
-              <li>Buses</li>
-              <li>Keke(Tricyles)</li>
-              <li>Motorcycles</li>
-              <li>Heavy Machinery</li>
+            <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
+              {categories.map((category, index) => (
+                <li
+                  key={index}
+                  onClick={() => setActiveIndex(index)}
+                  className={`p-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                    activeIndex === index
+                      ? "bg-primary text-white"
+                      : "hover:bg-gray-200"
+                  }`}
+                >
+                  {category}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
         <Swiper
           modules={[Navigation, Grid]}
           navigation={false}
-          spaceBetween={20}
-          slidesPerView={2.2}
+          slidesPerView={2}
+          spaceBetween={15}
           grid={{ rows: 2, fill: "row" }}
           className="w-full"
           breakpoints={{
+            375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
             640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
             768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
             1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
