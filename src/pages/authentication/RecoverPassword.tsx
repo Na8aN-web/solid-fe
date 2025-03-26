@@ -1,9 +1,9 @@
-import { useState } from "react";
+import React from "react";
 import Navbar from "../public/home/components/LandingNavbar";
 import { Link } from "react-router-dom";
 
 const RecoverPassword = () => {
-  const [showPassword, setShowPassword] = useState(false);
+
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -11,12 +11,11 @@ const RecoverPassword = () => {
     // input values
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
 
-    handleLogin(email, password);
+    handleLogin(email);
   };
 
-  const handleLogin = (email: string, password: string) => {};
+  const handleLogin = (email: string) => {};
 
   return (
     <div>

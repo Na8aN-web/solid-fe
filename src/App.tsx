@@ -6,6 +6,8 @@ import AccountTypeSelection from "./pages/authentication/AccountType";
 import SignupScreen from "./pages/authentication/SignUp";
 import Login from "./pages/authentication/Login";
 import RecoverPassword from "./pages/authentication/RecoverPassword";
+import CreateNewPassword from "./pages/authentication/CreateNewPassword";
+
 
 function App() {
   return (
@@ -19,6 +21,7 @@ function App() {
         <Route path="/signup" element={<SignupScreen />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recover-password" element={<RecoverPassword />} />
+        <Route path="/create-new-password" element={<CreateNewPassword />} />
       </Route>
     </Routes>
   );
