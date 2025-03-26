@@ -1,9 +1,61 @@
-import React from 'react'
+import { useState } from "react";
+import Navbar from "../public/home/components/LandingNavbar";
+import { Link } from "react-router-dom";
 
 const RecoverPassword = () => {
-  return (
-    <div>RecoverPassword</div>
-  )
-}
+  const [showPassword, setShowPassword] = useState(false);
 
-export default RecoverPassword
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    // input values
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    handleLogin(email, password);
+  };
+
+  const handleLogin = (email: string, password: string) => {};
+
+  return (
+    <div>
+      <Navbar />
+      <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
+        <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
+          <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">
+            Recover your password
+          </h1>
+          <p className="text-base text-shadeGray">
+            Enter your account's email to receive a 6-digit code
+          </p>
+          <form onSubmit={handleSubmit} className="space-y-10 pt-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="leading-8 text-sm text-customBrown font-normal"
+              >
+                Email Address
+              </label>
+              <input
+                name="email"
+                type="email"
+                placeholder="Enter your email address"
+                className="w-full p-3 border rounded-lg text-base"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-primary rounded-lg p-4 w-full text-base text-white"
+            >
+              Continue
+            </button>
+          </form>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default RecoverPassword;

@@ -21,8 +21,8 @@ const Login = () => {
   return (
     <div>
       <Navbar />
-      <section className="flex justify-center items-center sm:min-h-screen">
-        <div className="p-5 sm:p-14 sm:border sm:w-[606px] flex flex-col justify-center rounded-2xl">
+      <section className="sm:flex sm:justify-center sm:items-center sm:min-h-screen">
+        <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">
             Welcome back, login to your account
           </h1>
