@@ -4,6 +4,7 @@ import Layout from "./Layout";
 import HomeGuest from "./pages/private/home/HomeGuest";
 import AccountTypeSelection from "./pages/authentication/AccountType";
 import SignupScreen from "./pages/authentication/SignUp";
+import Login from "./pages/authentication/Login";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />
         <Route path="/signup" element={<SignupScreen />} />
+        <Route path="/login" element={<Login />} />
       </Route>
     </Routes>
   );
