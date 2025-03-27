@@ -4,6 +4,11 @@ import Layout from "./Layout";
 import HomeGuest from "./pages/private/home/HomeGuest";
 import AccountTypeSelection from "./pages/authentication/AccountType";
 import SignupScreen from "./pages/authentication/SignUp";
+import Login from "./pages/authentication/Login";
+import RecoverPassword from "./pages/authentication/RecoverPassword";
+import CreateNewPassword from "./pages/authentication/CreateNewPassword";
+import EnterCode from "./pages/authentication/EnterCode";
+
 
 function App() {
   return (
@@ -15,6 +20,10 @@ function App() {
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />
         <Route path="/signup" element={<SignupScreen />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/recover-password" element={<RecoverPassword />} />
+        <Route path="/create-new-password" element={<CreateNewPassword />} />
+        <Route path="/enter-code" element={<EnterCode />} />
       </Route>
     </Routes>
   );
