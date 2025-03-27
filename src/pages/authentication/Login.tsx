@@ -41,7 +41,7 @@ const Login = () => {
                 name="email"
                 type="email"
                 placeholder="Enter your email address or phone number"
-                className="w-full p-3 border rounded-lg text-base"
+                className="w-full p-4 border rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
@@ -55,8 +55,8 @@ const Login = () => {
               <input
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="w-full p-3 border rounded-lg text-base"
+                placeholder="**************"
+                className="w-full p-4 border rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}

@@ -40,7 +40,7 @@ const RecoverPassword = () => {
                 name="email"
                 type="email"
                 placeholder="Enter your email address"
-                className="w-full p-3 border rounded-lg text-base"
+                className="w-full p-4 border rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
