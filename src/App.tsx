@@ -7,6 +7,7 @@ import SignupScreen from "./pages/authentication/SignUp";
 import Login from "./pages/authentication/Login";
 import RecoverPassword from "./pages/authentication/RecoverPassword";
 import CreateNewPassword from "./pages/authentication/CreateNewPassword";
+import EnterCode from "./pages/authentication/EnterCode";
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/recover-password" element={<RecoverPassword />} />
         <Route path="/create-new-password" element={<CreateNewPassword />} />
+        <Route path="/enter-code" element={<EnterCode />} />
       </Route>
     </Routes>
   );

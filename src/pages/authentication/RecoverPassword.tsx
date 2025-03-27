@@ -1,9 +1,9 @@
-import React from "react";
-import Navbar from "../public/home/components/LandingNavbar";
+import React, { useState } from "react";
+import Navbar from "../private/home/components/Navbar";
 import { Link } from "react-router-dom";
 
 const RecoverPassword = () => {
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -19,7 +19,7 @@ const RecoverPassword = () => {
 
   return (
     <div>
-      <Navbar />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">

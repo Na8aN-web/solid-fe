@@ -1,25 +1,26 @@
 import { useState } from "react";
-import Navbar from "../public/home/components/LandingNavbar";
+import Navbar from "../private/home/components/Navbar";
 import { Link } from "react-router-dom";
 
 const CreateNewPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     // input values
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-    handleLogin(email);
+    handleLogin(password);
   };
 
-  const handleLogin = (email: string) => {};
+  const handleLogin = (password: string) => {};
 
   return (
     <div>
-      <Navbar />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-2">
