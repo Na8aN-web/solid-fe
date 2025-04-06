@@ -20,7 +20,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   reviews,
 }) => {
   return (
-    <div className="inline-block w-full">
+    <div className="inline-block w-full max-w-[210px] text-left">
       <div className="flex flex-col items-start justify-center border rounded-xl p-4 mb-3 w-full h-40 py-4 lg:h-52">
         {discount && (
           <span className="bg-primary text-white text-xs p-2 rounded-3xl">
@@ -35,13 +35,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <h3 className="text-sm font-medium text-customBrown truncate leading-relaxed">
         {title}
       </h3>
-      <div className="flex items-center justify-center gap-1 py-2">
+      <div className="flex items-center gap-1 py-2">
         <img src="/stars.svg" alt="stars" />
         <span className="text-xs md:text-sm font-medium text-customGray3">
           ({reviews} Reviews)
         </span>
       </div>
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center gap-2">
         <p className="text-sm font-semibold text-customBrown">{price}</p>
         {oldPrice && (
           <p className="text-[11px] font-semibold text-customGray3 line-through">
