@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -43,12 +44,13 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   />
                 )}
-
-                <img
-                  src="/Frame 47.svg"
-                  alt="solid-logo"
-                  className="w-32 lg:w-44"
-                />
+                <Link to="/home">
+                  <img
+                    src="/Frame 47.svg"
+                    alt="solid-logo"
+                    className="w-32 lg:w-44"
+                  />
+                </Link>
               </div>
               <img src="/cart.svg" alt="cart" className="w-8 lg:hidden" />
             </div>
@@ -99,18 +101,19 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                 <img src="cart.svg" alt="cart" className="w-auto" />
                 <p className="text-sm">My Cart</p>
               </div>
-              <button
-                type="submit"
-                className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold"
+              <Link
+                to="/login"
+                className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold flex items-center justify-center"
               >
                 Log in
-              </button>
-              <button
-                type="submit"
-                className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold"
+              </Link>
+
+              <Link
+                to="/signup"
+                className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center"
               >
                 Sign up
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -123,18 +126,19 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
           }`}
         >
           <div className="flex w-full justify-between items-center gap-4 py-5 px-5">
-            <button
-              type="submit"
-              className="border border-primary h-12 w-full rounded-lg bg-white text-primary text-sm font-semibold"
+            <Link
+              to="/login"
+              className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold flex items-center justify-center"
             >
               Log in
-            </button>
-            <button
-              type="submit"
-              className="border h-12 w-full rounded-lg bg-primary text-white text-sm font-semibold"
+            </Link>
+
+            <Link
+              to="/signup"
+              className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center"
             >
               Sign up
-            </button>
+            </Link>
           </div>
           {/* profile */}
           <div>
@@ -431,19 +435,19 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         </section>
         <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
           <div className="flex flex-col items-center">
-            <img src="/home.svg" alt="home" className="w-auto"/>
+            <img src="/home.svg" alt="home" className="w-auto" />
             <p className="text-sm">Home</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/categories.svg" alt="category" className="w-auto"/>
+            <img src="/categories.svg" alt="category" className="w-auto" />
             <p className="text-sm">Categories</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/you.svg" alt="you" className="w-auto"/>
+            <img src="/you.svg" alt="you" className="w-auto" />
             <p className="text-sm">You</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/helpp.svg" alt="help" className="w-auto"/>
+            <img src="/helpp.svg" alt="help" className="w-auto" />
             <p className="text-sm">Help</p>
           </div>
         </section>
