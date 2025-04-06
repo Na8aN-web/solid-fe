@@ -314,7 +314,7 @@ const ProductDetails = () => {
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <BrandNav isMenuOpen={isMenuOpen} />
       <section className="lg:px-5 lg:py-4">
-        <h2 className="py-4 px-5">Body Parts</h2>
+        <h2 className="py-2 px-5">Body Parts</h2>
         <div className="lg:flex lg:gap-6">
           <div className="py-6 px-4 lg:px-8 flex flex-col lg:w-2/3 gap-6 lg:gap-10 lg:flex-row bg-white lg:rounded-lg">
             <div className="flex-1">
