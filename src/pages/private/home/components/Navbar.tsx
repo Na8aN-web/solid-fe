@@ -22,9 +22,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   }, [isMenuOpen]);
 
   return (
-    <div className="relative">
+    <div className="relative bg-white">
       <header>
-        <div className="flex items-center pt-11 px-5 w-full relative lg:gap-20 lg:border-b lg:pb-11">
+        <div className="flex items-center pt-6 px-5 w-full relative lg:gap-20 lg:border-b lg:pb-9 lg:pt-9">
           <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto">
             <div className="flex justify-between">
               <div className="flex gap-4">

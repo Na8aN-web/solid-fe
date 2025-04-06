@@ -1,13 +1,19 @@
 import React, { useState } from "react";
-import Navbar from "../../public/home/components/LandingNavbar";
+import Navbar from "../../private/home/components/Navbar";
+import BrandNav from "../../private/home/components/BrandNav";
+import { Plus } from "lucide-react";
+import { Minus } from "lucide-react";
+import RecommendedProduct from "../home/components/RecommendedProduct";
 
 const ProductDetails = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "description" | "specs" | "reviews"
   >("description");
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [quantityCount, setQuantityCount] = useState<number>(1);
 
   const DescriptionSection = () => (
     <section className="text-sm text-shadeGray pb-4 space-y-1 border-b">
@@ -89,107 +95,88 @@ const ProductDetails = () => {
         Reviews
       </h2>
       <div className={!isSpecsOpen ? "block" : "hidden"}>
-        {/* <table className="border w-full md:hidden">
-          <tbody>
-            <tr>
-              <th className="border py-3 px-2 text-left">Dimensions</th>
-              <td className="border py-3 px-2 text-left">
-                32 cm x 25 cm x 14 cm
-              </td>
-            </tr>
-            <tr>
-              <th className="border py-3 px-2 text-left">Weight</th>
-              <td className="border py-3 px-2 text-left">0.6 kg</td>
-            </tr>
-            <tr>
-              <th className="border py-3 px-2 text-left">Main Material</th>
-              <td className="border py-3 px-2 text-left">Metal</td>
-            </tr>
-            <tr>
-              <th className="border py-3 px-2 text-left">Product Type</th>
-              <td className="border py-3 px-2 text-left">Brain Box</td>
-            </tr>
-          </tbody>
-        </table> */}
-        {/* <table className="table-fixed w-full border">
-          <thead>
-            <tr className="divide-x">
-              <th className="pt-6 px-2 text-center flex flex-col items-center justify-center gap-6">
-                <img src="/specicon.svg" alt="" />
-                Dimensions
-              </th>
-              <th className="w-1/4 py-3 px-2 text-center">Weight</th>
-              <th className="w-1/4 py-3 px-2 text-center">Main Material</th>
-              <th className="w-1/4 py-3 px-2 text-center">Product Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="divide-x">
-              <td className="w-1/4 py-3 px-2 text-center">
-                32 cm x 25 cm x 14 cm
-              </td>
-              <td className="w-1/4 py-3 px-2 text-center">0.6 kg</td>
-              <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
-              <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
-            </tr>
-          </tbody>
-        </table> */}
-        <table className="table-fixed w-full border">
-          <thead>
-            <tr className="divide-x">
-              <th className="pt-5 px-2 text-center">
-                <div className="flex flex-col items-center gap-4">
-                  <img
-                    src="/specicon.svg"
-                    alt="Dimensions Icon"
-                    className="w-12 h-12 mb-1"
-                  />
-                  <span>Dimensions</span>
-                </div>
-              </th>
-              <th className="w-1/4 pt-5 px-2 text-center">
-                <div className="flex flex-col items-center gap-4">
-                  <img
-                    src="/specicon.svg"
-                    alt="Weight Icon"
-                    className="w-12 h-12 mb-1"
-                  />
-                  <span>Weight</span>
-                </div>
-              </th>
-              <th className="w-1/4 pt-5 px-2 text-center">
-                <div className="flex flex-col items-center gap-4">
-                  <img
-                    src="/specicon.svg"
-                    alt="Material Icon"
-                    className="w-12 h-12 mb-1"
-                  />
-                  <span>Main Material</span>
-                </div>
-              </th>
-              <th className="w-1/4 pt-5 px-2 text-center">
-                <div className="flex flex-col items-center gap-4">
-                  <img
-                    src="/specicon.svg"
-                    alt="Product Type Icon"
-                    className="w-12 h-12 mb-1"
-                  />
-                  <span>Product Type</span>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="divide-x">
-              <td className="w-1/4 py-3 px-2 text-center">
-                32 cm x 25 cm x 14 cm
-              </td>
-              <td className="w-1/4 py-3 px-2 text-center">0.6 kg</td>
-              <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
-              <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="md:hidden">
+          <table className="border w-full">
+            <tbody>
+              <tr>
+                <th className="border py-3 px-2 text-left">Dimensions</th>
+                <td className="border py-3 px-2 text-left">
+                  32 cm x 25 cm x 14 cm
+                </td>
+              </tr>
+              <tr>
+                <th className="border py-3 px-2 text-left">Weight</th>
+                <td className="border py-3 px-2 text-left">0.6 kg</td>
+              </tr>
+              <tr>
+                <th className="border py-3 px-2 text-left">Main Material</th>
+                <td className="border py-3 px-2 text-left">Metal</td>
+              </tr>
+              <tr>
+                <th className="border py-3 px-2 text-left">Product Type</th>
+                <td className="border py-3 px-2 text-left">Brain Box</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="hidden md:block">
+          <table className="table-fixed w-full border">
+            <thead>
+              <tr className="divide-x">
+                <th className="pt-5 px-2 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <img
+                      src="/specicon.svg"
+                      alt="Dimensions Icon"
+                      className="w-12 h-12 mb-1"
+                    />
+                    <span>Dimensions</span>
+                  </div>
+                </th>
+                <th className="w-1/4 pt-5 px-2 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <img
+                      src="/specicon.svg"
+                      alt="Weight Icon"
+                      className="w-12 h-12 mb-1"
+                    />
+                    <span>Weight</span>
+                  </div>
+                </th>
+                <th className="w-1/4 pt-5 px-2 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <img
+                      src="/specicon.svg"
+                      alt="Material Icon"
+                      className="w-12 h-12 mb-1"
+                    />
+                    <span>Main Material</span>
+                  </div>
+                </th>
+                <th className="w-1/4 pt-5 px-2 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <img
+                      src="/specicon.svg"
+                      alt="Product Type Icon"
+                      className="w-12 h-12 mb-1"
+                    />
+                    <span>Product Type</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="divide-x">
+                <td className="w-1/4 py-3 px-2 text-center">
+                  32 cm x 25 cm x 14 cm
+                </td>
+                <td className="w-1/4 py-3 px-2 text-center">0.6 kg</td>
+                <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
+                <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );
@@ -324,9 +311,10 @@ const ProductDetails = () => {
 
   return (
     <div className="bg-[#F5F5F5] pb-10">
-      <Navbar />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <BrandNav isMenuOpen={isMenuOpen} />
       <section className="lg:px-5 lg:py-4">
-        <h2 className="py-4">Body Parts</h2>
+        <h2 className="py-4 px-5">Body Parts</h2>
         <div className="lg:flex lg:gap-6">
           <div className="py-6 px-4 lg:px-8 flex flex-col lg:w-2/3 gap-6 lg:gap-10 lg:flex-row bg-white lg:rounded-lg">
             <div className="flex-1">
@@ -471,7 +459,25 @@ const ProductDetails = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-customGray3">Quantity:</p>
-                  <img src="/counter.svg" alt="" />
+                  <div className="flex items-center justify-around border border-gray-300 rounded-[2px]">
+                    <button
+                      className="p-[5px] bg-[#F6F6F6] active:bg-[#b5b4b4]"
+                      onClick={() =>
+                        setQuantityCount((prev) => (prev > 1 ? prev - 1 : 1))
+                      }
+                    >
+                      <Minus />
+                    </button>
+                    <span className="border-l border-r px-[13px] py-[6px] text-customBrown text-base font-meduim">
+                      {quantityCount}
+                    </span>
+                    <button
+                      className="p-[5px] bg-[#F6F6F6] active:bg-[#b5b4b4]"
+                      onClick={() => setQuantityCount((prev) => prev + 1)}
+                    >
+                      <Plus />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3">Price:</p>
@@ -626,6 +632,7 @@ const ProductDetails = () => {
           <ReviewsSection />
         </div>
       </section>
+        <RecommendedProduct />
     </div>
   );
 };
