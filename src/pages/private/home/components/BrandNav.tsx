@@ -17,7 +17,7 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
   const [isDropOpen, setIsDropOpen] = useState(false);
   // const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
-    <div className="flex flex-col items-center lg:flex-row w-full gap-5 pt-6 pb-4 z-10">
+    <div className="flex flex-col items-center lg:flex-row w-full gap-5 pt-6 pb-3 z-10 bg-white">
       <div className="w-full lg:w-72 relative">
         <div className="flex items-center justify-between gap-4 px-8 h-14 bg-primary">
           <div
