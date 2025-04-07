@@ -7,6 +7,7 @@ import Login from "./pages/authentication/Login";
 import RecoverPassword from "./pages/authentication/RecoverPassword";
 import CreateNewPassword from "./pages/authentication/CreateNewPassword";
 import EnterCode from "./pages/authentication/EnterCode";
+import Product from "./pages/public/products/Product";
 import ProductDetails from "./pages/private/productdetails/ProductDetails";
 import Footer from "./components/Footer";
 
@@ -16,6 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<HomeGuest />} />
+        <Route path="/products" element={<Product />} />
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />
