@@ -36,12 +36,12 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
           </p>
         </div>
         <div
-          className={`px-4 py-2 bg-white w-full absolute z-100 transition-all duration-300 ease-in-out${isDropOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-10 opacity-0 invisible"}`}
+          className={`px-4 py-2 bg-white w-full absolute z-50 transition-all duration-300 ease-in-out${isDropOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-10 opacity-0 invisible"}`}
         >
           <h2 className="text-customBrown font-semibold text-base py-5">
             Categories
           </h2>
-          <ul className="flex flex-col justify-around items-start gap-3 h-inherit text-gray-500 text-sm font-normal">
+          <ul className="flex flex-col justify-around items-start  gap-3 h-inherit text-gray-500 text-sm font-normal">
             <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <div className="flex items-center gap-4">
                 <img src="/game-icons_race-car.svg" alt="body-part" className="w-auto"/>

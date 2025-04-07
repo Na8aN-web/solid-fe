@@ -8,6 +8,7 @@ import Login from "./pages/authentication/Login";
 import RecoverPassword from "./pages/authentication/RecoverPassword";
 import CreateNewPassword from "./pages/authentication/CreateNewPassword";
 import EnterCode from "./pages/authentication/EnterCode";
+import Product from "./pages/public/products/Product";
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/home" element={<HomeGuest />} />
+        <Route path="/products" element={<Product />} />
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />
@@ -24,6 +26,8 @@ function App() {
         <Route path="/recover-password" element={<RecoverPassword />} />
         <Route path="/create-new-password" element={<CreateNewPassword />} />
         <Route path="/enter-code" element={<EnterCode />} />
+
+
       </Route>
     </Routes>
   );
