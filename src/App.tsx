@@ -11,6 +11,7 @@ import Product from "./pages/public/products/Product";
 import ProductDetails from "./pages/private/productdetails/ProductDetails";
 import Footer from "./components/Footer";
 import ShoppingCart from "./pages/private/shoppingcart/ShoppingCart";
+import AddAddress from "./pages/private/shoppingcart/AddAddress";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/enter-code" element={<EnterCode />} />
         <Route path="/product-details" element={<ProductDetails />} />
         <Route path="/shopping-cart" element={<ShoppingCart />} />
+        <Route path="/add-address" element={<AddAddress />} />
       </Routes>
       <Footer />
     </>
