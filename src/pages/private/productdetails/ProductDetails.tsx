@@ -450,7 +450,7 @@ const ProductDetails = () => {
               </div>
             </div>
           </div>
-          <div className="py-6 px-4 lg:px-8 bg-white lg:rounded-lg lg:w-1/3">
+          <div className="py-6 px-4 lg:px-8 bg-white lg:rounded-lg lg:w-1/3 self-start">
             {/* order details */}
             <div className="pb-6">
               <h3 className="text-sm text-customBrown border-b leading-8 mb-6">

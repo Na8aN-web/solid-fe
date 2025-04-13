@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import ShoppingCart from "./pages/private/shoppingcart/ShoppingCart";
 import AddAddress from "./pages/private/shoppingcart/AddAddress";
 import ChangeAddress from "./pages/private/shoppingcart/ChangeAddress";
+import Checkout from "./pages/private/shoppingcart/Checkout";
 
 function App() {
   return (
@@ -30,9 +31,10 @@ function App() {
         <Route path="/create-new-password" element={<CreateNewPassword />} />
         <Route path="/enter-code" element={<EnterCode />} />
         <Route path="/product-details" element={<ProductDetails />} />
-        <Route path="/shopping-cart" element={<ShoppingCart />} />
+        <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/add-address" element={<AddAddress />} />
         <Route path="/change-address" element={<ChangeAddress />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Routes>
       <Footer />
     </>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import {  useEffect } from "react";
 import { Link } from "react-router-dom";
 
 interface NavProps {
@@ -52,7 +52,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   />
                 </Link>
               </div>
-              <img src="/cart.svg" alt="cart" className="w-8 lg:hidden" />
+              <Link to="/cart">
+                <img src="/cart.svg" alt="cart" className="w-8 lg:hidden" />
+              </Link>
             </div>
             {/* mobile input */}
             <input
@@ -97,10 +99,12 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   <option value="">Help</option>
                 </select>
               </div>
-              <div className="flex gap-1 items-center">
-                <img src="cart.svg" alt="cart" className="w-auto" />
-                <p className="text-sm">My Cart</p>
-              </div>
+              <Link to="/cart">
+                <div className="flex gap-1 items-center">
+                  <img src="cart.svg" alt="cart" className="w-auto" />
+                  <p className="text-sm">My Cart</p>
+                </div>
+              </Link>
               <Link
                 to="/login"
                 className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold flex items-center justify-center"

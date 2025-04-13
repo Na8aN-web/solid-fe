@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
-import Navbar from './components/Navbar';
+import Navbar from "../private/home/components/Navbar";
 
 interface SignupFormData {
     firstName: string;

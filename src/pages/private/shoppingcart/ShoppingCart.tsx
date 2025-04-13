@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Navbar from "../../private/home/components/Navbar";
 import { Plus, Minus, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ShoppingCart = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +15,7 @@ const ShoppingCart = () => {
           <h2 className="text-xl font-semibold">Shopping Cart</h2>
         </div>
         <div className="lg:flex lg:gap-5 lg:px-5 lg:pb-12">
-          <div className="bg-white w-full lg:w-2/3 lg:p-5 self-start px-5">
+          <div className="bg-white w-full lg:w-2/3 lg:p-5 self-start px-5 lg:rounded-lg lg:border lg:border-[#D9D9D9]">
             <table className="w-full">
               <tr className="w-full bg-[#F5F5F5]">
                 <td className="pl-3 py-4 text-sm text-customGray1 font-normal lg:hidden">
@@ -222,11 +223,13 @@ const ShoppingCart = () => {
               <img src="/arrowleft.svg" alt="" />
               <p className="text-sm text-primary">Continue Shopping</p>
             </div>
-            <button className="bg-primary py-4 text-white text-sm rounded w-full lg:hidden">
-              Proceed to checkout
-            </button>
+            <Link to="/checkout">
+              <button className="bg-primary py-4 text-white text-sm rounded w-full lg:hidden">
+                Proceed to checkout
+              </button>
+            </Link>
           </div>
-          <div className="lg:w-1/3 bg-white p-5">
+          <div className="lg:w-1/3 bg-white p-5 lg:rounded-lg">
             <div className="hidden lg:block">
               <h2 className="text-sm font-semibold text-customBrown pb-1 border-b">
                 Delivery
@@ -322,15 +325,14 @@ const ShoppingCart = () => {
                       <p>60,000.00</p>
                     </div>
                   </div>
-                  <button className="bg-primary py-4 text-white text-sm rounded w-full">
-                    Proceed to checkout
-                  </button>
+                  <Link to="/checkout">
+                    <button className="bg-primary py-4 text-white text-sm rounded w-full">
+                      Proceed to checkout
+                    </button>
+                  </Link>
                 </form>
               </div>
             </div>
-            {/* <button className="bg-primary py-4 text-white text-sm rounded w-full">
-              Proceed to checkout
-            </button> */}
           </div>
         </div>
       </section>

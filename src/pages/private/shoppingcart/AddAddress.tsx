@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const AddAddress = () => {
   return (
@@ -148,18 +149,24 @@ const AddAddress = () => {
               <input type="checkbox" name="" id="" />
               <p className="text-customGray3 text-sm">Set as default address</p>
             </div>
-            <button
-              type="submit"
-              className="bg-primary rounded-lg p-4 w-full text-base text-white font-semibold"
-            >
-              Save
-            </button>
-            <button
-              type="submit"
-              className="bg-white rounded-lg p-4 w-full text-base text-primary border border-primary font-semibold"
-            >
-              Cancel
-            </button>
+            <div>
+              <Link to="/checkout">
+                <button
+                  type="submit"
+                  className="bg-primary rounded-lg p-4 w-full text-base text-white font-semibold mb-5"
+                >
+                  Save
+                </button>
+              </Link>
+              <Link to="/checkout">
+                <button
+                  type="submit"
+                  className="bg-white rounded-lg p-4 w-full text-base text-primary border border-primary font-semibold"
+                >
+                  Cancel
+                </button>
+              </Link>
+            </div>
           </form>
         </div>
       </section>
