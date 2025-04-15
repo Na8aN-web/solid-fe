@@ -50,8 +50,6 @@ const Product: React.FC = () => {
         const checkIfMobile = () => {
             setIsMobile(window.innerWidth < 768);
         };
-
-        // Initial check
         checkIfMobile();
 
         // Add event listener for window resize
@@ -112,10 +110,8 @@ const Product: React.FC = () => {
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
     const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
-    // Handler for adding to cart
     const addToCart = (id: number) => {
         console.log(`Added product ${id} to cart`);
-        // Implement actual cart functionality here
     };
 
     const handlePriceChange = ({ minPrice, maxPrice }: { minPrice: number; maxPrice: number }): void => {
@@ -133,12 +129,8 @@ const Product: React.FC = () => {
         });
     };
 
-    // Apply filters and close sidebar on mobile
     const applyFilters = () => {
         console.log("Applying filters:", filters);
-        // Add your filter logic here
-
-        // Close the filter sidebar on mobile
         if (isMobile) {
             setIsFilterOpen(false);
         }
@@ -162,21 +154,14 @@ const Product: React.FC = () => {
                     </div>
                 </nav>
 
-                {/* Product page header */}
                 <div className="mx-auto p-4 bg-[#F9F9F9] relative">
-                    {/* Mobile Filter Button */}
-
-                    {/* Filter and product container */}
                     <div className="flex flex-col md:flex-row gap-6 relative min-h-[calc(100vh-200px)]">
-                        {/* Overlay for mobile when sidebar is open */}
                         {isMobile && isFilterOpen && (
                             <div
                                 className="fixed inset-0 bg-black bg-opacity-50 z-30"
                                 onClick={handleOverlayClick}
                             ></div>
                         )}
-
-                        {/* Sidebar Filter Component - conditionally shown/positioned based on screen size */}
                         <div
                             className={`
             ${isMobile ? 'fixed left-0 top-0 h-full overflow-y-auto z-40 transition-transform duration-300 ease-in-out' : 'md:sticky top-4 self-start h-fit max-h-screen overflow-y-auto'} 
