@@ -12,6 +12,10 @@ import About from "./pages/public/about/About";
 import ProductDetails from "./pages/private/productdetails/ProductDetails";
 import Footer from "./components/Footer";
 import Blog from "./pages/public/blog/Blog";
+import ShoppingCart from "./pages/private/shoppingcart/ShoppingCart";
+import AddAddress from "./pages/private/shoppingcart/AddAddress";
+import ChangeAddress from "./pages/private/shoppingcart/ChangeAddress";
+import Checkout from "./pages/private/shoppingcart/Checkout";
 
 function App() {
   return (
@@ -31,6 +35,10 @@ function App() {
         <Route path="/create-new-password" element={<CreateNewPassword />} />
         <Route path="/enter-code" element={<EnterCode />} />
         <Route path="/product-details" element={<ProductDetails />} />
+        <Route path="/cart" element={<ShoppingCart />} />
+        <Route path="/add-address" element={<AddAddress />} />
+        <Route path="/change-address" element={<ChangeAddress />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Routes>
       <Footer />
     </>

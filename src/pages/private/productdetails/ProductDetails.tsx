@@ -450,7 +450,7 @@ const ProductDetails = () => {
               </div>
             </div>
           </div>
-          <div className="py-6 px-4 lg:px-8 bg-white lg:rounded-lg lg:w-1/3">
+          <div className="py-6 px-4 lg:px-8 bg-white lg:rounded-lg lg:w-1/3 self-start">
             {/* order details */}
             <div className="pb-6">
               <h3 className="text-sm text-customBrown border-b leading-8 mb-6">
@@ -459,20 +459,20 @@ const ProductDetails = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-customGray3">Quantity:</p>
-                  <div className="flex items-center justify-around border border-gray-300 rounded-[2px]">
+                  <div className="flex items-center justify-around border border-gray-300 rounded-[2px] w-[106px] h-[28px]">
                     <button
-                      className="p-[5px] bg-[#F6F6F6] active:bg-[#b5b4b4]"
+                      className="flex-1 w-full text-center bg-[#F6F6F6] active:bg-[#b5b4b4]"
                       onClick={() =>
                         setQuantityCount((prev) => (prev > 1 ? prev - 1 : 1))
                       }
                     >
                       <Minus />
                     </button>
-                    <span className="border-l border-r px-[13px] py-[6px] text-customBrown text-base font-meduim">
+                    <span className="flex-1 w-full text-center border-l border-r text-customBrown text-base font-meduim">
                       {quantityCount}
                     </span>
                     <button
-                      className="p-[5px] bg-[#F6F6F6] active:bg-[#b5b4b4]"
+                      className="flex-1 w-full text-center bg-[#F6F6F6] active:bg-[#b5b4b4]"
                       onClick={() => setQuantityCount((prev) => prev + 1)}
                     >
                       <Plus />
@@ -493,9 +493,9 @@ const ProductDetails = () => {
                 </div>
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3 flex gap-2 items-center">
-                    Discount{" "}
+                    Discount
                     <span className="text-[10px] text-customBrown font-meduim flex gap-2 bg-[#BFCCD8] px-3 py-[2px] rounded-2xl">
-                      standard{" "}
+                      standard
                       <img src="/standardarrow.svg" alt="Discount Type Arrow" />
                     </span>
                   </p>
@@ -632,7 +632,7 @@ const ProductDetails = () => {
           <ReviewsSection />
         </div>
       </section>
-        <RecommendedProduct />
+      <RecommendedProduct />
     </div>
   );
 };
