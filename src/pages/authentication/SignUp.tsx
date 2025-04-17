@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import Navbar from "../private/home/components/Navbar";
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { registerUser, prepareSignupData, clearError } from '../../store/slices/authSlice';
 
 interface SignupFormData {
     firstName: string;
@@ -10,6 +13,11 @@ interface SignupFormData {
     companyName?: string;
     password: string;
     termsAccepted: boolean;
+    // Add business fields if needed for certain account types
+    businessName?: string;
+    businessAddress?: string;
+    businessRCNumber?: string;
+    businessWebsite?: string;
 }
 
 const SignupScreen: React.FC = () => {
@@ -25,12 +33,34 @@ const SignupScreen: React.FC = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
+    
+    const dispatch = useAppDispatch();
+    const { selectedAccountType, isLoading, error, isAuthenticated } = useAppSelector(state => state.auth);
+    
     const [passwordRequirements, setPasswordRequirements] = useState({
         minLength: false,
         hasNumber: false,
         hasSpecialChar: false,
         hasUppercase: false
     });
+
+    useEffect(() => {
+        // Clear previous errors when component mounts
+        dispatch(clearError());
+        
+        // Redirect if no account type is selected
+        if (!selectedAccountType) {
+            navigate('/account-type');
+        }
+    }, [dispatch, navigate, selectedAccountType]);
+
+    // Redirect on successful authentication
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/home');
+        }
+    }, [isAuthenticated, navigate]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -50,9 +80,19 @@ const SignupScreen: React.FC = () => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Signup Data:', formData);
+        
+        if (!selectedAccountType) {
+            navigate('/account-type');
+            return;
+        }
+        
+        // Prepare the data for submission
+        const signupData = prepareSignupData(selectedAccountType, formData);
+        
+        // Dispatch the register action
+        dispatch(registerUser(signupData));
     };
 
     const isFormValid = () => {
@@ -73,11 +113,20 @@ const SignupScreen: React.FC = () => {
             <div className="min-h-screen bg-white flex items-center justify-center p-0 md:p-4 font-roboto">
                 <div className="w-full max-w-[600px] bg-white rounded-lg md:border border-[#D9D9D9] shadow-md p-[20px] md:p-[60px]">
                     <div className="flex items-center mb-6">
-                        <button className="mr-4 text-gray-600 hover:text-gray-800">
+                        <button 
+                            className="mr-4 text-gray-600 hover:text-gray-800"
+                            onClick={() => navigate('/account-type')}
+                        >
                             <ChevronLeft size={24} />
                         </button>
                         <h2 className="text-[24px] text-[#2D2828] font-bold">Sign up</h2>
                     </div>
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                            {error}
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="flex flex-col md:flex-row md:space-x-4">
@@ -160,6 +209,68 @@ const SignupScreen: React.FC = () => {
                             />
                         </div>
 
+                        {/* Conditionally render business fields based on account type */}
+                        {selectedAccountType && selectedAccountType !== 'mechanics' && (
+                            <>
+                                <div>
+                                    <label htmlFor="businessName" className="block text-sm text-customBrown">
+                                        Business Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="businessName"
+                                        name="businessName"
+                                        value={formData.businessName || ''}
+                                        onChange={handleInputChange}
+                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Business Name"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="businessAddress" className="block text-sm text-customBrown">
+                                        Business Address
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="businessAddress"
+                                        name="businessAddress"
+                                        value={formData.businessAddress || ''}
+                                        onChange={handleInputChange}
+                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Business Address"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="businessRCNumber" className="block text-sm text-customBrown">
+                                        Business RC Number
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="businessRCNumber"
+                                        name="businessRCNumber"
+                                        value={formData.businessRCNumber || ''}
+                                        onChange={handleInputChange}
+                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Business RC Number"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="businessWebsite" className="block text-sm text-customBrown">
+                                        Business Website (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="businessWebsite"
+                                        name="businessWebsite"
+                                        value={formData.businessWebsite || ''}
+                                        onChange={handleInputChange}
+                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Business Website"
+                                    />
+                                </div>
+                            </>
+                        )}
+
                         <div>
                             <label htmlFor="password" className="block text-sm text-customBrown">
                                 Password
@@ -203,8 +314,6 @@ const SignupScreen: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
 
                         <div>
@@ -228,21 +337,21 @@ const SignupScreen: React.FC = () => {
 
                         <button
                             type="submit"
-                            disabled={!isFormValid()}
+                            disabled={!isFormValid() || isLoading}
                             className={`
-              w-full py-3 rounded-lg text-white font-bold transition-all duration-300
-              ${isFormValid()
+                                w-full py-3 rounded-lg text-white font-bold transition-all duration-300
+                                ${isFormValid() && !isLoading
                                     ? 'bg-primary hover:bg-blue-700 active:bg-blue-800'
                                     : 'bg-gray-400 cursor-not-allowed'}
-            `}
+                            `}
                         >
-                            Create Account
+                            {isLoading ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </form>
 
                     <div className="mt-4 text-center">
                         <p className="text-gray-600 mb-4">Already have an account?
-                            <a href="#" className="text-primary hover:underline ml-1 font-bold">
+                            <a href="/login" className="text-primary hover:underline ml-1 font-bold">
                                 Log In
                             </a>
                         </p>
@@ -252,12 +361,18 @@ const SignupScreen: React.FC = () => {
                             <hr className="flex-grow border-t border-gray-300" />
                         </div>
                         <div className="mt-4 flex flex-col md:flex-row items-center justify-center gap-4">
-                            <button className="bg-white border w-full md:w-[calc(50%-0.5rem)] border-[#1D192B] text-gray-700 text-[14px] py-4 px-5 rounded-lg inline-flex items-center justify-center hover:bg-gray-50">
-                                <img src="/facebook.png" alt="Facebook" className=" mr-3" />
+                            <button 
+                                type="button"
+                                className="bg-white border w-full md:w-[calc(50%-0.5rem)] border-[#1D192B] text-gray-700 text-[14px] py-4 px-5 rounded-lg inline-flex items-center justify-center hover:bg-gray-50"
+                            >
+                                <img src="/facebook.png" alt="Facebook" className="mr-3" />
                                 Continue with Facebook
                             </button>
-                            <button className="bg-white border w-full md:w-[calc(50%-0.5rem)] border-[#1D192B] text-gray-700 text-[14px] py-4 px-5 rounded-lg inline-flex items-center justify-center hover:bg-gray-50">
-                                <img src="/google.png" alt="Google" className=" mr-3" />
+                            <button 
+                                type="button"
+                                className="bg-white border w-full md:w-[calc(50%-0.5rem)] border-[#1D192B] text-gray-700 text-[14px] py-4 px-5 rounded-lg inline-flex items-center justify-center hover:bg-gray-50"
+                            >
+                                <img src="/google.png" alt="Google" className="mr-3" />
                                 Continue with Google
                             </button>
                         </div>
