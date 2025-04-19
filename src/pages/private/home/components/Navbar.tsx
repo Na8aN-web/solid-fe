@@ -1,5 +1,6 @@
-import {  useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAppSelector } from "../../../../store/hooks";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -7,8 +8,15 @@ interface NavProps {
 }
 
 const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
-  // const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // const [isDropOpen, setIsDropOpen] = useState(false);
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
+
+  const getInitial = (name: string | undefined | null): string => {
+    if (!name) {
+      return '';
+    }
+    return name.charAt(0).toUpperCase();
+  };
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -94,55 +102,54 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             {/* User Options */}
             <div className="flex gap-4 items-center justify-end w-full">
               <div className="flex gap-1 items-center">
-                <img src="/help.svg" alt="help" className="w-8" />
+                <img src="/wishList.svg" alt="help" className="w-6" />
+                <p className="text-sm">Wishlist</p>
+              </div>
+              <div className="flex gap-1 items-center">
+                <img src="/help.svg" alt="help" className="w-6" />
                 <select defaultValue="" name="" id="" className="text-sm">
                   <option value="">Help</option>
                 </select>
               </div>
               <Link to="/cart">
                 <div className="flex gap-1 items-center">
-                  <img src="cart.svg" alt="cart" className="w-auto" />
+                  <img src="cart.svg" alt="cart" className="w-6" />
                   <p className="text-sm">My Cart</p>
                 </div>
               </Link>
-              <Link
-                to="/login"
-                className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold flex items-center justify-center"
-              >
-                Log in
-              </Link>
-
-              <Link
-                to="/signup"
-                className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center"
-              >
-                Sign up
-              </Link>
+              <div className="flex gap-1 items-center">
+                <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-[200px] flex items-center justify-center">
+                  <p className="text-base font-semibold text-customBrown">
+                    {getInitial(isAuthenticated && user?.firstName)}
+                  </p>
+                </div>
+                <img src="arrow-down.svg" alt="" className="w-4" />
+              </div>
             </div>
           </div>
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-20 z-10 max-h-full pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
+          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
             isMenuOpen
               ? "translate-y-0 opacity-100 visible"
               : "-translate-y-10 opacity-0 invisible"
           }`}
         >
-          <div className="flex w-full justify-between items-center gap-4 py-5 px-5">
-            <Link
-              to="/login"
-              className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold flex items-center justify-center"
-            >
-              Log in
-            </Link>
-
-            <Link
-              to="/signup"
-              className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center"
-            >
-              Sign up
-            </Link>
+          <div className="py-5 px-5">
+            <div className="flex gap-3 items-center">
+              <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-[200px] flex items-center justify-center">
+                <p className="text-base font-semibold text-customBrown">
+                  {getInitial(user?.firstName)}
+                </p>
+              </div>
+              <div className="flex flex-col justify-between">
+                <p className="text-customDark text-base font-semibold">
+                  {user?.firstName}
+                </p>
+                <p className="text-xs text-customGray3">{user?.email}</p>
+              </div>
+            </div>
           </div>
           {/* profile */}
           <div>
