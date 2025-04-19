@@ -1,11 +1,40 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../private/home/components/Navbar";
+import Navbar from "../public/home/components/LandingNavbar";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { loginUser, clearError } from "../../store/slices/authSlice";
+
+interface LoginData {
+  email: string;
+  phoneNumber: string;
+  password: string;
+}
 
 const Login = () => {
+  const [formData, setFormData] = useState<LoginData>({
+    email: "",
+    phoneNumber: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const dispatch = useAppDispatch();
+  const { isLoading, error, isAuthenticated } = useAppSelector(
+    (state) => state.auth
+  );
+
+  useEffect(() => {
+    // Clear previous errors when component mounts
+    dispatch(clearError());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -18,11 +47,17 @@ const Login = () => {
     handleLogin(email, password);
   };
 
-  const handleLogin = (email: string, password: string) => {};
+  // const handleLogin = (email: string, password: string) => {
+  //   dispatch(loginUser({ email, password }));
+  // };
+
+  const handleLogin = (emailOrPhone: string, password: string) => {
+    dispatch(loginUser({ email: emailOrPhone, password }));
+  };
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar />
       <section className="sm:flex sm:justify-center sm:items-center sm:min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">
@@ -40,8 +75,9 @@ const Login = () => {
                 Email Address or Phone number
               </label>
               <input
+                id="email"
                 name="email"
-                type="email"
+                type="text"
                 placeholder="Enter your email address or phone number"
                 className="w-full p-4 border rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
@@ -59,24 +95,32 @@ const Login = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="**************"
                 className="w-full p-4 border rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                required
               />
-              <span
+              <button
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-[60px] transform -translate-y-1/2 text-sm text-primary"
+                className="absolute flex right-4 top-[60px] transform -translate-y-1/2 text-sm text-primary"
+                type="button"
               >
                 {showPassword ? "Hide" : "Show"}
-              </span>
-              <Link to="/recover-password">
-                <p className="text-right cursor-pointer leading-8 text-sm text-shadeGray font-normal">
-                  Forgot Password?
-                </p>
-              </Link>
+              </button>
+                {error && (
+                  <div className="text-red-700 p-3 rounded text-sm">
+                    {error}
+                  </div>
+                )}
+                <Link to="/recover-password">
+                  <p className="text-right cursor-pointer py-2  text-sm text-shadeGray font-normal">
+                    Forgot Password?
+                  </p>
+                </Link>
             </div>
             <button
               type="submit"
               className="bg-primary rounded-lg p-4 w-full text-base text-white"
+              disabled={isLoading}
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
           <p className="text-center text-sm text-black py-4">

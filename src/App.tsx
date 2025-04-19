@@ -16,13 +16,38 @@ import ShoppingCart from "./pages/private/shoppingcart/ShoppingCart";
 import AddAddress from "./pages/private/shoppingcart/AddAddress";
 import ChangeAddress from "./pages/private/shoppingcart/ChangeAddress";
 import Checkout from "./pages/private/shoppingcart/Checkout";
+import PrivateRoute from "./components/PrivateRoute";
+import { useAppDispatch } from "./store/hooks"; // Adjust the import path as needed
+import { setUser, setAuthenticated } from "./store/slices/authSlice";
+import { useEffect } from "react";
 
 function App() {
+  const dispatch = useAppDispatch();
+
+useEffect(() => {
+  const storedUser = localStorage.getItem('user');
+  const storedToken = localStorage.getItem('authToken');
+
+  if (storedUser && storedToken) {
+    dispatch(setUser(JSON.parse(storedUser)));
+    dispatch(setAuthenticated(true));
+  }
+}, [dispatch]);
   return (
     <>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/home" element={<HomeGuest />} />
+        {/* Private Routes: This component is only accessible to authenticated users */}
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute>
+              <HomeGuest />
+            </PrivateRoute>
+          }
+        />
+
+        {/* <Route path="/home" element={<HomeGuest />} /> */}
         <Route path="/products" element={<Product />} />
         <Route path="/about" element={<About />} />
         <Route path="/blog" element={<Blog />} />
