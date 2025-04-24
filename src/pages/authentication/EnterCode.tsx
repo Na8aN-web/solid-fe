@@ -1,13 +1,60 @@
 import React, { useState, useRef, useEffect } from "react";
 import Navbar from "../private/home/components/Navbar";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { verifyOTP, requestPasswordResetOTP, clearError } from "../../store/slices/authSlice";
+import { RootState, AppDispatch } from "../../store";
 
 const EnterCode = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [bgColor, setBgColor] = useState<string>("bg-[#F3F3F3]");
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  
+  const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    // Get email from session storage
+    const email = sessionStorage.getItem("resetEmail");
+    if (!email) {
+      // If no email is found, redirect back to recovery page
+      navigate("/recover-password");
+      return;
+    }
+    setResetEmail(email);
+    
+    // Clear any previous errors
+    dispatch(clearError());
+  }, [dispatch, navigate]);
+
+  useEffect(() => {
+    // If OTP is verified, navigate to create new password page
+    if (passwordReset.otpVerified) {
+      navigate("/create-new-password");
+    }
+  }, [passwordReset.otpVerified, navigate]);
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (timeLeft <= 0) return; // Stop countdown at 0
+
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => prevTime - 1);
+    }, 1000);
+
+    return () => clearInterval(timer); // Cleanup on unmount
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? `0${secs}` : secs}`;
+  };
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>, index: number) {
     if (isNaN(Number(e.target.value))) return;
@@ -20,12 +67,16 @@ const EnterCode = () => {
       // Check if all OTP inputs are filled
       if (newOtp.every((val) => val.trim() !== "")) {
         setBgColor("bg-[#D9E1E8]"); // Change background when OTP is fully entered
+        // Submit OTP automatically when all fields are filled
+        setTimeout(() => handleSubmitOTP(newOtp.join("")), 300);
       } else {
         setBgColor("bg-[#F3F3F3]"); // Reset background if not complete
       }
 
       return newOtp;
     });
+    
+    // Auto focus next input
     if (
       e.target.value &&
       e.target.nextElementSibling instanceof HTMLInputElement
@@ -49,23 +100,22 @@ const EnterCode = () => {
     }
   }
 
-  useEffect(() => {
-    if (timeLeft <= 0) return; // Stop countdown at 0
-
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => prevTime - 1);
-    }, 1000);
-
-    return () => clearInterval(timer); // Cleanup on unmount
-  }, [timeLeft]);
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes}:${secs < 10 ? `0${secs}` : secs}`;
+  const handleSubmitOTP = (otpCode: string) => {
+    dispatch(verifyOTP(otpCode));
   };
 
-  // setOtp([otp.map(data, indx) => (indx === index? e.target.value)])
+  const handleResendCode = () => {
+    if (timeLeft > 0) return; // Don't allow resend if timer is still running
+    
+    // Reset timer
+    setTimeLeft(300);
+    
+    // Resend OTP
+    if (resetEmail) {
+      dispatch(requestPasswordResetOTP(resetEmail));
+    }
+  };
+
   return (
     <div>
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
@@ -78,10 +128,17 @@ const EnterCode = () => {
             Enter the 6 digit code we just sent to
           </p>
           <span className="text-base text-shadeGray font-semibold">
-            Marvel987@gmail.com
+            {resetEmail}
           </span>
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
+          
           <form className="space-y-10 pt-4">
-            <div className={`flex gap-1`}>
+            <div className={`flex gap-1 ${isLoading ? 'opacity-50' : ''}`}>
               {otp.map((data, i) => {
                 return (
                   <input
@@ -92,8 +149,9 @@ const EnterCode = () => {
                     value={data}
                     onChange={(e) => handleChange(e, i)}
                     onKeyDown={(e) => handleKeyDown(e, i)}
+                    disabled={isLoading}
                     ref={(el) => {
-                      inputRefs.current[i] = el; // ✅ Fix: Ensure it returns void
+                      inputRefs.current[i] = el;
                     }}
                   />
                 );
@@ -101,8 +159,20 @@ const EnterCode = () => {
             </div>
           </form>
           <p className="text-sm font-semibold text-[#919191] leading-10">
-            Didn't get the code? Resend in{" "}
-            <span className="text-[#4817C2]">{formatTime(timeLeft)}</span>
+            {timeLeft > 0 ? (
+              <>
+                Didn't get the code? Resend in{" "}
+                <span className="text-[#4817C2]">{formatTime(timeLeft)}</span>
+              </>
+            ) : (
+              <button 
+                onClick={handleResendCode}
+                className="text-[#4817C2] hover:underline"
+                disabled={isLoading}
+              >
+                Resend Code
+              </button>
+            )}
           </p>
         </div>
       </section>

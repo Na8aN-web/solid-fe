@@ -1,4 +1,3 @@
-// src/store/slices/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
 import {
@@ -16,6 +15,12 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   selectedAccountType: string | null;
+  passwordReset: {
+    otpRequested: boolean;
+    otpVerified: boolean;
+    onetimePassword: string | null;
+    resetSuccess: boolean;
+  };
 }
 
 // Initial state
@@ -26,6 +31,12 @@ const initialState: AuthState = {
   isLoading: false,
   error: null,
   selectedAccountType: sessionStorage.getItem("selectedAccountType"),
+  passwordReset: {
+    otpRequested: false,
+    otpVerified: false,
+    onetimePassword: null,
+    resetSuccess: false,
+  },
 };
 
 // Create async thunks for API calls
@@ -57,7 +68,7 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Login thunk (we'll implement this for completeness)
+// Login thunk
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (
@@ -80,6 +91,63 @@ export const loginUser = createAsyncThunk(
     } catch (error: any) {
       if (error.response) {
         return rejectWithValue(error.response.data.message || "Login failed");
+      }
+      return rejectWithValue("Network error. Please try again.");
+    }
+  }
+);
+
+// Request OTP thunk
+export const requestPasswordResetOTP = createAsyncThunk(
+  "auth/requestOTP",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/request-otp", { email });
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Failed to send reset code"
+        );
+      }
+      return rejectWithValue("Network error. Please try again.");
+    }
+  }
+);
+
+// Verify OTP thunk
+export const verifyOTP = createAsyncThunk(
+  "auth/verifyOTP",
+  async (otp: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/verify-otp", { otp });
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Failed to verify OTP"
+        );
+      }
+      return rejectWithValue("Network error. Please try again.");
+    }
+  }
+);
+
+// Reset password thunk
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (
+    data: { onetime_password: string; new_password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axiosInstance.post("/auth/reset-password", data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Failed to reset password"
+        );
       }
       return rejectWithValue("Network error. Please try again.");
     }
@@ -149,6 +217,14 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    resetPasswordState: (state) => {
+      state.passwordReset = {
+        otpRequested: false,
+        otpVerified: false,
+        onetimePassword: null,
+        resetSuccess: false,
+      };
+    },
   },
   extraReducers: (builder) => {
     // Register cases
@@ -183,12 +259,61 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload as string;
     });
+
+    // Request OTP cases
+    builder.addCase(requestPasswordResetOTP.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(requestPasswordResetOTP.fulfilled, (state) => {
+      state.isLoading = false;
+      state.passwordReset.otpRequested = true;
+    });
+    builder.addCase(requestPasswordResetOTP.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Verify OTP cases
+    builder.addCase(verifyOTP.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(verifyOTP.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.passwordReset.otpVerified = true;
+      state.passwordReset.onetimePassword = action.payload.onetime_password;
+    });
+    builder.addCase(verifyOTP.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Reset password cases
+    builder.addCase(resetPassword.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(resetPassword.fulfilled, (state) => {
+      state.isLoading = false;
+      state.passwordReset.resetSuccess = true;
+    });
+    builder.addCase(resetPassword.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 
 // Export actions
-export const { setUser, setAuthenticated, setAccountType, logout, clearError } =
-  authSlice.actions;
+export const { 
+  setUser, 
+  setAuthenticated, 
+  setAccountType, 
+  logout, 
+  clearError,
+  resetPasswordState 
+} = authSlice.actions;
 
 // Export reducer
 export default authSlice.reducer;
