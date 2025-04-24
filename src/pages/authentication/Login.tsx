@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../public/home/components/LandingNavbar";
+import Navbar from "./components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { loginUser, clearError } from "../../store/slices/authSlice";
@@ -18,6 +18,7 @@ const Login = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
@@ -57,7 +58,7 @@ const Login = () => {
 
   return (
     <div>
-      <Navbar />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="sm:flex sm:justify-center sm:items-center sm:min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">
@@ -104,16 +105,16 @@ const Login = () => {
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
-                {error && (
-                  <div className="text-red-700 p-3 rounded text-sm">
-                    {error}
-                  </div>
-                )}
-                <Link to="/recover-password">
-                  <p className="text-right cursor-pointer py-2  text-sm text-shadeGray font-normal">
-                    Forgot Password?
-                  </p>
-                </Link>
+              {error && (
+                <div className="text-red-700 p-3 rounded text-sm">
+                  {error}
+                </div>
+              )}
+              <Link to="/recover-password">
+                <p className="text-right cursor-pointer py-2  text-sm text-shadeGray font-normal">
+                  Forgot Password?
+                </p>
+              </Link>
             </div>
             <button
               type="submit"
@@ -125,7 +126,9 @@ const Login = () => {
           </form>
           <p className="text-center text-sm text-black py-4">
             Don't have an account?
-            <span className="text-primary font-bold">Create</span>
+            <a href="/account-type" className="text-primary hover:underline ml-1 font-bold">
+              Create
+            </a>
           </p>
           <div className="flex items-center gap-4 pb-3">
             <div className="flex-1 border-t border-gray-300"></div>

@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../private/home/components/Navbar";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { resetPassword, clearError, resetPasswordState } from "../../store/slices/authSlice";
+import { RootState, AppDispatch } from "../../store";
 
 const CreateNewPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,31 +22,67 @@ const CreateNewPassword = () => {
     hasUppercase: false,
   });
 
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  
+  const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    // Clear any previous errors
+    dispatch(clearError());
+    
+    // Check if we have the onetime_password in the state
+    if (!passwordReset.otpVerified || !passwordReset.onetimePassword) {
+      // If we don't have the onetime_password, redirect to recovery page
+      navigate("/recover-password");
+    }
+  }, [dispatch, navigate, passwordReset.otpVerified, passwordReset.onetimePassword]);
+
+  useEffect(() => {
+    // If password reset is successful, show success and redirect to login page
+    if (passwordReset.resetSuccess) {
+      alert("Password reset successful. Please login with your new password.");
+      
+      // Reset the password reset state
+      dispatch(resetPasswordState());
+      
+      // Navigate to login page
+      navigate("/login");
+    }
+  }, [passwordReset.resetSuccess, dispatch, navigate]);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    // input values
-    const formData = new FormData(event.currentTarget);
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-
-    if (password !== confirmPassword) {
+    
+    // Check if the password and confirmation match
+    if (formData.password !== formData.confirmPassword) {
       setPasswordMismatch(true);
       return;
     }
 
     setPasswordMismatch(false);
 
-    handleLogin(password);
+    // Check if all password requirements are met
+    const allRequirementsMet = Object.values(passwordRequirements).every(Boolean);
+    if (!allRequirementsMet) {
+      alert("Please ensure your password meets all requirements.");
+      return;
+    }
+
+    // Submit the password reset request
+    if (passwordReset.onetimePassword) {
+      dispatch(resetPassword({
+        onetime_password: passwordReset.onetimePassword,
+        new_password: formData.password
+      }));
+    }
   };
 
-  const handleLogin = (password: string) => {};
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
 
     // Password requirements validation
@@ -63,8 +102,15 @@ const CreateNewPassword = () => {
       <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-2">
-            Create New password
+            Create New Password
           </h1>
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="relative">
               <label
@@ -83,20 +129,20 @@ const CreateNewPassword = () => {
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-[60px] transform -translate-y-1/2 text-sm text-primary"
+                className="absolute right-4 top-[60px] transform -translate-y-1/2 text-sm text-primary cursor-pointer"
               >
                 {showPassword ? "Hide" : "Show"}
               </span>
             </div>
             <div className="relative">
               <label
-                htmlFor="password"
+                htmlFor="confirmPassword"
                 className="leading-8 text-sm text-customBrown font-normal"
               >
                 Re-enter Password
               </label>
               <input
-                type={showPassword ? "text" : "password"}
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 name="confirmPassword"
                 onChange={handleInputChange}
@@ -107,7 +153,7 @@ const CreateNewPassword = () => {
               />
               <span
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-[60px] transform -translate-y-1/2 text-sm text-primary"
+                className="absolute right-4 top-[60px] transform -translate-y-1/2 text-sm text-primary cursor-pointer"
               >
                 {showConfirmPassword ? "Hide" : "Show"}
               </span>
@@ -147,9 +193,12 @@ const CreateNewPassword = () => {
             </div>
             <button
               type="submit"
-              className="bg-primary rounded-lg p-4 w-full text-base text-white"
+              disabled={isLoading}
+              className={`rounded-lg p-4 w-full text-base text-white ${
+                isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-primary"
+              }`}
             >
-              Continue
+              {isLoading ? "Resetting Password..." : "Continue"}
             </button>
           </form>
         </div>

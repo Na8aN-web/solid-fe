@@ -99,28 +99,31 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                 <img src="cart.svg" alt="cart" className="w-auto" />
                 <p className="text-sm">My Cart</p>
               </div>
-              <button
-                type="submit"
-                className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold"
-              >
-                Log in
-              </button>
-              <button
-                type="submit"
-                className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold"
-              >
-                Sign up
-              </button>
+              <a href="/login">
+                <button
+                  type="submit"
+                  className="border border-primary h-12 w-20 rounded-lg bg-white text-primary text-sm font-semibold"
+                >
+                  Log in
+                </button>
+              </a>
+              <a href="/account-type">
+                <button
+                  type="submit"
+                  className="border h-12 w-24 rounded-lg bg-primary text-white text-sm font-semibold"
+                >
+                  Sign up
+                </button>
+              </a>
             </div>
           </div>
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-20 z-10 max-h-full pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen
-              ? "translate-y-0 opacity-100 visible"
-              : "-translate-y-10 opacity-0 invisible"
-          }`}
+          className={`fixed top-20 z-10 max-h-full pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
+            ? "translate-y-0 opacity-100 visible"
+            : "-translate-y-10 opacity-0 invisible"
+            }`}
         >
           <div className="flex w-full justify-between items-center gap-4 py-5 px-5">
             <button
@@ -431,19 +434,19 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         </section>
         <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
           <div className="flex flex-col items-center">
-            <img src="/home.svg" alt="home" className="w-auto"/>
+            <img src="/home.svg" alt="home" className="w-auto" />
             <p className="text-sm">Home</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/categories.svg" alt="category" className="w-auto"/>
+            <img src="/categories.svg" alt="category" className="w-auto" />
             <p className="text-sm">Categories</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/you.svg" alt="you" className="w-auto"/>
+            <img src="/you.svg" alt="you" className="w-auto" />
             <p className="text-sm">You</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/helpp.svg" alt="help" className="w-auto"/>
+            <img src="/helpp.svg" alt="help" className="w-auto" />
             <p className="text-sm">Help</p>
           </div>
         </section>

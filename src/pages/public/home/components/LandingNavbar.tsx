@@ -82,20 +82,24 @@ const Navbar: React.FC = () => {
                             <p className="text-[14px] text-[#2D2828] font-roboto">My Cart</p>
                         </div>
                         <div className="hidden md:block">
-                            <button
-                                type="submit"
-                                className="border border-primary h-12 w-16 rounded-lg bg-white text-primary text-sm font-semibold"
-                            >
-                                Log in
-                            </button>
+                            <a href='/login'>
+                                <button
+                                    type="submit"
+                                    className="border border-primary h-12 w-16 rounded-lg bg-white text-primary text-sm font-semibold"
+                                >
+                                    Log in
+                                </button>
+                            </a>
                         </div>
                         <div className="hidden md:block">
-                            <button
-                                type="submit"
-                                className="border h-12 w-20 rounded-lg bg-primary text-white text-sm font-semibold"
-                            >
-                                Sign up
-                            </button>
+                            <a href='/account-type'>
+                                <button
+                                    type="submit"
+                                    className="border h-12 w-20 rounded-lg bg-primary text-white text-sm font-semibold"
+                                >
+                                    Sign up
+                                </button>
+                            </a>
                         </div>
 
                         {/* Cart icon for mobile */}

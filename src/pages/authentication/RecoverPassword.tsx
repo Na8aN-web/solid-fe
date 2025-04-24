@@ -1,21 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../private/home/components/Navbar";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { requestPasswordResetOTP, clearError } from "../../store/slices/authSlice";
+import { RootState, AppDispatch } from "../../store";
 
 const RecoverPassword = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  
+  const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    // Clear any previous errors
+    dispatch(clearError());
+  }, [dispatch]);
+
+  useEffect(() => {
+    // If OTP was successfully requested, navigate to the code verification page
+    if (passwordReset.otpRequested) {
+      // Store email in session storage for next component
+      sessionStorage.setItem("resetEmail", email);
+      navigate("/enter-code");
+    }
+  }, [passwordReset.otpRequested, navigate, email]);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    // input values
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-
-    handleLogin(email);
+    dispatch(requestPasswordResetOTP(email));
   };
-
-  const handleLogin = (email: string) => {};
 
   return (
     <div>
@@ -28,6 +43,11 @@ const RecoverPassword = () => {
           <p className="text-base text-shadeGray">
             Enter your account's email to receive a 6-digit code
           </p>
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-10 pt-4">
             <div>
               <label
@@ -39,6 +59,8 @@ const RecoverPassword = () => {
               <input
                 name="email"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 className="w-full p-4 border rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
@@ -46,9 +68,12 @@ const RecoverPassword = () => {
             </div>
             <button
               type="submit"
-              className="bg-primary rounded-lg p-4 w-full text-base text-white"
+              disabled={isLoading}
+              className={`rounded-lg p-4 w-full text-base text-white ${
+                isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-primary"
+              }`}
             >
-              Continue
+              {isLoading ? "Sending..." : "Continue"}
             </button>
           </form>
         </div>

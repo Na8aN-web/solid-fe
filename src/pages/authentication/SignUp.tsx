@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
-import Navbar from "../public/home/components/LandingNavbar";
+import Navbar from "./components/Navbar";
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { registerUser, prepareSignupData, clearError } from '../../store/slices/authSlice';
 
@@ -32,6 +32,7 @@ const SignupScreen: React.FC = () => {
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
     
     const dispatch = useAppDispatch();
@@ -108,7 +109,7 @@ const SignupScreen: React.FC = () => {
 
     return (
         <>
-            <Navbar />
+           <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
             <div className="min-h-screen bg-white flex items-center justify-center p-0 md:p-4 font-roboto">
                 <div className="w-full max-w-[600px] bg-white rounded-lg md:border border-[#D9D9D9] shadow-md p-[20px] md:p-[60px]">
                     <div className="flex items-center mb-6">
