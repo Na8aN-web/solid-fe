@@ -52,7 +52,7 @@ useEffect(() => {
         <Route path="/products" element={<Product />} />
         <Route path="/about" element={<About />} />
         <Route path="/blog" element={<Blog />} />
-        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/contact" element={<ContactUs />} />
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />
