@@ -20,6 +20,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import { useAppDispatch } from "./store/hooks"; // Adjust the import path as needed
 import { setUser, setAuthenticated } from "./store/slices/authSlice";
 import { useEffect } from "react";
+import ContactUs from "./pages/public/contactus/ContactUs";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -51,6 +52,7 @@ useEffect(() => {
         <Route path="/products" element={<Product />} />
         <Route path="/about" element={<About />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/contact" element={<ContactUs />} />
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />

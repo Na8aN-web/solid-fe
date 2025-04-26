@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -128,16 +128,20 @@ const Footer = () => {
             </h3>
             <span className="bg-customGold rounded block w-12 h-[4px]"></span>
           </div>
-          <p className="hidden sm:block text-customLight font-normal text-sm pb-3">About Us</p>
+          <p className="hidden sm:block text-customLight font-normal text-sm pb-3">
+            About Us
+          </p>
           <p className="text-customLight font-normal text-sm pb-3">
             Customer Service
           </p>
           <p className="text-customLight font-normal text-sm pb-3">
             Privacy Policy
           </p>
-          <p className="text-customLight font-normal text-sm pb-3">
-            Contact Us
-          </p>
+          <Link to="/contact">
+            <p className="text-customLight font-normal text-sm pb-3">
+              Contact Us
+            </p>
+          </Link>
         </div>
         {/* support */}
         <div>
