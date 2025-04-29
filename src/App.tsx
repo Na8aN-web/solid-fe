@@ -15,9 +15,10 @@ import Blog from "./pages/public/blog/Blog";
 import ShoppingCart from "./pages/private/shoppingcart/ShoppingCart";
 import AddAddress from "./pages/private/shoppingcart/AddAddress";
 import ChangeAddress from "./pages/private/shoppingcart/ChangeAddress";
+import Account from "./pages/private/accountinformation/Account";
 import Checkout from "./pages/private/shoppingcart/Checkout";
 import PrivateRoute from "./components/PrivateRoute";
-import { useAppDispatch } from "./store/hooks"; // Adjust the import path as needed
+import { useAppDispatch } from "./store/hooks";
 import { setUser, setAuthenticated } from "./store/slices/authSlice";
 import { useEffect } from "react";
 import ContactUs from "./pages/public/contactus/ContactUs";
@@ -25,15 +26,15 @@ import ContactUs from "./pages/public/contactus/ContactUs";
 function App() {
   const dispatch = useAppDispatch();
 
-useEffect(() => {
-  const storedUser = localStorage.getItem('user');
-  const storedToken = localStorage.getItem('authToken');
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('authToken');
 
-  if (storedUser && storedToken) {
-    dispatch(setUser(JSON.parse(storedUser)));
-    dispatch(setAuthenticated(true));
-  }
-}, [dispatch]);
+    if (storedUser && storedToken) {
+      dispatch(setUser(JSON.parse(storedUser)));
+      dispatch(setAuthenticated(true));
+    }
+  }, [dispatch]);
   return (
     <>
       <Routes>
@@ -61,11 +62,14 @@ useEffect(() => {
         <Route path="/recover-password" element={<RecoverPassword />} />
         <Route path="/create-new-password" element={<CreateNewPassword />} />
         <Route path="/enter-code" element={<EnterCode />} />
-        <Route path="/product-details" element={<ProductDetails />} />
-        <Route path="/cart" element={<ShoppingCart />} />
-        <Route path="/add-address" element={<AddAddress />} />
-        <Route path="/change-address" element={<ChangeAddress />} />
-        <Route path="/checkout" element={<Checkout />} />
+
+
+        <Route path="/product-details" element={<PrivateRoute><ProductDetails /></PrivateRoute>} />
+        <Route path="/cart" element={<PrivateRoute><ShoppingCart /></PrivateRoute>} />
+        <Route path="/add-address" element={<PrivateRoute><AddAddress /></PrivateRoute>} />
+        <Route path="/change-address" element={<PrivateRoute><ChangeAddress /></PrivateRoute>} />
+        <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+        <Route path="/account-information" element={<Account />} />
       </Routes>
       <Footer />
     </>
