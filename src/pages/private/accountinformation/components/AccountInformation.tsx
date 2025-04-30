@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserCircle, BookOpen, Star, ShoppingBag, Heart, MapPin, MessageSquare, Shield, LogOut, ChevronLeft } from 'lucide-react';
 import Profile from './Profile';
+import AddressBook from './AddressBook';
 
 // Define the type for sidebar items
 type SidebarItem = {
@@ -38,7 +39,9 @@ const AccountInformation = () => {
                     <Profile /> 
                 );
             case 'address':
-                return <div className="p-6 bg-white rounded-lg border border-gray-200"><h2 className="text-xl font-semibold">Address Book</h2><p className="text-gray-500 mt-2">Your address book information will appear here.</p></div>;
+                return (
+                    <AddressBook />
+                )
             case 'ratings':
                 return <div className="p-6 bg-white rounded-lg border border-gray-200"><h2 className="text-xl font-semibold">Pending Ratings</h2><p className="text-gray-500 mt-2">Your pending ratings will appear here.</p></div>;
             case 'orders':
