@@ -22,13 +22,15 @@ import { useAppDispatch } from "./store/hooks";
 import { setUser, setAuthenticated } from "./store/slices/authSlice";
 import { useEffect } from "react";
 import ContactUs from "./pages/public/contactus/ContactUs";
+import RateReviewProduct from "./pages/private/accountinformation/components/RateReviewProduct";
+import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
 
 function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('authToken');
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("authToken");
 
     if (storedUser && storedToken) {
       dispatch(setUser(JSON.parse(storedUser)));
@@ -63,13 +65,52 @@ function App() {
         <Route path="/create-new-password" element={<CreateNewPassword />} />
         <Route path="/enter-code" element={<EnterCode />} />
 
-
-        <Route path="/product-details" element={<PrivateRoute><ProductDetails /></PrivateRoute>} />
-        <Route path="/cart" element={<PrivateRoute><ShoppingCart /></PrivateRoute>} />
-        <Route path="/add-address" element={<PrivateRoute><AddAddress /></PrivateRoute>} />
-        <Route path="/change-address" element={<PrivateRoute><ChangeAddress /></PrivateRoute>} />
-        <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
-        <Route path="/account-information" element={<Account />} />
+        <Route
+          path="/product-details"
+          element={
+            <PrivateRoute>
+              <ProductDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <PrivateRoute>
+              <ShoppingCart />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/add-address"
+          element={
+            <PrivateRoute>
+              <AddAddress />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/change-address"
+          element={
+            <PrivateRoute>
+              <ChangeAddress />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute>
+              <Checkout />
+            </PrivateRoute>
+          }
+        />
+        {/* <Route path="/account-information" element={<Account />} />
+        <Route path="/rate-product" element={<RateReviewProduct />} /> */}
+        <Route path="/account-information" element={<Account />}>
+          <Route index element={<AccountInformation />} />
+          <Route path="rate-product" element={<RateReviewProduct />} />
+        </Route>
       </Routes>
       <Footer />
     </>

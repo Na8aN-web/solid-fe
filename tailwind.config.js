@@ -17,6 +17,9 @@ export default {
         customLight: "#F9F9F9",
         customGold: "#FFC300",
       },
+      boxShadow: {
+        'custom': '0px 4px 11.4px 0px rgba(0, 0, 0, 0.25)', // adjust color as needed
+      },
       fontFamily: {
         'roboto': ['Roboto', 'sans-serif'],
       }
