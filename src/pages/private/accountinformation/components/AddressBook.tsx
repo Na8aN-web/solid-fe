@@ -2,7 +2,6 @@ import React from "react";
 
 const AddressBook = () => {
   return (
-    <div>
       <div className="flex justify-center items-center">
         <section className="space-y-5 w-full min-h-screen">
           <div className="flex justify-between items-center">
@@ -38,7 +37,6 @@ const AddressBook = () => {
           </section>
         </section>
       </div>
-    </div>
   );
 };
 
