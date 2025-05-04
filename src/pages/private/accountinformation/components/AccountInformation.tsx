@@ -18,6 +18,7 @@ import Orders from "./orders/Orders";
 import SavedItems from "./saveditems/SavedItems";
 import TrackOrder from "./orders/TrackOrder";
 import Messages from "./messages/Messages";
+import Security from "./security/Security";
 
 
 // Define the type for sidebar items
@@ -72,12 +73,7 @@ const AccountInformation = () => {
         );
       case "security":
         return (
-          <div className="p-6 bg-white rounded-lg border border-gray-200">
-            <h2 className="text-xl font-semibold">Security</h2>
-            <p className="text-gray-500 mt-2">
-              Your security settings will appear here.
-            </p>
-          </div>
+        <Security />
         );
       case "logout":
         return (
