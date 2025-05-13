@@ -9,7 +9,7 @@ import CreateNewPassword from "./pages/authentication/CreateNewPassword";
 import EnterCode from "./pages/authentication/EnterCode";
 import Product from "./pages/public/products/Product";
 import About from "./pages/public/about/About";
-import ProductDetails from "./pages/private/productdetails/ProductDetails";
+import ProductDetails from "./pages/public/products/productdetails/ProductDetails";
 import Footer from "./components/Footer";
 import Blog from "./pages/public/blog/Blog";
 import ShoppingCart from "./pages/private/shoppingcart/ShoppingCart";
@@ -24,6 +24,7 @@ import { useEffect } from "react";
 import ContactUs from "./pages/public/contactus/ContactUs";
 import RateReviewProduct from "./pages/private/accountinformation/components/rating/RateReviewProduct";
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
+import Store from "./pages/public/visitstore/Store";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -56,6 +57,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/store" element={<Store />} />
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />

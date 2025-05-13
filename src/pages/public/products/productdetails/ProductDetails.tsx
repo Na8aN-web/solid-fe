@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Navbar from "../../private/home/components/Navbar";
-import BrandNav from "../../private/home/components/BrandNav";
+import Navbar from "../../../private/home/components/Navbar";
+import BrandNav from "../../../private/home/components/BrandNav";
 import { Plus } from "lucide-react";
 import { Minus } from "lucide-react";
-import RecommendedProduct from "../home/components/RecommendedProduct";
+import RecommendedProduct from "../../../private/home/components/RecommendedProduct";
 
 const ProductDetails = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
