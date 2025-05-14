@@ -5,6 +5,9 @@ import SidebarFilter from "./components/SidebarFilter";
 import ProductGrid from "./components/ProductGrid";
 import Recents from "./components/Recents";
 import { productData } from "./data";
+import { fetchProductCount } from "../../../store/slices/productSlice"; 
+import { fetchProducts, toggleFavorite, setItemsPerPage, setCurrentPage } from "../../../store/slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 
 interface Product {
     id: number;
@@ -39,11 +42,21 @@ type SectionKey = 'category' | 'department' | 'vehicleType' | 'brand';
 
 const Product: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [products, setProducts] = useState<Product[]>(productData);
+    // const [products, setProducts] = useState<Product[]>(productData);
     const [isMobile, setIsMobile] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     // Add this new state variable
     const [isSortOpen, setIsSortOpen] = useState(false);
+
+    const dispatch = useAppDispatch();
+     const { products, loading, error, currentPage, itemsPerPage, totalProducts } = useAppSelector(
+     (state) => state.products
+  );
+
+      useEffect(() => {
+        dispatch(fetchProducts());
+        dispatch(fetchProductCount());
+    }, [dispatch]);
 
     // Check if the screen is mobile size
     useEffect(() => {
@@ -73,8 +86,8 @@ const Product: React.FC = () => {
         vehicleTypes: [],
         brands: [],
     });
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(16);
+    // const [currentPage, setCurrentPage] = useState(1);
+    // const [itemsPerPage, setItemsPerPage] = useState(16);
     const [sortOrder, setSortOrder] = useState('Alphabetical Order');
     const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
     const [expandedSections, setExpandedSections] = useState({
@@ -97,14 +110,14 @@ const Product: React.FC = () => {
     };
 
     // Handler for toggling favorite
-    const toggleFavorite = (id: number) => {
-        setProducts(products.map(product =>
-            product.id === id ? { ...product, favorite: !product.favorite } : product
-        ));
-    };
+    // const toggleFavorite = (id: number) => {
+    //     setProducts(products.map(product =>
+    //         product.id === id ? { ...product, favorite: !product.favorite } : product
+    //     ));
+    // };
 
     // Calculate pagination values
-    const totalProducts = products.length;
+    // const totalProducts = products.length;
     const totalPages = Math.ceil(totalProducts / itemsPerPage);
     const indexOfLastProduct = currentPage * itemsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
