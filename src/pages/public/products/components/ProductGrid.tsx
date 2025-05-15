@@ -236,9 +236,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                                 </div>
 
                                 <div className="flex items-center space-x-2 mb-2">
-                                    <span className="font-bold text-[#2D2828]">₦{product.salePrice.toLocaleString()}</span>
+                                    <span className="font-bold text-[#2D2828]">₦{product.salePrice?.toLocaleString()}</span>
                                     {product.price > product.salePrice && (
-                                        <span className="text-gray-500 line-through text-sm">₦{product.price.toLocaleString()}</span>
+                                        <span className="text-gray-500 line-through text-sm">₦{product.price?.toLocaleString()}</span>
                                     )}
                                 </div>
 
