@@ -159,7 +159,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     return (
         <div className="font-roboto">
             <div className="bg-gray-100 min-h-screen ">
-                {/* Navigation bar */}
+                {/* Navigation bar. */}
                 {/* <nav className="bg-[#F5F5F5] p-4 border-b hidden md:block">
                     <div className="mx-auto flex items-center">
                         <div className="flex space-x-6 ml-[50px]">
