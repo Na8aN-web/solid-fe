@@ -25,6 +25,7 @@ import ContactUs from "./pages/public/contactus/ContactUs";
 import RateReviewProduct from "./pages/private/accountinformation/components/rating/RateReviewProduct";
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
 import Store from "./pages/public/visitstore/Store";
+import HelpCenter from "./pages/private/help/Help";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -113,6 +114,13 @@ function App() {
           <Route index element={<AccountInformation />} />
           <Route path="rate-product" element={<RateReviewProduct />} />
         </Route>
+
+        <Route
+          path="/help"
+          element={
+            <HelpCenter />
+          }
+        />
       </Routes>
       <Footer />
     </>

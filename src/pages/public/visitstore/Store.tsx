@@ -1,6 +1,5 @@
 import { useState } from "react";
 import ProductPageLayout from "../products/ProductPageLayout";
-import { productData } from "../products/data";
 import Navbar from "../home/components/LandingNavbar";
 import BrandNav from "../../private/home/components/BrandNav";
 import { MapPin, Search } from "lucide-react";
@@ -89,7 +88,7 @@ const Store = () => {
         </div>
       </section>
 
-      <ProductPageLayout products={productData} pageTitle="Visit Store" />
+      <ProductPageLayout pageTitle="Visit Store" />
     </div>
   );
 };
