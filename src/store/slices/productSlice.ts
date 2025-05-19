@@ -5,6 +5,7 @@ import { Product, ProductsResponse, ProductState } from "../../services/products
 
 const initialState: ProductState = {
     products: [],
+    product: null,
     loading: false,
     error: null,
     currentPage: 1,
@@ -28,6 +29,26 @@ export const fetchProducts = createAsyncThunk(
         try {
             const response = await axiosInstance.get<ProductsResponse>("/products");
             return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                return rejectWithValue(error.response.data.message || "Failed to fetch products");
+            }
+            return rejectWithValue("Network error. Please try again.");
+        }
+    }
+);
+
+export const fetchProductById = createAsyncThunk<
+  { product: Product },
+  string,
+  { rejectValue: string }
+>(
+    "product/fetchById",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get<{ product: Product }>(`/products/${id}`);
+            console.log(response.data);
+            return response.data; 
         } catch (error: any) {
             if (error.response) {
                 return rejectWithValue(error.response.data.message || "Failed to fetch products");
@@ -68,7 +89,7 @@ const productSlice = createSlice({
             state.sortBy = action.payload;
         },
         toggleFavorite: (state, action: PayloadAction<number>) => {
-            const product = state.products.find(p => p.id === action.payload);
+            const product = state.products.find(p => p._id === action.payload);
             if (product) {
                 product.favorite = !product.favorite;
             }
@@ -119,6 +140,20 @@ const productSlice = createSlice({
             state.totalProducts = action.payload;
         });
         builder.addCase(fetchProductCount.rejected, (state, action) => {
+            state.error = action.payload as string;
+        });
+        builder.addCase(fetchProductById.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        
+        builder.addCase(fetchProductById.fulfilled, (state, action) => {
+            state.loading = false;
+            state.product = action.payload.product; 
+        });
+        
+        builder.addCase(fetchProductById.rejected, (state, action) => {
+            state.loading = false;
             state.error = action.payload as string;
         });
 

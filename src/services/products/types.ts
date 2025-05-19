@@ -1,6 +1,6 @@
 // src/services/products/types.ts
 export interface Product {
-    id: number;
+    _id: number;
     name: string;
     category: string;
     maker: string;
@@ -22,6 +22,7 @@ export interface ProductsResponse {
 
 export interface ProductState {
     products: Product[];
+    product: Product | null;
     loading: boolean;
     error: string | null;
     currentPage: number;

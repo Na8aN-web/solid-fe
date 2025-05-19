@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../../private/home/components/Navbar";
 import BrandNav from "../../../private/home/components/BrandNav";
 import { Plus } from "lucide-react";
 import { Minus } from "lucide-react";
 import RecommendedProduct from "../../../private/home/components/RecommendedProduct";
+import { useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { fetchProductById } from "../../../../store/slices/productSlice";
+import { Product } from "../types/product";
+import { FaStar } from "react-icons/fa";
 
 const ProductDetails = () => {
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useAppDispatch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "description" | "specs" | "reviews"
@@ -14,6 +21,86 @@ const ProductDetails = () => {
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [quantityCount, setQuantityCount] = useState<number>(1);
+    const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+
+  const product = useAppSelector(
+    (state) => state.products.product as Product | null
+  );
+  const loading = useAppSelector((state) => state.products.loading);
+  const error = useAppSelector((state) => state.products.error);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchProductById(id));
+    }
+  }, [dispatch, id]);
+
+  if (!product) {
+    return <div>Loading product...</div>;
+  }
+
+  // Destructuring the product fields
+  const {
+    name,
+    brand,
+    category,
+    briefDescription,
+    fullDescription,
+    images,
+    discountPrice,
+    regularPrice,
+    salesPrice,
+    packageSize,
+    weight,
+    stockStatus,
+    quantityInStock,
+    rating,
+    numReviews,
+    tieredPricing,
+    isFeatured,
+    isNewArrival,
+    isDealOfTheDay,
+    material,
+    minStock,
+    minOrderQuantity,
+    store,
+    sku,
+    partNumber,
+    updatedAt,
+    createdAt,
+    units,
+  } = product;
+
+  const savedPrice = Math.round(regularPrice - salesPrice);
+  const discountAmount = regularPrice - discountPrice;
+  const discountPercent = Math.round((discountAmount / regularPrice) * 100);
+  const totalPrice = Math.round(quantityCount * salesPrice);
+  console.log(product);
+  console.log(brand.name);
+
+    // Convert numReviews into a star count based on defined rules
+    const starCount =
+    numReviews >= 60
+      ? 5
+      : numReviews >= 30
+        ? 4
+        : numReviews >= 20
+          ? 3
+          : numReviews >= 10
+            ? 2
+            : numReviews >= 1
+              ? 1
+              : 0;
+
+  //   const { _id: brandId, name: brandName } = brand || {};
+  // const { _id: categoryId, name: categoryName } = category || {};
+  // const { length, breadth, width } = packageSize || {};
+
+  console.log("Product ID from URL:", id);
+  console.log("Product from state:", product);
+  if (loading) return <div>Loading product...</div>;
+  if (error) return <div>Error: {error}</div>;
+  // if (!product) return <div>Product not found</div>;
 
   const DescriptionSection = () => (
     <section className="text-sm text-shadeGray pb-4 space-y-1 border-b">
@@ -31,47 +118,51 @@ const ProductDetails = () => {
         />
       </div>
       <div className={!isDescriptionOpen ? "block" : "hidden"}>
-        <p>
-          Haier Thermocool is making life better with our amazing range of
-          double door refrigerators, which are designed for Nigeria homes with
-          stylish design, large freezer storage space (UP TO 95L) that can
-          retain food freshness for 100 hours without electricity and built with
-          durable tropical compressors.
-        </p>
-        <p>
-          Redefining freshness in the Turbo Series with the best cooling speed
-          and elegant glass finish.
-        </p>
-        <p>
-          35% Energy Saving Saves money on electricity bills by reducing energy
-          consumption.
-        </p>
-        <p>
-          100hrs Cooling Retention After Power Cut Peace of mind with continuous
-          freshness for 100 hours after a power cut.
-        </p>
-        <p>
-          Super Fast Cooling Rapid Cooling to Keep Your Fresh in Less Than
-          30min.
-        </p>
-        <p>
-          Largest Freezer Ratio Refrigerator in Nigeria About 50% Freezer Ratio:
-          Double Door Refrigerator. Store More and Shop Less.
-        </p>
-        <p>Aesthetics Handle Recessed</p>
-        <p>Door Colours Silver (shining silver)</p>
-        <p>Accessories Condenser type Outside</p>
-        <p>Length of cable/incl. plug (cm) 2 meters</p>
-        <p>
-          Basic data Voltage/Frequency (V/Hz) Rated: 220-240V/50HZ, product can
-          start under 187V and run under 170V
-        </p>
-        <p>Freezer Volume (L) 96</p>
-        <p>Total Volume (L) 138</p>
-        <p>Fridge Volume (L) 42</p>
-        <p>Defrost Manual</p>
-        <p>Net weight (Kg) 32</p>
-        <p>Gross weight (Kg) 36</p>
+        <p>{fullDescription}</p>
+
+        <ul className="list-disc pl-5 space-y-1 pt-3">
+          <li>
+            <strong>Brand:</strong> {brand?.name}
+          </li>
+          <li>
+            <strong>Category:</strong> {category?.name}
+          </li>
+          <li>
+            <strong>Material:</strong> {material}
+          </li>
+          <li>
+            <strong>Part Number:</strong> {partNumber}
+          </li>
+          <li>
+            <strong>Stock Status:</strong> {stockStatus}
+          </li>
+          <li>
+            <strong>In Stock:</strong> {quantityInStock} {units}
+          </li>
+          <li>
+            <strong>Minimum Order Quantity:</strong> {minOrderQuantity}
+          </li>
+          <li>
+            <strong>Minimum Stock Alert:</strong> {minStock}
+          </li>
+          <li>
+            <strong>Weight:</strong> {weight} kg
+          </li>
+          <li>
+            <strong>Dimensions (L×B×W):</strong> {packageSize.length} ×
+            {packageSize.breadth} × {packageSize.width} cm
+          </li>
+          <li>
+            <strong>Rating:</strong> {rating?.toFixed(1)} / 5 ({numReviews}{" "}
+            reviews)
+          </li>
+          <li>
+            <strong>SKU:</strong> {sku}
+          </li>
+          <li>
+            <strong>Store:</strong> {store}
+          </li>
+        </ul>
       </div>
     </section>
   );
@@ -91,9 +182,6 @@ const ProductDetails = () => {
           }`}
         />
       </div>
-      <h2 className="text-sm text-primary font-meduim pb-2 hidden md:block">
-        Reviews
-      </h2>
       <div className={!isSpecsOpen ? "block" : "hidden"}>
         <div className="md:hidden">
           <table className="border w-full">
@@ -101,20 +189,20 @@ const ProductDetails = () => {
               <tr>
                 <th className="border py-3 px-2 text-left">Dimensions</th>
                 <td className="border py-3 px-2 text-left">
-                  32 cm x 25 cm x 14 cm
+                  {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`}
                 </td>
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Weight</th>
-                <td className="border py-3 px-2 text-left">0.6 kg</td>
+                <td className="border py-3 px-2 text-left">{weight} kg</td>
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Main Material</th>
-                <td className="border py-3 px-2 text-left">Metal</td>
+                <td className="border py-3 px-2 text-left">{material}</td>
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Product Type</th>
-                <td className="border py-3 px-2 text-left">Brain Box</td>
+                <td className="border py-3 px-2 text-left">{category.name}</td>
               </tr>
             </tbody>
           </table>
@@ -168,11 +256,11 @@ const ProductDetails = () => {
             <tbody>
               <tr className="divide-x">
                 <td className="w-1/4 py-3 px-2 text-center">
-                  32 cm x 25 cm x 14 cm
+                  {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`}
                 </td>
-                <td className="w-1/4 py-3 px-2 text-center">0.6 kg</td>
-                <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
-                <td className="w-1/4 py-3 px-2 text-center">Brain Box</td>
+                <td className="w-1/4 py-3 px-2 text-center">{weight} kg</td>
+                <td className="w-1/4 py-3 px-2 text-center">{material}</td>
+                <td className="w-1/4 py-3 px-2 text-center">{category.name}</td>
               </tr>
             </tbody>
           </table>
@@ -200,14 +288,22 @@ const ProductDetails = () => {
         <div className="space-y-4 md:space-y-0 md:flex md:items-start gap-20 border-b md:border-b-0">
           <div className="space-y-2">
             <h3 className="text-xs text-customBrown">Total Review</h3>
-            <p className="text-2xl text-customBrown">121</p>
+            <p className="text-2xl text-customBrown">{numReviews}</p>
             <span className="text-xs text-customGray3">Verified reviews</span>
           </div>
           <div className="space-y-2">
             <h3 className="text-xs text-customBrown">Average Rating</h3>
             <div className="flex items-center gap-4">
               <p className="text-2xl text-customBrown">4.0</p>
-              <img src="/stars.svg" alt="" />
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, index) => (
+                  <Star
+                    key={index}
+                    color={index < starCount ? "gold" : "lightgrey"}
+                    className="w-4 h-4"
+                  />
+                ))}
+              </div>
             </div>
             <span className="text-xs text-customGray3">
               Average rating on this product
@@ -319,18 +415,34 @@ const ProductDetails = () => {
           <div className="py-6 px-4 lg:px-8 flex flex-col lg:w-2/3 gap-6 lg:gap-10 lg:flex-row bg-white lg:rounded-lg">
             <div className="flex-1">
               <div className="flex flex-col flex-1 items-center gap-16 w-full pt-24">
-                <div className="">
-                  <img src="/tyres.svg" alt="" className="w-[220px]" />
+                <div className="h-[220px] border">
+                  <img
+                    src={images[0]}
+                    alt={name}
+                    className="w-[220px] h-[220px] object-fill"
+                  />
                 </div>
-                <div className="flex items-center justify-between w-full max-w-[400px]">
-                  <div className="border px-4 py-5 rounded flex justify-center items-center">
-                    <img src="/tyres.svg" alt="tyres" className="w-[50px]" />
+                <div className="flex items-center justify-between w-full">
+                  <div className="border px-4 py-4 rounded flex justify-center items-center">
+                    <img
+                      src={images[0]}
+                      alt={name}
+                      className="w-[65px] h-[65px] object-fill"
+                    />
                   </div>
-                  <div className="border px-4 py-5 rounded flex justify-center items-center">
-                    <img src="/tyres.svg" alt="tyres" className="w-[50px]" />
+                  <div className="border px-4 py-4 rounded flex justify-center items-center">
+                    <img
+                      src={images[1]}
+                      alt={name}
+                      className="w-[65px] h-[65px] object-fill"
+                    />
                   </div>
-                  <div className="border px-4 py-5 rounded flex justify-center items-center">
-                    <img src="/tyres.svg" alt="tyres" className="w-[50px]" />
+                  <div className="border px-4 py-4 rounded flex justify-center items-center">
+                    <img
+                      src={images[1]}
+                      alt={name}
+                      className="w-[65px] h-[65px] object-fill"
+                    />
                   </div>
                 </div>
               </div>
@@ -344,37 +456,46 @@ const ProductDetails = () => {
               </div>
             </div>
             <div className="space-y-3 flex-1">
-              <h2 className="text-xl text-customBrown">Michellene Tyres</h2>
+              <h2 className="text-xl text-customBrown">{name}</h2>
               {/* review */}
               <div className="flex gap-2 items-center">
-                <img src="/stars.svg" alt="" />
-                <span className="text-xs text-customGray3">(88 reviews)</span>
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, index) => (
+                  <Star
+                    key={index}
+                    color={index < starCount ? "gold" : "lightgrey"}
+                    className="w-4 h-4"
+                  />
+                ))}
+              </div>
+                <span className="text-xs text-customGray3">
+                  ({numReviews} reviews)
+                </span>
               </div>
               {/* brand */}
               <p className="text-sm text-customGray3">
-                Brand: <span className="text-customBrown">Michellene</span>
+                Brand: <span className="text-customBrown">{brand.name}</span>
               </p>
               {/* price */}
               <p className="text-xl text-customBrown">
-                60,000.00{" "}
-                <span className="text-sm text-customGray3">80,000.00</span>
+                ₦{salesPrice}
+                <span className="text-sm text-customGray3">
+                  ₦{regularPrice}
+                </span>
               </p>
-              <p className="text-xs text-customGray3">You save 20,000</p>
+              <p className="text-xs text-customGray3">You save ₦{savedPrice}</p>
               <div className="flex gap-2 items-center">
                 <img src="/vector.svg" alt="" />
-                <span className="text-xs text-[#F24844]">2 Units left</span>
+                <span className="text-xs text-[#F24844]">
+                  {quantityInStock} Units left
+                </span>
               </div>
               {/* description */}
               <div>
                 <h3 className="text-sm text-shadeGray font-medium pb-2">
                   Description
                 </h3>
-                <p className="text-sm text-customGray2">
-                  Designed for ultimate comfort and durability, featuring an
-                  adjustable, ergonomic fit and advanced ventilation system,
-                  with spacious compartments and easy access, it’s ideal for
-                  snowy, summer and all seasons
-                </p>
+                <p className="text-sm text-customGray2">{briefDescription}</p>
               </div>
               <div className="space-y-2 px-2 border rounded-xl">
                 <div className="flex gap-6 items-center py-4">
@@ -419,9 +540,7 @@ const ProductDetails = () => {
                   <div className="flex gap-2">
                     <img src="/warehouse.svg" alt="" />
                     <div>
-                      <p className="text-sm text-customBrown">
-                        Solid Spare Parts Warehouse
-                      </p>
+                      <p className="text-sm text-customBrown">{store}</p>
                       <p className="text-xs text-shadeGray">
                         200 successful sales
                       </p>
@@ -482,13 +601,13 @@ const ProductDetails = () => {
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3">Price:</p>
                   <span className="text-sm text-customBrown font-meduim">
-                    60,000.00
+                    ₦{totalPrice}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3">Discount:</p>
                   <span className="text-sm text-customBrown font-meduim">
-                    (20%) -20,000.00
+                    ({discountPercent}%) -₦{discountPrice}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -500,7 +619,7 @@ const ProductDetails = () => {
                     </span>
                   </p>
                   <span className="text-sm text-customBrown font-meduim">
-                    (20%) -20,000.00
+                    ({discountPercent}%) -₦{discountPrice}
                   </span>
                 </div>
               </div>
@@ -569,13 +688,13 @@ const ProductDetails = () => {
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3">Subtotal:</p>
                   <span className="text-sm text-customBrown font-meduim">
-                    60,000.00
+                  ₦{totalPrice}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-sm text-customBrown font-medium">Total</p>
                   <span className="text-base text-customBrown font-meduim">
-                    20,000.00
+                  ₦{totalPrice}
                   </span>
                 </div>
               </div>

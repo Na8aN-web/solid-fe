@@ -69,7 +69,7 @@ function App() {
         <Route path="/enter-code" element={<EnterCode />} />
 
         <Route
-          path="/product-details"
+          path="/product/:id"
           element={
             <PrivateRoute>
               <ProductDetails />
