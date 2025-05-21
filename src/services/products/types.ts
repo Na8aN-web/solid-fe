@@ -1,5 +1,6 @@
 // src/services/products/types.ts
 export interface Product {
+    regularPrice: any;
     _id: number;
     name: string;
     category: string;
@@ -7,10 +8,11 @@ export interface Product {
     model: string;
     year: string;
     price: number;
-    salePrice: number;
+    salesPrice: number;
+    displayPrice: number;
     image: string;
     description: string;
-    reviews: number;
+    numReviews: number;
     rating: number;
     discount: number;
     favorite: boolean;
@@ -22,6 +24,7 @@ export interface ProductsResponse {
 
 export interface ProductState {
     products: Product[];
+    newArrivals: Product[];
     product: Product | null;
     loading: boolean;
     error: string | null;
@@ -38,3 +41,21 @@ export interface ProductState {
     };
     sortBy: string;
 }
+
+export interface NewProduct {
+    _id: string;
+    name: string;
+    displayPrice: number;
+    rating: number;
+    image: string;
+    categoryName: string;
+    brandName: string;
+  }
+  
+  export interface NewProductsResponse {
+    products: NewProduct[];
+  }
+
+  export interface DealOfDayResponse {
+    products: NewProduct[];
+  }

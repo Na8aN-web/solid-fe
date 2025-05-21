@@ -7,7 +7,7 @@ interface ProductCardProps {
   price: string;
   oldPrice?: string;
   discount?: string;
-  reviews?: string;
+  numReviews?: number;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -17,7 +17,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   oldPrice,
   discount,
-  reviews,
+  numReviews,
 }) => {
   return (
     <div className="inline-block w-full max-w-[210px] text-left">
@@ -38,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="flex items-center gap-1 py-2">
         <img src="/stars.svg" alt="stars" />
         <span className="text-xs md:text-sm font-medium text-customGray3">
-          ({reviews} Reviews)
+          ({numReviews} Reviews)
         </span>
       </div>
       <div className="flex items-center gap-2">

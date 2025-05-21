@@ -6,6 +6,7 @@ import { Product, ProductsResponse, ProductState } from "../../services/products
 const initialState: ProductState = {
     products: [],
     product: null,
+    newArrivals: [],
     loading: false,
     error: null,
     currentPage: 1,
@@ -67,6 +68,38 @@ export const fetchProductCount = createAsyncThunk(
         } catch (error: any) {
             if (error.response) {
                 return rejectWithValue(error.response.data.message || "Failed to fetch product count");
+            }
+            return rejectWithValue("Network error. Please try again.");
+        }
+    }
+);
+
+//new arrival product
+
+export const newProducts = createAsyncThunk(
+    "products/newProducts",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get<ProductsResponse>("/products/new");
+            return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                return rejectWithValue(error.response.data.message || "Failed to fetch products");
+            }
+            return rejectWithValue("Network error. Please try again.");
+        }
+    }
+);
+
+export const dealsOfTheDay = createAsyncThunk(
+    "products/dealsOfTheDay",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get<ProductsResponse>("/products/new");
+            return response.data;
+        } catch (error: any) {
+            if (error.response) {
+                return rejectWithValue(error.response.data.message || "Failed to fetch products");
             }
             return rejectWithValue("Network error. Please try again.");
         }
@@ -153,6 +186,21 @@ const productSlice = createSlice({
         });
         
         builder.addCase(fetchProductById.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        builder.addCase(newProducts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        
+        builder.addCase(newProducts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.newArrivals = action.payload.products;
+        });
+        
+        builder.addCase(newProducts.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
         });

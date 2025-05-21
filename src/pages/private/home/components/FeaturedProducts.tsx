@@ -78,7 +78,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -87,7 +87,7 @@ const FeaturedProducts = () => {
               title="Fuel Pump"
               category="REPAIR PARTS"
               price="N60,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -98,7 +98,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -107,7 +107,7 @@ const FeaturedProducts = () => {
               title="Fuel Filter"
               category="FILTERS"
               price="N60,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -118,7 +118,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -128,7 +128,7 @@ const FeaturedProducts = () => {
               category="COOLING & HEATING SYSTEMS"
               price="N60,000.00"
               oldPrice="N80,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -139,7 +139,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -148,7 +148,7 @@ const FeaturedProducts = () => {
               title="Fuel Pump"
               category="REPAIR PARTS"
               price="N60,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -159,7 +159,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -168,7 +168,7 @@ const FeaturedProducts = () => {
               title="Fuel Filter"
               category="FILTERS"
               price="N60,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -179,7 +179,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -189,7 +189,7 @@ const FeaturedProducts = () => {
               category="COOLING & HEATING SYSTEMS"
               price="N60,000.00"
               oldPrice="N80,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -200,7 +200,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -209,7 +209,7 @@ const FeaturedProducts = () => {
               title="Fuel Pump"
               category="REPAIR PARTS"
               price="N60,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -220,7 +220,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -229,7 +229,7 @@ const FeaturedProducts = () => {
               title="Fuel Filter"
               category="FILTERS"
               price="N60,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -240,7 +240,7 @@ const FeaturedProducts = () => {
               price="N60,000.00"
               oldPrice="N80,000.00"
               discount="-18%"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -250,7 +250,7 @@ const FeaturedProducts = () => {
               category="COOLING & HEATING SYSTEMS"
               price="N60,000.00"
               oldPrice="N80,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
         </Swiper>

@@ -11,10 +11,10 @@ interface Product {
   model: string;
   year: string;
   price: number;
-  salePrice: number;
+  displayPrice: number;
   image: string;
   description: string;
-  reviews: number;
+  numReviews: number;
   rating: number;
   discount: number;
   favorite: boolean;
@@ -277,15 +277,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   <div className="flex items-center mb-2">
                     {renderStars(product.rating)}
                     <span className="text-xs text-[#827E7E] ml-1">
-                      ({product.reviews} reviews)
+                      ({product.numReviews} reviews)
                     </span>
                   </div>
 
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="font-bold text-[#2D2828]">
-                      ₦{product.salePrice?.toLocaleString()}
+                      ₦{product.displayPrice?.toLocaleString()}
                     </span>
-                    {product.price > product.salePrice && (
+                    {product.price > product.displayPrice && (
                       <span className="text-gray-500 line-through text-sm">
                         ₦{product.price?.toLocaleString()}
                       </span>

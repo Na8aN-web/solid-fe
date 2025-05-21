@@ -21,7 +21,7 @@ const ProductDetails = () => {
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [quantityCount, setQuantityCount] = useState<number>(1);
-    const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+  const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
 
   const product = useAppSelector(
     (state) => state.products.product as Product | null
@@ -75,11 +75,9 @@ const ProductDetails = () => {
   const discountAmount = regularPrice - discountPrice;
   const discountPercent = Math.round((discountAmount / regularPrice) * 100);
   const totalPrice = Math.round(quantityCount * salesPrice);
-  console.log(product);
-  console.log(brand.name);
 
-    // Convert numReviews into a star count based on defined rules
-    const starCount =
+  // Convert numReviews into a star count based on defined rules
+  const starCount =
     numReviews >= 60
       ? 5
       : numReviews >= 30
@@ -96,7 +94,6 @@ const ProductDetails = () => {
   // const { _id: categoryId, name: categoryName } = category || {};
   // const { length, breadth, width } = packageSize || {};
 
-  console.log("Product ID from URL:", id);
   console.log("Product from state:", product);
   if (loading) return <div>Loading product...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -459,15 +456,15 @@ const ProductDetails = () => {
               <h2 className="text-xl text-customBrown">{name}</h2>
               {/* review */}
               <div className="flex gap-2 items-center">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, index) => (
-                  <Star
-                    key={index}
-                    color={index < starCount ? "gold" : "lightgrey"}
-                    className="w-4 h-4"
-                  />
-                ))}
-              </div>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, index) => (
+                    <Star
+                      key={index}
+                      color={index < starCount ? "gold" : "lightgrey"}
+                      className="w-4 h-4"
+                    />
+                  ))}
+                </div>
                 <span className="text-xs text-customGray3">
                   ({numReviews} reviews)
                 </span>
@@ -478,9 +475,9 @@ const ProductDetails = () => {
               </p>
               {/* price */}
               <p className="text-xl text-customBrown">
-                ₦{salesPrice}
+                {`₦${Math.floor(salesPrice)}.00`}
                 <span className="text-sm text-customGray3">
-                  ₦{regularPrice}
+                {`₦${Math.floor(regularPrice)}.00`}
                 </span>
               </p>
               <p className="text-xs text-customGray3">You save ₦{savedPrice}</p>
@@ -688,13 +685,13 @@ const ProductDetails = () => {
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3">Subtotal:</p>
                   <span className="text-sm text-customBrown font-meduim">
-                  ₦{totalPrice}
+                    ₦{totalPrice}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-sm text-customBrown font-medium">Total</p>
                   <span className="text-base text-customBrown font-meduim">
-                  ₦{totalPrice}
+                    ₦{totalPrice}
                   </span>
                 </div>
               </div>
