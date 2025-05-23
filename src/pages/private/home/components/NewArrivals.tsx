@@ -9,6 +9,7 @@ import { FreeMode } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { newProducts } from "../../../../store/slices/productSlice";
+import LoaderSpinner from "../../../../components/LoaderSpinner";
 
 export interface Product {
   _id: string;
@@ -30,14 +31,12 @@ const NewArrivals = () => {
   );
   console.log(newArrivals);
 
-
   const loading = useAppSelector((state) => state.products.loading);
   const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(newProducts());
   }, [dispatch]);
-
 
   const categories = [
     "Passengers Cars",
@@ -82,50 +81,46 @@ const NewArrivals = () => {
             </ul>
           </div>
         </div>
-        <Swiper
-          slidesPerView={2}
-          spaceBetween={15}
-          freeMode={true}
-          pagination={{ clickable: true }}
-          modules={[FreeMode]}
-          className="w-full"
-          breakpoints={{
-            360: { slidesPerView: 2.2, spaceBetween: 15 },
-            640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-            768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-            1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
-          }}
-        >
-
-        
-          <SwiperSlide>
-            <ProductCard
-              image="/radiator.svg"
-              title="Radiator"
-              category="COOLING & HEATING SYSTEMS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          {newArrivals.map((product) => (
-            <SwiperSlide key={product._id}>
-              <ProductCard
-                image={product.image}
-                title={product.name}
-                category={product.category}
-               rating={product.rating}
-                price={`₦${Math.floor(product.displayPrice)}.00`}
-                oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
-                // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
-                discount={
-                  product.discount ? `-${product.discount}%` : undefined
-                }
-                numReviews={product.numReviews}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <div>
+          {loading ? (
+            <div className="flex justify-center items-center h-[400px]">
+              <LoaderSpinner />
+            </div>
+          ) : (
+            <Swiper
+              slidesPerView={2}
+              spaceBetween={15}
+              freeMode={true}
+              pagination={{ clickable: true }}
+              modules={[FreeMode]}
+              className="w-full"
+              breakpoints={{
+                360: { slidesPerView: 2.2, spaceBetween: 15 },
+                640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
+                768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
+                1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
+              }}
+            >
+              {newArrivals.map((product) => (
+                <SwiperSlide key={product._id}>
+                  <ProductCard
+                    image={product.image}
+                    title={product.name}
+                    category={product.category}
+                    rating={product.rating}
+                    price={`₦${Math.floor(product.displayPrice)}.00`}
+                    oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                    // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
+                    discount={
+                      product.discount ? `-${product.discount}%` : undefined
+                    }
+                    numReviews={product.numReviews}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
+        </div>
       </section>
     </div>
   );

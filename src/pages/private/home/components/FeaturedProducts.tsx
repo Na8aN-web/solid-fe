@@ -11,22 +11,23 @@ import { Grid, Navigation } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { featuredProducts } from "../../../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import LoaderSpinner from "../../../../components/LoaderSpinner";
 
 const FeaturedProducts = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-    const dispatch = useAppDispatch();
-  
-    const featProducts = useAppSelector(
-      (state) => state.products.featuredProducts ?? []
-    );
-    console.log(featProducts);
+  const dispatch = useAppDispatch();
 
-      const loading = useAppSelector((state) => state.products.loading);
-      const error = useAppSelector((state) => state.products.error);
-    
-      useEffect(() => {
-        dispatch(featuredProducts());
-      }, [dispatch]);
+  const featProducts = useAppSelector(
+    (state) => state.products.featuredProducts ?? []
+  );
+  console.log(featProducts);
+
+  const loading = useAppSelector((state) => state.products.loading);
+  const error = useAppSelector((state) => state.products.error);
+
+  useEffect(() => {
+    dispatch(featuredProducts());
+  }, [dispatch]);
 
   const categories = [
     "Passengers Cars",
@@ -71,49 +72,46 @@ const FeaturedProducts = () => {
             </ul>
           </div>
         </div>
-        <Swiper
-          modules={[Navigation, Grid]}
-          navigation={false}
-          slidesPerView={2}
-          spaceBetween={15}
-          grid={{ rows: 2, fill: "row" }}
-          className="w-full"
-          breakpoints={{
-            375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
-            640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-            768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-            1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
-          }}
-        >
-          <SwiperSlide>
-            <ProductCard
-              image="/shock-absorber.svg"
-              title="Shock Absorber"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          {featProducts.map((product) => (
-            <SwiperSlide key={product._id}>
-              <ProductCard
-                image={product.image}
-                title={product.name}
-                category={product.category}
-               rating={product.rating}
-                price={`₦${Math.floor(product.displayPrice)}.00`}
-                oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
-                // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
-                discount={
-                  product.discount ? `-${product.discount}%` : undefined
-                }
-                numReviews={product.numReviews}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <div>
+          {loading ? (
+            <div className="flex justify-center items-center h-[400px]">
+              <LoaderSpinner />
+            </div>
+          ) : (
+            <Swiper
+              modules={[Navigation, Grid]}
+              navigation={false}
+              slidesPerView={2}
+              spaceBetween={15}
+              grid={{ rows: 2, fill: "row" }}
+              className="w-full"
+              breakpoints={{
+                375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
+                640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
+                768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
+                1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
+              }}
+            >
+              {featProducts.map((product) => (
+                <SwiperSlide key={product._id}>
+                  <ProductCard
+                    image={product.image}
+                    title={product.name}
+                    category={product.category}
+                    rating={product.rating}
+                    price={`₦${Math.floor(product.displayPrice)}.00`}
+                    oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                    // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
+                    discount={
+                      product.discount ? `-${product.discount}%` : undefined
+                    }
+                    numReviews={product.numReviews}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
+        </div>
       </section>
     </div>
   );
