@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
 import "swiper/css";
@@ -7,19 +7,47 @@ import "../styles.css";
 // import required modules
 import { FreeMode } from "swiper/modules";
 import ProductCard from "./ProductCard";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { newProducts } from "../../../../store/slices/productSlice";
+
+export interface Product {
+  _id: string;
+  name: string;
+  category: string;
+  images: string;
+  salesPrice: number;
+  regularPrice: number;
+  discount?: number;
+  numReviews?: number;
+}
 
 const NewArrivals = () => {
-    const [activeIndex, setActiveIndex] = useState(0);
-  
-    const categories = [
-      "Passengers Cars",
-      "SUVs and Crossover",
-      "Trucks",
-      "Buses",
-      "Keke (Tricycles)",
-      "Motorcycles",
-      "Heavy Machinery",
-    ];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const dispatch = useAppDispatch();
+
+  const newArrivals = useAppSelector(
+    (state) => state.products.newArrivals ?? []
+  );
+  console.log(newArrivals);
+
+
+  const loading = useAppSelector((state) => state.products.loading);
+  const error = useAppSelector((state) => state.products.error);
+
+  useEffect(() => {
+    dispatch(newProducts());
+  }, [dispatch]);
+
+
+  const categories = [
+    "Passengers Cars",
+    "SUVs and Crossover",
+    "Trucks",
+    "Buses",
+    "Keke (Tricycles)",
+    "Motorcycles",
+    "Heavy Machinery",
+  ];
   return (
     <div>
       <section>
@@ -68,57 +96,8 @@ const NewArrivals = () => {
             1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
           }}
         >
-          <SwiperSlide>
-            <ProductCard
-              image="/shock-absorber.svg"
-              title="Shock Absorber"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-pump.svg"
-              title="Fuel Pump"
-              category="REPAIR PARTS"
-              price="N60,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/tyres.svg"
-              title="Michellene Tyres"
-              category="WHEELS & TYRES"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-filter.svg"
-              title="Fuel Filter"
-              category="FILTERS"
-              price="N60,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/performance-exhaust.svg"
-              title="Performance Exhaust System"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide>
+
+        
           <SwiperSlide>
             <ProductCard
               image="/radiator.svg"
@@ -126,9 +105,26 @@ const NewArrivals = () => {
               category="COOLING & HEATING SYSTEMS"
               price="N60,000.00"
               oldPrice="N80,000.00"
-              reviews="88"
+              numReviews={88}
             />
           </SwiperSlide>
+          {newArrivals.map((product) => (
+            <SwiperSlide key={product._id}>
+              <ProductCard
+                image={product.image}
+                title={product.name}
+                category={product.category}
+               rating={product.rating}
+                price={`₦${Math.floor(product.displayPrice)}.00`}
+                oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
+                discount={
+                  product.discount ? `-${product.discount}%` : undefined
+                }
+                numReviews={product.numReviews}
+              />
+            </SwiperSlide>
+          ))}
         </Swiper>
       </section>
     </div>

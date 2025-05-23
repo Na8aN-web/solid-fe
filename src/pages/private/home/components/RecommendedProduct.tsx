@@ -21,7 +21,7 @@ const RecommendedProduct = () => {
             price="N60,000.00"
             oldPrice="N80,000.00"
             discount="-18%"
-            reviews="88"
+            numReviews={88}
           />
         ))}
       </div>

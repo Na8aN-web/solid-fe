@@ -1,16 +1,18 @@
 // src/services/products/types.ts
 export interface Product {
-    id: number;
+    regularPrice: any;
+    _id: number;
     name: string;
     category: string;
     maker: string;
     model: string;
     year: string;
     price: number;
-    salePrice: number;
+    salesPrice: number;
+    displayPrice: number;
     image: string;
     description: string;
-    reviews: number;
+    numReviews: number;
     rating: number;
     discount: number;
     favorite: boolean;
@@ -22,6 +24,9 @@ export interface ProductsResponse {
 
 export interface ProductState {
     products: Product[];
+    newArrivals: NewProduct[];
+    featuredProducts: NewProduct[];
+    product: Product | null;
     loading: boolean;
     error: string | null;
     currentPage: number;
@@ -37,3 +42,25 @@ export interface ProductState {
     };
     sortBy: string;
 }
+
+export interface NewProduct {
+    numReviews: number | undefined;
+    discount: any;
+    category: string;
+    regularPrice: number;
+    _id: string;
+    name: string;
+    displayPrice: number;
+    rating: number;
+    image: string;
+    categoryName: string;
+    brandName: string;
+  }
+  
+  export interface NewProductsResponse {
+    products: NewProduct[];
+  }
+
+  export interface DealOfDayResponse {
+    products: NewProduct[];
+  }
