@@ -15,7 +15,6 @@ export interface Product {
   name: string;
   category: string;
   images: string;
-  price: number;
   salesPrice: number;
   regularPrice: number;
   discount?: number;
@@ -31,12 +30,14 @@ const NewArrivals = () => {
   );
   console.log(newArrivals);
 
+
   const loading = useAppSelector((state) => state.products.loading);
   const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(newProducts());
   }, [dispatch]);
+
 
   const categories = [
     "Passengers Cars",
@@ -95,57 +96,8 @@ const NewArrivals = () => {
             1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
           }}
         >
-          {/* <SwiperSlide>
-            <ProductCard
-              image="/shock-absorber.svg"
-              title="Shock Absorber"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide> */}
-          {/* <SwiperSlide>
-            <ProductCard
-              image="/fuel-pump.svg"
-              title="Fuel Pump"
-              category="REPAIR PARTS"
-              price="N60,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/tyres.svg"
-              title="Michellene Tyres"
-              category="WHEELS & TYRES"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide> */}
-          {/* <SwiperSlide>
-            <ProductCard
-              image="/fuel-filter.svg"
-              title="Fuel Filter"
-              category="FILTERS"
-              price="N60,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/performance-exhaust.svg"
-              title="Performance Exhaust System"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide> */}
+
+        
           <SwiperSlide>
             <ProductCard
               image="/radiator.svg"
@@ -162,7 +114,8 @@ const NewArrivals = () => {
                 image={product.image}
                 title={product.name}
                 category={product.category}
-                price={`₦${Math.floor(product.salesPrice)}.00`}
+               rating={product.rating}
+                price={`₦${Math.floor(product.displayPrice)}.00`}
                 oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
                 // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
                 discount={

@@ -1,12 +1,13 @@
 // src/store/slices/productSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
-import { Product, ProductsResponse, ProductState } from "../../services/products/types";
+import { Product, ProductsResponse, ProductState, NewProduct } from "../../services/products/types";
 
 const initialState: ProductState = {
     products: [],
     product: null,
     newArrivals: [],
+    featuredProducts: [],
     loading: false,
     error: null,
     currentPage: 1,
@@ -76,20 +77,57 @@ export const fetchProductCount = createAsyncThunk(
 
 //new arrival product
 
-export const newProducts = createAsyncThunk(
+
+export const newProducts = createAsyncThunk<NewProduct[], void>(
     "products/newProducts",
     async (_, { rejectWithValue }) => {
-        try {
-            const response = await axiosInstance.get<ProductsResponse>("/products/new");
-            return response.data;
-        } catch (error: any) {
-            if (error.response) {
-                return rejectWithValue(error.response.data.message || "Failed to fetch products");
-            }
-            return rejectWithValue("Network error. Please try again.");
+      try {
+        const response = await axiosInstance.get<{ products: NewProduct[] }>("/products/new");
+        console.log(response.data.products);
+        
+        return response.data.products;
+      } catch (error: any) {
+        if (error.response) {
+          return rejectWithValue(error.response.data.message || "Failed to fetch products");
         }
+        return rejectWithValue("Network error. Please try again.");
+      }
     }
-);
+  );
+
+  export const featuredProducts = createAsyncThunk<NewProduct[], void>(
+    "products/featuredProducts",
+    async (_, { rejectWithValue }) => {
+      try {
+        const response = await axiosInstance.get<{ products: NewProduct[] }>("/products/featured");
+        console.log(response);
+        
+        return response.data.products;
+      } catch (error: any) {
+        if (error.response) {
+          return rejectWithValue(error.response.data.message || "Failed to fetch products");
+        }
+        return rejectWithValue("Network error. Please try again.");
+      }
+    }
+  );
+
+//   export const featuredProducts = createAsyncThunk<NewProduct[], void>(
+//     "products/featuredProducts",
+//     async (_, { rejectWithValue }) => {
+//       try {
+//         const response = await axiosInstance.get<NewProduct[]>("/products/featured");
+//         console.log("Featured response:", response.data); // Logs the array
+//         return response.data; // ✅ Return the array directly
+//       } catch (error: any) {
+//         if (error.response) {
+//           return rejectWithValue(error.response.data.message || "Failed to fetch products");
+//         }
+//         return rejectWithValue("Network error. Please try again.");
+//       }
+//     }
+//   );
+  
 
 export const dealsOfTheDay = createAsyncThunk(
     "products/dealsOfTheDay",
@@ -197,10 +235,25 @@ const productSlice = createSlice({
         
         builder.addCase(newProducts.fulfilled, (state, action) => {
             state.loading = false;
-            state.newArrivals = action.payload.products;
+            state.newArrivals = action.payload;
         });
         
         builder.addCase(newProducts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        builder.addCase(featuredProducts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        
+        builder.addCase(featuredProducts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.featuredProducts = action.payload;
+        });
+        
+        builder.addCase(featuredProducts.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
         });

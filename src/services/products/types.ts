@@ -24,7 +24,8 @@ export interface ProductsResponse {
 
 export interface ProductState {
     products: Product[];
-    newArrivals: Product[];
+    newArrivals: NewProduct[];
+    featuredProducts: NewProduct[];
     product: Product | null;
     loading: boolean;
     error: string | null;
@@ -43,6 +44,10 @@ export interface ProductState {
 }
 
 export interface NewProduct {
+    numReviews: number | undefined;
+    discount: any;
+    category: string;
+    regularPrice: number;
     _id: string;
     name: string;
     displayPrice: number;

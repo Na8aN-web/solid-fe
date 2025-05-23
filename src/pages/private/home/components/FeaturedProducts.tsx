@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
@@ -9,9 +9,24 @@ import "../styles.css";
 // import required modules
 import { Grid, Navigation } from "swiper/modules";
 import ProductCard from "./ProductCard";
+import { featuredProducts } from "../../../../store/slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 
 const FeaturedProducts = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+    const dispatch = useAppDispatch();
+  
+    const featProducts = useAppSelector(
+      (state) => state.products.featuredProducts ?? []
+    );
+    console.log(featProducts);
+
+      const loading = useAppSelector((state) => state.products.loading);
+      const error = useAppSelector((state) => state.products.error);
+    
+      useEffect(() => {
+        dispatch(featuredProducts());
+      }, [dispatch]);
 
   const categories = [
     "Passengers Cars",
@@ -81,178 +96,23 @@ const FeaturedProducts = () => {
               numReviews={88}
             />
           </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-pump.svg"
-              title="Fuel Pump"
-              category="REPAIR PARTS"
-              price="N60,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/tyres.svg"
-              title="Michellene Tyres"
-              category="WHEELS & TYRES"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-filter.svg"
-              title="Fuel Filter"
-              category="FILTERS"
-              price="N60,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/performance-exhaust.svg"
-              title="Performance Exhaust System"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/radiator.svg"
-              title="Radiator"
-              category="COOLING & HEATING SYSTEMS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/shock-absorber.svg"
-              title="Shock Absorber"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-pump.svg"
-              title="Fuel Pump"
-              category="REPAIR PARTS"
-              price="N60,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/tyres.svg"
-              title="Michellene Tyres"
-              category="WHEELS & TYRES"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-filter.svg"
-              title="Fuel Filter"
-              category="FILTERS"
-              price="N60,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/performance-exhaust.svg"
-              title="Performance Exhaust System"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/radiator.svg"
-              title="Radiator"
-              category="COOLING & HEATING SYSTEMS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/shock-absorber.svg"
-              title="Shock Absorber"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-pump.svg"
-              title="Fuel Pump"
-              category="REPAIR PARTS"
-              price="N60,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/tyres.svg"
-              title="Michellene Tyres"
-              category="WHEELS & TYRES"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-filter.svg"
-              title="Fuel Filter"
-              category="FILTERS"
-              price="N60,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/performance-exhaust.svg"
-              title="Performance Exhaust System"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              numReviews={88}
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/radiator.svg"
-              title="Radiator"
-              category="COOLING & HEATING SYSTEMS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              numReviews={88}
-            />
-          </SwiperSlide>
+          {featProducts.map((product) => (
+            <SwiperSlide key={product._id}>
+              <ProductCard
+                image={product.image}
+                title={product.name}
+                category={product.category}
+               rating={product.rating}
+                price={`₦${Math.floor(product.displayPrice)}.00`}
+                oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
+                discount={
+                  product.discount ? `-${product.discount}%` : undefined
+                }
+                numReviews={product.numReviews}
+              />
+            </SwiperSlide>
+          ))}
         </Swiper>
       </section>
     </div>

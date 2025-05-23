@@ -1,12 +1,14 @@
 import React from "react";
+import { FaStar } from "react-icons/fa";
 
 interface ProductCardProps {
   image: string;
   title: string;
   category: string;
-  price: string;
+  price?: string;
   oldPrice?: string;
   discount?: string;
+  rating?: number;
   numReviews?: number;
 }
 
@@ -14,11 +16,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   image,
   title,
   category,
-  price,
   oldPrice,
   discount,
+  price,
+  rating,
   numReviews,
 }) => {
+  const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+
   return (
     <div className="inline-block w-full max-w-[210px] text-left">
       <div className="flex flex-col items-start justify-center border rounded-xl p-4 mb-3 w-full h-40 py-4 lg:h-52">
@@ -27,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             {discount}
           </span>
         )}
-        <img src={image} alt={title} className="px-4 w-32 m-auto lg:w-36" />
+        <img src={image} alt={title} className="px-4 w-[100px] h-[100px] m-auto lg:w-[140px] lg:h-[130px]" />
       </div>
       <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal">
         {category}
@@ -36,7 +41,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {title}
       </h3>
       <div className="flex items-center gap-1 py-2">
-        <img src="/stars.svg" alt="stars" />
+        <div className="flex gap-1">
+          {[...Array(5)].map((_, index) => (
+            <Star
+              key={index}
+              color={index < (rating ?? 0) ? "gold" : "lightgrey"}
+              className="w-3 h-3"
+            />
+          ))}
+        </div>
         <span className="text-xs md:text-sm font-medium text-customGray3">
           ({numReviews} Reviews)
         </span>
@@ -52,7 +65,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="flex gap-3 pt-4">
         <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full">
           <img src="/blue-cart.svg" alt="cart" />
-          <span className="text-[11px] sm:text-sm text-primary font-normal">Add to cart</span>
+          <span className="text-[11px] sm:text-sm text-primary font-normal">
+            Add to cart
+          </span>
         </button>
         <button className="border rounded border-primary py-2 px-3">
           <img src="/favourite.svg" alt="favourite" className="w-6" />
