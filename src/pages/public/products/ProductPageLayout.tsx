@@ -59,7 +59,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
      const { products, loading, error, currentPage, itemsPerPage, totalProducts } = useAppSelector(
      (state) => state.products
   );
-console.log(products);
 
       useEffect(() => {
         dispatch(fetchProducts());
