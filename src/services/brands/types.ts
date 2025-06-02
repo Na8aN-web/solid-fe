@@ -1,4 +1,3 @@
-// src/services/brands/types.ts
 export interface Brand {
   _id: string;
   name: string;
