@@ -29,10 +29,9 @@ const NewArrivals = () => {
   const newArrivals = useAppSelector(
     (state) => state.products.newArrivals ?? []
   );
-  console.log(newArrivals);
 
   const loading = useAppSelector((state) => state.products.loading);
-  const error = useAppSelector((state) => state.products.error);
+  // const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(newProducts());

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
@@ -8,9 +8,34 @@ import "../styles.css";
 // import required modules
 import { Navigation } from "swiper/modules";
 import DealsCard from "./DealsCard";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { dealsOfTheDay } from "../../../../store/slices/productSlice";
+import LoaderSpinner from "../../../../components/LoaderSpinner";
 
+// export interface Product {
+//   _id: string;
+//   name: string;
+//   category: string;
+//   images: string;
+//   salesPrice: number;
+//   regularPrice: number;
+//   discount?: number;
+//   numReviews?: number;
+// }
 
 const DealsOfTheDay = () => {
+  const dispatch = useAppDispatch();
+
+  const newDeals = useAppSelector(
+    (state) => state.products.dealsOfTheDay ?? []
+  );
+
+  const loading = useAppSelector((state) => state.products.loading);
+
+  useEffect(() => {
+    dispatch(dealsOfTheDay());
+  }, [dispatch]);
+
   return (
     <div>
       <section className="relative">
@@ -31,67 +56,47 @@ const DealsOfTheDay = () => {
           </div>
         </div>
         <div>
-          <Swiper
-            slidesPerView={1}
-            spaceBetween={30}
-            modules={[Navigation]}
-            navigation={{
-              nextEl: ".custom-next",
-              prevEl: ".custom-prev",
-            }}
-            className="mySwiper"
-            breakpoints={{
-              // 320: { slidesPerView: 1 }, // Small phones
-              // 640: { slidesPerView: 1 }, // Small tablets
-              // 768: { slidesPerView: 2 }, // Tablets
-              1280: { slidesPerView: 2 }, // Desktops
-            }}
-          >
-            <SwiperSlide>
-              <DealsCard
-                image="/tyres.svg"
-                title="Shock Absorber"
-                category="PERFORMANCE PARTS"
-                price="N60,000.00"
-                oldPrice="N80,000.00"
-                discount="-18%"
-                reviews="88"
-              />
-            </SwiperSlide>
-            <SwiperSlide>
-              <DealsCard
-                image="/tyres.svg"
-                title="Shock Absorber"
-                category="PERFORMANCE PARTS"
-                price="N60,000.00"
-                oldPrice="N80,000.00"
-                discount="-18%"
-                reviews="88"
-              />
-            </SwiperSlide>
-            <SwiperSlide>
-              <DealsCard
-                image="/tyres.svg"
-                title="Shock Absorber"
-                category="PERFORMANCE PARTS"
-                price="N60,000.00"
-                oldPrice="N80,000.00"
-                discount="-18%"
-                reviews="88"
-              />
-            </SwiperSlide>
-            <SwiperSlide>
-              <DealsCard
-                image="/tyres.svg"
-                title="Shock Absorber"
-                category="PERFORMANCE PARTS"
-                price="N60,000.00"
-                oldPrice="N80,000.00"
-                discount="-18%"
-                reviews="88"
-              />
-            </SwiperSlide>
-          </Swiper>
+          {loading ? (
+            <div className="flex justify-center items-center h-[400px]">
+              <LoaderSpinner />
+            </div>
+          ) : (
+            <Swiper
+              slidesPerView={1}
+              spaceBetween={30}
+              modules={[Navigation]}
+              navigation={{
+                nextEl: ".custom-next",
+                prevEl: ".custom-prev",
+              }}
+              className="mySwiper"
+              breakpoints={{
+                1280: { slidesPerView: 2 }, // Desktops
+              }}
+            >
+              {newDeals.map((deal) => {
+                const discount =
+                  ((deal.regularPrice - deal.displayPrice) /
+                    deal.regularPrice) *
+                  100;
+                const formattedDiscount = `${Math.round(discount)}%`;
+                return (
+                  <SwiperSlide key={deal._id}>
+                    <DealsCard
+                      image={deal.image}
+                      title={deal.name}
+                      category={deal.categoryName}
+                      price={`₦${Math.floor(deal.displayPrice)}.00`}
+                      oldPrice={`₦${Math.floor(deal.regularPrice)}.00`}
+                      rating={deal.rating}
+                      discount={formattedDiscount}
+                      reviews={deal.numReviews?.toString()}
+                    />
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
+          )}
         </div>
       </section>
     </div>

@@ -20,10 +20,9 @@ const FeaturedProducts = () => {
   const featProducts = useAppSelector(
     (state) => state.products.featuredProducts ?? []
   );
-  console.log(featProducts);
 
   const loading = useAppSelector((state) => state.products.loading);
-  const error = useAppSelector((state) => state.products.error);
+  // const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(featuredProducts());
