@@ -10,10 +10,9 @@ interface NavProps {
 const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
-
   const getInitial = (name: string | undefined | null): string => {
     if (!name) {
-      return '';
+      return "";
     }
     return name.charAt(0).toUpperCase();
   };
@@ -38,14 +37,15 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             <div className="flex justify-between">
               <div className="flex gap-4">
                 {isMenuOpen ? (
-                <Link to="/home">
-                  <img
-                    src="/cancel.svg"
-                    alt="close"
-                    className="w-4 lg:hidden"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  />
-                </Link>
+                  //home
+                  <Link to="/home">
+                    <img
+                      src="/cancel.svg"
+                      alt="close"
+                      className="w-4 lg:hidden"
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    />
+                  </Link>
                 ) : (
                   <img
                     src="/hamburger.svg"
