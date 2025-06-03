@@ -12,6 +12,7 @@ import ProductCard from "./ProductCard";
 import { featuredProducts } from "../../../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
+import { Link } from "react-router-dom";
 
 const FeaturedProducts = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -20,10 +21,9 @@ const FeaturedProducts = () => {
   const featProducts = useAppSelector(
     (state) => state.products.featuredProducts ?? []
   );
-  console.log(featProducts);
 
   const loading = useAppSelector((state) => state.products.loading);
-  const error = useAppSelector((state) => state.products.error);
+  // const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(featuredProducts());
@@ -92,23 +92,29 @@ const FeaturedProducts = () => {
                 1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
               }}
             >
-              {featProducts.map((product) => (
-                <SwiperSlide key={product._id}>
-                  <ProductCard
-                    image={product.image}
-                    title={product.name}
-                    category={product.category}
-                    rating={product.rating}
-                    price={`₦${Math.floor(product.displayPrice)}.00`}
-                    oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
-                    // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
-                    discount={
-                      product.discount ? `-${product.discount}%` : undefined
-                    }
-                    numReviews={product.numReviews}
-                  />
-                </SwiperSlide>
-              ))}
+              {featProducts.map((product) => {
+                const discount =
+                  ((product.regularPrice - product.displayPrice) /
+                    product.regularPrice) *
+                  100;
+                const formattedDiscount = `${Math.round(discount)}%`;
+                return (
+                  <SwiperSlide key={product._id}>
+                    <Link to={`/product/${product._id}`}>
+                      <ProductCard
+                        image={product.image}
+                        title={product.name}
+                        category={product.category}
+                        rating={product.rating}
+                        price={`₦${Math.floor(product.displayPrice)}.00`}
+                        oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                        discount={formattedDiscount}
+                        numReviews={product.numReviews}
+                      />
+                    </Link>
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
           )}
         </div>

@@ -1,5 +1,5 @@
 import React from "react";
-
+import { FaStar } from "react-icons/fa";
 
 interface ProductCardProps {
   image: string;
@@ -9,6 +9,7 @@ interface ProductCardProps {
   oldPrice?: string;
   discount?: string;
   reviews?: string;
+  rating?: number;
 }
 
 const DealsCard: React.FC<ProductCardProps> = ({
@@ -19,28 +20,33 @@ const DealsCard: React.FC<ProductCardProps> = ({
   oldPrice,
   discount,
   reviews,
+  rating,
 }) => {
+  const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
   return (
-    // <div className="border flex flex-col md:flex-row items-start gap-6 px-4 md:px-12 py-6 rounded-2xl">
-    <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex">
+    <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex w-full">
       <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16">
         <div className="relative">
           {discount && (
-            <span className="bg-primary text-white text-xs p-2 rounded-3xl absolute top-[-5px] right-[-60px] xl:top-[-50px]">
+            <span className="bg-primary text-white text-xs p-2 w-[38px] h-[26px] rounded-3xl flex justify-center items-center absolute top-[-5px] right-[-60px] xl:top-[-50px]">
               {discount}
             </span>
           )}
-          <img src={image} alt="" className="w-auto lg:w-[250px]" />
+          <img
+            src={image}
+            alt=""
+            className="w-[140px] h-[140px] md:w-[200px] md:h-[200px]"
+          />
         </div>
         <div className="flex justify-center lg:flex-col items-center gap-4 w-full pb-6">
-          <div className="border p-3 rounded-2xl w-24 flex justify-center items-center">
-            <img src={image} alt={title} className="w-10" />
+          <div className="border p-4 rounded-2xl flex justify-center items-center">
+            <img src={image} alt={title} className="w-12 h-12" />
           </div>
-          <div className="border p-3 rounded-2xl w-24 flex justify-center items-center">
-          <img src={image} alt={title} className="w-10" />
+          <div className="border p-4 rounded-2xl flex justify-center items-center">
+            <img src={image} alt={title} className="w-12 h-12" />
           </div>
-          <div className="border p-3 rounded-2xl w-24 flex justify-center items-center">
-          <img src={image} alt={title} className="w-10" />
+          <div className="border p-4 rounded-2xl flex justify-center items-center">
+            <img src={image} alt={title} className="w-12 h-12" />
           </div>
         </div>
       </div>
@@ -52,7 +58,15 @@ const DealsCard: React.FC<ProductCardProps> = ({
           {title}
         </h3>
         <div className="flex items-center gap-1 py-2">
-          <img src="/stars.svg" alt="stars" />
+          <div className="flex gap-1">
+            {[...Array(5)].map((_, index) => (
+              <Star
+                key={index}
+                color={index < (rating ?? 0) ? "gold" : "lightgrey"}
+                className="w-3 h-3"
+              />
+            ))}
+          </div>
           <span className="text-sm font-medium text-customGray3">
             ({reviews} Reviews)
           </span>
@@ -66,13 +80,25 @@ const DealsCard: React.FC<ProductCardProps> = ({
           )}
         </div>
         <div className="flex gap-3 pt-4">
-          <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-56">
+          <button
+            className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-56"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle add to cart logic
+            }}
+          >
             <img src="/add-cart.svg" alt="cart" />
             <span className="text-sm text-primary font-normal">
               Add to cart
             </span>
           </button>
-          <button className="border rounded border-primary py-2 px-3">
+          <button
+            className="border rounded border-primary py-2 px-3"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle add to wishlist logic
+            }}
+          >
             <img src="/favourite.svg" alt="favourite" className="w-6" />
           </button>
         </div>

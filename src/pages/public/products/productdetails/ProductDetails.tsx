@@ -36,6 +36,10 @@ const ProductDetails = () => {
     }
   }, [dispatch, id]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   if (!product) {
     return (
       <div>
@@ -413,8 +417,8 @@ const ProductDetails = () => {
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <BrandNav isMenuOpen={isMenuOpen} />
       {loading ? (
-        <div className="h-[400px] flex items-center justify-center">
-          Loading products...
+        <div className="flex justify-center items-center h-[400px]">
+          <LoaderSpinner />
         </div>
       ) : (
         <div>
