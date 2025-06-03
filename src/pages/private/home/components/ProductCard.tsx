@@ -28,11 +28,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <div className="inline-block w-full max-w-[210px] text-left">
       <div className="flex flex-col items-start justify-center border rounded-xl p-4 mb-3 w-full h-40 py-4 lg:h-52">
         {discount && (
-          <span className="bg-primary text-white text-xs p-2 rounded-3xl">
+          <span className="bg-primary text-white text-xs w-[38px] h-[26px] rounded-3xl flex justify-center items-center">
             {discount}
           </span>
         )}
-        <img src={image} alt={title} className="px-4 w-[100px] h-[100px] m-auto lg:w-[140px] lg:h-[130px]" />
+        <img
+          src={image}
+          alt={title}
+          className="px-4 w-[100px] h-[100px] m-auto lg:w-[140px] lg:h-[130px]"
+        />
       </div>
       <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal">
         {category}
@@ -63,13 +67,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       <div className="flex gap-3 pt-4">
-        <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full">
+        <button
+          className="flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            // handle add to cart logic
+          }}
+        >
           <img src="/blue-cart.svg" alt="cart" />
           <span className="text-[11px] sm:text-sm text-primary font-normal">
             Add to cart
           </span>
         </button>
-        <button className="border rounded border-primary py-2 px-3">
+        <button
+          className="border rounded border-primary py-2 px-3"
+          onClick={(e) => {
+            e.stopPropagation();
+            // handle add to wishlist logic
+          }}
+        >
           <img src="/favourite.svg" alt="favourite" className="w-6" />
         </button>
       </div>

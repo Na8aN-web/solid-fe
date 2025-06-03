@@ -10,6 +10,7 @@ import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { newProducts } from "../../../../store/slices/productSlice";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
+import { Link } from "react-router-dom";
 
 export interface Product {
   _id: string;
@@ -100,23 +101,29 @@ const NewArrivals = () => {
                 1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
               }}
             >
-              {newArrivals.map((product) => (
-                <SwiperSlide key={product._id}>
-                  <ProductCard
-                    image={product.image}
-                    title={product.name}
-                    category={product.category}
-                    rating={product.rating}
-                    price={`₦${Math.floor(product.displayPrice)}.00`}
-                    oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
-                    // oldPrice={product.salePrice ? `₦${product.price}` : undefined}
-                    discount={
-                      product.discount ? `-${product.discount}%` : undefined
-                    }
-                    numReviews={product.numReviews}
-                  />
-                </SwiperSlide>
-              ))}
+              {newArrivals.map((product) => {
+                const discount =
+                  ((product.regularPrice - product.displayPrice) /
+                    product.regularPrice) *
+                  100;
+                const formattedDiscount = `${Math.round(discount)}%`;
+                return (
+                  <SwiperSlide key={product._id}>
+                    <Link to={`/product/${product._id}`}>
+                      <ProductCard
+                        image={product.image}
+                        title={product.name}
+                        category={product.category}
+                        rating={product.rating}
+                        price={`₦${Math.floor(product.displayPrice)}.00`}
+                        oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                        discount={formattedDiscount}
+                        numReviews={product.numReviews}
+                      />
+                    </Link>
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
           )}
         </div>

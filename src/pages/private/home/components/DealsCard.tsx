@@ -28,7 +28,7 @@ const DealsCard: React.FC<ProductCardProps> = ({
       <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16">
         <div className="relative">
           {discount && (
-            <span className="bg-primary text-white text-xs p-2 rounded-3xl absolute top-[-5px] right-[-60px] xl:top-[-50px]">
+            <span className="bg-primary text-white text-xs p-2 w-[38px] h-[26px] rounded-3xl flex justify-center items-center absolute top-[-5px] right-[-60px] xl:top-[-50px]">
               {discount}
             </span>
           )}
@@ -80,13 +80,25 @@ const DealsCard: React.FC<ProductCardProps> = ({
           )}
         </div>
         <div className="flex gap-3 pt-4">
-          <button className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-56">
+          <button
+            className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-56"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle add to cart logic
+            }}
+          >
             <img src="/add-cart.svg" alt="cart" />
             <span className="text-sm text-primary font-normal">
               Add to cart
             </span>
           </button>
-          <button className="border rounded border-primary py-2 px-3">
+          <button
+            className="border rounded border-primary py-2 px-3"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle add to wishlist logic
+            }}
+          >
             <img src="/favourite.svg" alt="favourite" className="w-6" />
           </button>
         </div>

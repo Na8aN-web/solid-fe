@@ -11,17 +11,7 @@ import DealsCard from "./DealsCard";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { dealsOfTheDay } from "../../../../store/slices/productSlice";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
-
-// export interface Product {
-//   _id: string;
-//   name: string;
-//   category: string;
-//   images: string;
-//   salesPrice: number;
-//   regularPrice: number;
-//   discount?: number;
-//   numReviews?: number;
-// }
+import { Link } from "react-router-dom";
 
 const DealsOfTheDay = () => {
   const dispatch = useAppDispatch();
@@ -82,16 +72,18 @@ const DealsOfTheDay = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={deal._id}>
-                    <DealsCard
-                      image={deal.image}
-                      title={deal.name}
-                      category={deal.categoryName}
-                      price={`₦${Math.floor(deal.displayPrice)}.00`}
-                      oldPrice={`₦${Math.floor(deal.regularPrice)}.00`}
-                      rating={deal.rating}
-                      discount={formattedDiscount}
-                      reviews={deal.numReviews?.toString()}
-                    />
+                    <Link to={`/product/${deal._id}`}>
+                      <DealsCard
+                        image={deal.image}
+                        title={deal.name}
+                        category={deal.categoryName}
+                        price={`₦${Math.floor(deal.displayPrice)}.00`}
+                        oldPrice={`₦${Math.floor(deal.regularPrice)}.00`}
+                        rating={deal.rating}
+                        discount={formattedDiscount}
+                        reviews={deal.numReviews?.toString()}
+                      />
+                    </Link>
                   </SwiperSlide>
                 );
               })}
