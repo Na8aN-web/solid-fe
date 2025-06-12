@@ -1,7 +1,13 @@
 import React from "react";
 import { FaStar } from "react-icons/fa";
+import { MdFavoriteBorder } from "react-icons/md";
+import { addProductToCart } from "../../../../store/slices/cartSlice";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+
+
 
 interface ProductCardProps {
+  productId: string;
   image: string;
   title: string;
   category: string;
@@ -13,6 +19,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
+  productId,
   image,
   title,
   category,
@@ -23,6 +30,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
   numReviews,
 }) => {
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+  const Favourite = MdFavoriteBorder as unknown as React.FC<
+    React.SVGProps<SVGSVGElement>
+  >;
+
+  const dispatch = useAppDispatch();
+
+  // const newArrivals = useAppSelector(
+  //   (state) => state.products.newArrivals ?? []
+  // );
+
+  const handleAddToCart = () => {
+    dispatch(addProductToCart({ productId, quantity: 1 }));
+  };
 
   return (
     <div className="inline-block w-full max-w-[210px] text-left">
@@ -71,7 +91,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           className="flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full"
           onClick={(e) => {
             e.stopPropagation();
-            // handle add to cart logic
+            handleAddToCart();
           }}
         >
           <img src="/blue-cart.svg" alt="cart" />
@@ -86,7 +106,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             // handle add to wishlist logic
           }}
         >
-          <img src="/favourite.svg" alt="favourite" className="w-6" />
+          <Favourite />
         </button>
       </div>
     </div>

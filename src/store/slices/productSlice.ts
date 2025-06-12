@@ -57,7 +57,6 @@ export const fetchProductById = createAsyncThunk<
     const response = await axiosInstance.get<{ product: Product }>(
       `/products/${id}`
     );
-    console.log(response.data);
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -135,7 +134,6 @@ export const dealsOfTheDay = createAsyncThunk<NewProduct[]>(
       const response = await axiosInstance.get<{ products: NewProduct[] }>(
         "/products/deals"
       );
-      console.log(response.data.products);
       return response.data.products;
     } catch (error: any) {
       if (error.response) {

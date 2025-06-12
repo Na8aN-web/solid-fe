@@ -27,21 +27,28 @@ export const fetchUserCart = createAsyncThunk(
 
 export const addProductToCart = createAsyncThunk<
   Cart,
-  { productId: string },
+  { productId: string; quantity: number },
   { rejectValue: string }
->("cart/addProductToCart", async ({ productId }, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.put("/cart/add", { productId });
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      return rejectWithValue(
-        error.response.data.message || "Failed to add product to cart"
-      );
+>(
+  "cart/addProductToCart",
+  async ({ productId, quantity }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/cart/add", {
+        productId,
+        quantity,
+      });
+      console.log("Product added", { productId, quantity });
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Failed to add product to cart"
+        );
+      }
+      return rejectWithValue("Network error. Please try again.");
     }
-    return rejectWithValue("Network error. Please try again.");
   }
-});
+);
 
 export const removeProductFromCart = createAsyncThunk<
   Cart,
@@ -171,23 +178,20 @@ const cartSlice = createSlice({
 
     // Update cart item quantity
     builder.addCase(updateCartItemQuantity.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      });
-      builder.addCase(updateCartItemQuantity.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cart = action.payload;
-      });
-      builder.addCase(updateCartItemQuantity.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updateCartItemQuantity.fulfilled, (state, action) => {
+      state.loading = false;
+      state.cart = action.payload;
+    });
+    builder.addCase(updateCartItemQuantity.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 
-export const {
-    clearCartError,
-    clearCart,
-} = cartSlice.actions;
+export const { clearCartError, clearCart } = cartSlice.actions;
 
 export default cartSlice.reducer;

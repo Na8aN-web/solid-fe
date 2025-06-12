@@ -6,6 +6,8 @@ import brandReducer from './slices/brandSlice';
 import categoriesReducer from './slices/categoriesSlice'
 import vehicleReducer from './slices/vehicleSlice'
 import wishlistReducer from './slices/wishlistSlice'
+import cartReducer from './slices/cartSlice'
+
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +16,8 @@ export const store = configureStore({
     brands: brandReducer, 
     categories: categoriesReducer,
     vehicle: vehicleReducer,
-    wishlist: wishlistReducer
+    wishlist: wishlistReducer,
+    cart: cartReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
