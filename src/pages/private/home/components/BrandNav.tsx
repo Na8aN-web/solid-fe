@@ -90,7 +90,7 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
 
       {/* main navigation */}
       <div
-        className={`w-full lg:w-3/4 relative ${isDropOpen || isMenuOpen ? "-z-10" : "z-10"}`}
+        className={`w-full lg:w-3/4 relative ${isMenuOpen ? "-z-10" : "z-10"}`}
       >
         {/* Loading state */}
         {brandsLoading && (

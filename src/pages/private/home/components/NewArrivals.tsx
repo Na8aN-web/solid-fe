@@ -26,6 +26,7 @@ export interface Product {
 const NewArrivals = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const newArrivals = useAppSelector(
     (state) => state.products.newArrivals ?? []
@@ -38,15 +39,17 @@ const NewArrivals = () => {
     dispatch(newProducts());
   }, [dispatch]);
 
-  const categories = [
-    "Passengers Cars",
-    "SUVs and Crossover",
-    "Trucks",
-    "Buses",
-    "Keke (Tricycles)",
-    "Motorcycles",
-    "Heavy Machinery",
-  ];
+  // Extract unique display names from featured products
+  const uniqueCategories = Array.from(
+    new Set(newArrivals.map((product) => product.categoryName))
+  ).filter(Boolean); // remove null/undefined if any
+
+  // filter featured products by active categoryName
+  const filteredProducts = activeCategory
+    ? newArrivals.filter((product) => product.categoryName === activeCategory)
+    : newArrivals;
+
+
   return (
     <div>
       <section>
@@ -64,18 +67,29 @@ const NewArrivals = () => {
             </button>
           </div>
           <div className="hidden lg:block">
-            <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
-              {categories.map((category, index) => (
+          <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
+              <li
+                onClick={() => setActiveCategory(null)}
+                className={`p-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  activeCategory === null
+                    ? "bg-primary text-white"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                All
+              </li>
+
+              {uniqueCategories.map((categoryName, index) => (
                 <li
                   key={index}
-                  onClick={() => setActiveIndex(index)}
+                  onClick={() => setActiveCategory(categoryName)}
                   className={`p-2 rounded-lg cursor-pointer transition-all duration-300 ${
-                    activeIndex === index
+                    activeCategory === categoryName
                       ? "bg-primary text-white"
                       : "hover:bg-gray-200"
                   }`}
                 >
-                  {category}
+                  {categoryName}
                 </li>
               ))}
             </ul>
@@ -101,7 +115,7 @@ const NewArrivals = () => {
                 1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
               }}
             >
-              {newArrivals.map((product) => {
+              {filteredProducts.map((product) => {
                 const discount =
                   ((product.regularPrice - product.displayPrice) /
                     product.regularPrice) *
