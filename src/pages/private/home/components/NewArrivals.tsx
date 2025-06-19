@@ -5,7 +5,7 @@ import "swiper/css";
 import "swiper/css/free-mode";
 import "../styles.css";
 // import required modules
-import { FreeMode } from "swiper/modules";
+import { Navigation, Grid } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { newProducts } from "../../../../store/slices/productSlice";
@@ -102,17 +102,17 @@ const NewArrivals = () => {
             </div>
           ) : (
             <Swiper
-              slidesPerView={2}
-              spaceBetween={15}
-              freeMode={true}
-              pagination={{ clickable: true }}
-              modules={[FreeMode]}
-              className="w-full"
-              breakpoints={{
-                360: { slidesPerView: 2.2, spaceBetween: 15 },
-                640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-                768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-                1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
+            modules={[Navigation, Grid]}
+            navigation={false}
+            slidesPerView={2}
+            spaceBetween={15}
+            grid={{ rows: 1, fill: "row" }}
+            className="w-full"
+            breakpoints={{
+              375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
+              640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
+              768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
+              1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
               }}
             >
               {filteredProducts.map((product) => {

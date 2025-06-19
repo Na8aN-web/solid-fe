@@ -114,7 +114,7 @@ const FeaturedProducts = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={product._id}>
-                    {/* <Link to={`/product/${product._id}`}> */}
+                    <Link to={`/product/${product._id}`}>
                     <ProductCard
                       productId={product._id}
                       image={product.image}
@@ -126,7 +126,7 @@ const FeaturedProducts = () => {
                       discount={formattedDiscount}
                       numReviews={product.numReviews}
                     />
-                    {/* </Link> */}
+                    </Link>
                   </SwiperSlide>
                 );
               })}

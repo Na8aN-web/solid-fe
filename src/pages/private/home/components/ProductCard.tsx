@@ -43,7 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="inline-block w-full max-w-[210px] text-left">
+    <div className="w-full text-left">
       <div className="flex flex-col items-start justify-center border rounded-xl p-4 mb-3 w-full h-40 py-4 lg:h-52">
         {discount && (
           <span className="bg-primary text-white text-xs w-[38px] h-[26px] rounded-3xl flex justify-center items-center">
@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal">
         {category}
       </p>
-      <h3 className="text-sm font-medium text-customBrown truncate leading-relaxed">
+      <h3 className="text-sm font-medium text-customBrown truncate leading-relaxed w-[18ch] xl:w-[25ch]">
         {title}
       </h3>
       <div className="flex items-center gap-1 py-2">
@@ -68,7 +68,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Star
               key={index}
               color={index < (rating ?? 0) ? "gold" : "lightgrey"}
-              className="w-3 h-3"
+              className="w-2 h-3"
             />
           ))}
         </div>
@@ -93,7 +93,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           }}
         >
           <img src="/blue-cart.svg" alt="cart" />
-          <span className="text-[11px] sm:text-sm text-primary font-normal">
+          <span className="text-[10px] text-primary font-normal">
             Add to cart
           </span>
         </button>
