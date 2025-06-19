@@ -37,8 +37,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const dispatch = useAppDispatch();
 
   const handleAddToCart = () => {
-    console.log("Clicked add to cart");
-    console.log("Product ID:", productId);
     dispatch(addProductToCart({ productId, quantity: 1 }));
   };
 
