@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Home from "./pages/public/home/Home";
 import HomeGuest from "./pages/private/home/HomeGuest";
 import AccountTypeSelection from "./pages/authentication/AccountType";
@@ -27,8 +28,15 @@ import AccountInformation from "./pages/private/accountinformation/components/Ac
 import Store from "./pages/public/visitstore/Store";
 import HelpCenter from "./pages/private/help/Help";
 
+//Admin
+import Dashboard from "./pages/admin/dashboard/Dashboard";
+
 function App() {
   const dispatch = useAppDispatch();
+  const location = useLocation();
+
+  const noFooterPaths = ["/admin/dashboard"]; // add more if needed
+  const shouldShowFooter = !noFooterPaths.includes(location.pathname)
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -121,8 +129,16 @@ function App() {
             <HelpCenter />
           }
         />
+
+        {/* Admin*/}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <Dashboard />
+          }
+        />
       </Routes>
-      <Footer />
+       {shouldShowFooter && <Footer />}
     </>
   );
 }

@@ -306,13 +306,13 @@ const authSlice = createSlice({
 });
 
 // Export actions
-export const { 
-  setUser, 
-  setAuthenticated, 
-  setAccountType, 
-  logout, 
+export const {
+  setUser,
+  setAuthenticated,
+  setAccountType,
+  logout,
   clearError,
-  resetPasswordState 
+  resetPasswordState
 } = authSlice.actions;
 
 // Export reducer
