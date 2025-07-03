@@ -30,6 +30,7 @@ import HelpCenter from "./pages/private/help/Help";
 
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
+import Products from "./pages/admin/products/Products";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -135,6 +136,12 @@ function App() {
           path="/admin/dashboard"
           element={
             <Dashboard />
+          }
+        />
+           <Route
+          path="/admin/products"
+          element={
+            <Products />
           }
         />
       </Routes>

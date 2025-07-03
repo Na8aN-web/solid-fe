@@ -131,8 +131,8 @@ const Dashboard: React.FC = () => {
     };
 
     const sidebarItems = [
-        { icon: BarChart3, label: 'Dashboard', active: true },
-        { icon: Package, label: 'Products' },
+        { icon: BarChart3, label: 'Dashboard'},
+        { icon: Package, label: 'Products', active: true  },
         { icon: ShoppingCart, label: 'Orders' },
         { icon: Users, label: 'Users' },
         { icon: Archive, label: 'Inventory' },
