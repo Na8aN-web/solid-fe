@@ -30,13 +30,15 @@ import HelpCenter from "./pages/private/help/Help";
 
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
+import Products from "./pages/admin/products/Products";
+import ProductCategory from "./pages/admin/productCategory/ProductCat";
 
 function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
 
   const noFooterPaths = ["/admin/dashboard"]; // add more if needed
-  const shouldShowFooter = !noFooterPaths.includes(location.pathname)
+  const shouldShowFooter = !noFooterPaths.includes(location.pathname);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -123,22 +125,14 @@ function App() {
           <Route path="rate-product" element={<RateReviewProduct />} />
         </Route>
 
-        <Route
-          path="/help"
-          element={
-            <HelpCenter />
-          }
-        />
+        <Route path="/help" element={<HelpCenter />} />
 
         {/* Admin*/}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <Dashboard />
-          }
-        />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/products" element={<Products />} />
+        <Route path="/admin/product-category" element={<ProductCategory />} />
       </Routes>
-       {shouldShowFooter && <Footer />}
+      {shouldShowFooter && <Footer />}
     </>
   );
 }
