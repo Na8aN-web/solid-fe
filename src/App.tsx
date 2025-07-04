@@ -31,7 +31,8 @@ import HelpCenter from "./pages/private/help/Help";
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
 import Products from "./pages/admin/products/Products";
-import ProductCategory from "./pages/admin/productCategory/ProductCat";
+import ProductCategory from "./pages/admin/products/productCategory/ProductCat";
+import AddProduct from "./pages/admin/products/addProduct/AddProduct";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -138,6 +139,7 @@ function App() {
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/product-category" element={<ProductCategory />} />
+        <Route path="/admin/add-product" element={<AddProduct />} />
       </Routes>
       {shouldShowFooter && <Footer />}
     </>

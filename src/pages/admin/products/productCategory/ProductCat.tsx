@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Search, Plus, ChevronDown, ArrowUpDown } from "lucide-react";
 import ProductIcon from "../../../assets/productIcon.svg";
-import carTyre from "../../../assets/tyres.svg";
-import edit from "../../../assets/edit.svg";
-import deLete from "../../../assets/delete.svg";
+import carTyre from "../../../../assets/tyres.svg";
+import edit from "../../../../assets/edit.svg";
+import deLete from "../../../../assets/delete.svg";
 
 interface Product {
   id: string;
