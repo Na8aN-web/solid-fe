@@ -66,25 +66,13 @@ const productsBrand: Product[] = [
   },
 ];
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Active":
-      return "bg-[#E1F1E0] text-[#15B70D]";
-    case "Inactive":
-      return "bg-[#F3F3F3] text-[#919191]";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
 
 const handleEdit = (id: string) => {
   console.log("Editing product with ID:", id);
-  // Navigate to edit form or open modal
 };
 
 const handleDelete = (id: string) => {
   console.log("Deleting product with ID:", id);
-  // Show confirm dialog or call API
 };
 
 // product categories table
