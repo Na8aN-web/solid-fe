@@ -43,6 +43,7 @@ function App() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("authToken");
+    console.log(storedToken);
 
     if (storedUser && storedToken) {
       dispatch(setUser(JSON.parse(storedUser)));
@@ -126,6 +127,12 @@ function App() {
         </Route>
 
         <Route path="/help" element={<HelpCenter />} />
+        <Route
+          path="/help"
+          element={
+            <HelpCenter />
+          }
+        />
 
         {/* Admin*/}
         <Route path="/admin/dashboard" element={<Dashboard />} />

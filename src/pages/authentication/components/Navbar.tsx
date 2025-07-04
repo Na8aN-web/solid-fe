@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -120,10 +121,11 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-20 z-10 max-h-full pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
-            ? "translate-y-0 opacity-100 visible"
-            : "-translate-y-10 opacity-0 invisible"
-            }`}
+          className={`fixed top-20 z-10 max-h-full pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen
+              ? "translate-y-0 opacity-100 visible"
+              : "-translate-y-10 opacity-0 invisible"
+          }`}
         >
           <div className="flex w-full justify-between items-center gap-4 py-5 px-5">
             <button
@@ -442,8 +444,10 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             <p className="text-sm">Categories</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/you.svg" alt="you" className="w-auto" />
-            <p className="text-sm">You</p>
+            <Link to="/account-information">
+              <img src="/you.svg" alt="you" className="w-auto" />
+              <p className="text-sm">You</p>
+            </Link>
           </div>
           <div className="flex flex-col items-center">
             <img src="/helpp.svg" alt="help" className="w-auto" />

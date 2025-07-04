@@ -5,7 +5,7 @@ import "swiper/css";
 import "swiper/css/free-mode";
 import "../styles.css";
 // import required modules
-import { FreeMode } from "swiper/modules";
+import { Navigation, Grid } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { newProducts } from "../../../../store/slices/productSlice";
@@ -26,6 +26,7 @@ export interface Product {
 const NewArrivals = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const newArrivals = useAppSelector(
     (state) => state.products.newArrivals ?? []
@@ -38,15 +39,17 @@ const NewArrivals = () => {
     dispatch(newProducts());
   }, [dispatch]);
 
-  const categories = [
-    "Passengers Cars",
-    "SUVs and Crossover",
-    "Trucks",
-    "Buses",
-    "Keke (Tricycles)",
-    "Motorcycles",
-    "Heavy Machinery",
-  ];
+  // Extract unique display names from featured products
+  const uniqueCategories = Array.from(
+    new Set(newArrivals.map((product) => product.categoryName))
+  ).filter(Boolean); // remove null/undefined if any
+
+  // filter featured products by active categoryName
+  const filteredProducts = activeCategory
+    ? newArrivals.filter((product) => product.categoryName === activeCategory)
+    : newArrivals;
+
+
   return (
     <div>
       <section>
@@ -64,18 +67,29 @@ const NewArrivals = () => {
             </button>
           </div>
           <div className="hidden lg:block">
-            <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
-              {categories.map((category, index) => (
+          <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
+              <li
+                onClick={() => setActiveCategory(null)}
+                className={`p-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  activeCategory === null
+                    ? "bg-primary text-white"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                All
+              </li>
+
+              {uniqueCategories.map((categoryName, index) => (
                 <li
                   key={index}
-                  onClick={() => setActiveIndex(index)}
+                  onClick={() => setActiveCategory(categoryName)}
                   className={`p-2 rounded-lg cursor-pointer transition-all duration-300 ${
-                    activeIndex === index
+                    activeCategory === categoryName
                       ? "bg-primary text-white"
                       : "hover:bg-gray-200"
                   }`}
                 >
-                  {category}
+                  {categoryName}
                 </li>
               ))}
             </ul>
@@ -88,20 +102,20 @@ const NewArrivals = () => {
             </div>
           ) : (
             <Swiper
-              slidesPerView={2}
-              spaceBetween={15}
-              freeMode={true}
-              pagination={{ clickable: true }}
-              modules={[FreeMode]}
-              className="w-full"
-              breakpoints={{
-                360: { slidesPerView: 2.2, spaceBetween: 15 },
-                640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-                768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-                1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
+            modules={[Navigation, Grid]}
+            navigation={false}
+            slidesPerView={2}
+            spaceBetween={15}
+            grid={{ rows: 1, fill: "row" }}
+            className="w-full"
+            breakpoints={{
+              375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
+              640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
+              768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
+              1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
               }}
             >
-              {newArrivals.map((product) => {
+              {filteredProducts.map((product) => {
                 const discount =
                   ((product.regularPrice - product.displayPrice) /
                     product.regularPrice) *
@@ -111,12 +125,25 @@ const NewArrivals = () => {
                   <SwiperSlide key={product._id}>
                     <Link to={`/product/${product._id}`}>
                       <ProductCard
+                        productId={product._id}
                         image={product.image}
                         title={product.name}
                         category={product.category}
                         rating={product.rating}
-                        price={`₦${Math.floor(product.displayPrice)}.00`}
-                        oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                        price={`₦${product.displayPrice.toLocaleString(
+                          "en-NG",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}`}
+                        oldPrice={`₦${product.regularPrice.toLocaleString(
+                          "en-NG",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}`}
                         discount={formattedDiscount}
                         numReviews={product.numReviews}
                       />

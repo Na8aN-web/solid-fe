@@ -135,7 +135,6 @@ export const dealsOfTheDay = createAsyncThunk<NewProduct[]>(
             const response = await axiosInstance.get<{ products: NewProduct[] }>(
                 "/products/deals"
             );
-            console.log(response.data.products);
             return response.data.products;
         } catch (error: any) {
             if (error.response) {
