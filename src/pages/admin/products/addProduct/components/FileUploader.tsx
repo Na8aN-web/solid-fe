@@ -1,7 +1,12 @@
 import React, { useRef, useState, ChangeEvent } from "react";
 import { ImagePlus } from "lucide-react";
 
-const FileUploader: React.FC = () => {
+interface FileUploaderProps {
+  onUpload?: () => void;
+  onRemove?: () => void;
+}
+
+const FileUploader: React.FC<FileUploaderProps> = ({ onUpload, onRemove }) => {
   const uploadRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -11,6 +16,7 @@ const FileUploader: React.FC = () => {
       const selectedFile = files[0];
       const imageUrl = URL.createObjectURL(selectedFile);
       setPreviewUrl(imageUrl);
+      onUpload?.();
     }
   };
 
@@ -23,6 +29,7 @@ const FileUploader: React.FC = () => {
     if (uploadRef.current) {
       uploadRef.current.value = "";
     }
+    onRemove?.();
   };
 
   return (
@@ -67,8 +74,8 @@ const FileUploader: React.FC = () => {
           className="flex flex-col items-center justify-center w-full h-full text-center"
         >
           <ImagePlus className="pb-1" />
-          <p>
-            <span className="underline">Click to upload</span> or drag and drop
+          <p className="text-sm font-medium text-customBrown">
+            <span className="underline text-sm font-medium text-primary">Click to upload</span> or drag and drop
           </p>
         </button>
       )}
