@@ -21,7 +21,7 @@ import Checkout from "./pages/private/shoppingcart/Checkout";
 import PrivateRoute from "./components/PrivateRoute";
 import { useAppDispatch } from "./store/hooks";
 import { setUser, setAuthenticated } from "./store/slices/authSlice";
-import { useEffect } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import ContactUs from "./pages/public/contactus/ContactUs";
 import RateReviewProduct from "./pages/private/accountinformation/components/rating/RateReviewProduct";
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
@@ -31,11 +31,13 @@ import HelpCenter from "./pages/private/help/Help";
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
 import Products from "./pages/admin/products/Products";
-import ProductCategory from "./pages/admin/productCategory/ProductCat";
+import ProductCategory from "./pages/admin/products/productCategory/ProductCat";
+import AddProduct from "./pages/admin/products/addProduct/AddProduct";
 
 function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const noFooterPaths = ["/admin/dashboard"]; // add more if needed
   const shouldShowFooter = !noFooterPaths.includes(location.pathname);
@@ -138,6 +140,7 @@ function App() {
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/product-category" element={<ProductCategory />} />
+        <Route path="/admin/add-product" element={<AddProduct />} />
       </Routes>
       {shouldShowFooter && <Footer />}
     </>
