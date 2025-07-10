@@ -39,6 +39,7 @@ import Inventory from "./pages/admin/inventory/Inventory";
 import Transactions from "./pages/admin/transactions/Transactions";
 import Manufacturers from "./pages/admin/manufacturers/Manufacturers";
 import Partners from "./pages/admin/partners/Partners";
+import Settings from "./pages/admin/settings/Settings";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -154,6 +155,7 @@ function App() {
         <Route path="/admin/transactions" element={<Transactions />} />
         <Route path="/admin/manufacturers" element={<Manufacturers />} />
         <Route path="/admin/partners" element={<Partners />} />
+        <Route path="/admin/settings" element={<Settings />} />
       </Routes>
       {shouldShowFooter && <Footer />}
     </>
