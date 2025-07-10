@@ -33,6 +33,12 @@ import Dashboard from "./pages/admin/dashboard/Dashboard";
 import Products from "./pages/admin/products/Products";
 import ProductCategory from "./pages/admin/products/productCategory/ProductCat";
 import AddProduct from "./pages/admin/products/addProduct/AddProduct";
+import Orders from "./pages/admin/orders/Orders";
+import Users from "./pages/admin/users/Users";
+import Inventory from "./pages/admin/inventory/Inventory";
+import Transactions from "./pages/admin/transactions/Transactions";
+import Manufacturers from "./pages/admin/manufacturers/Manufacturers";
+import Partners from "./pages/admin/partners/Partners";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -142,6 +148,12 @@ function App() {
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/product-category" element={<ProductCategory />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/orders" element={<Orders />} />
+        <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/inventory" element={<Inventory />} />
+        <Route path="/admin/transactions" element={<Transactions />} />
+        <Route path="/admin/manufacturers" element={<Manufacturers />} />
+        <Route path="/admin/partners" element={<Partners />} />
       </Routes>
       {shouldShowFooter && <Footer />}
     </>
