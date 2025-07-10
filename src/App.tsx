@@ -39,8 +39,8 @@ function App() {
   const location = useLocation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const noFooterPaths = ["/admin/dashboard"]; // add more if needed
-  const shouldShowFooter = !noFooterPaths.includes(location.pathname);
+  // Hide footer for all admin routes
+  const shouldShowFooter = !location.pathname.startsWith("/admin");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -52,6 +52,7 @@ function App() {
       dispatch(setAuthenticated(true));
     }
   }, [dispatch]);
+  
   return (
     <>
       <Routes>
