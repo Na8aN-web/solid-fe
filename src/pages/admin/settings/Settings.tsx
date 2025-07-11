@@ -197,12 +197,6 @@ const Settings: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
-            <ArrowUpDown className="text-primary w-[19px]" />
-            <p className="text-primary font-semibold text-sm">Sort</p>
-          </div>
-        </div>
       </section>
       {activeTab === "admin" && <AdminAccounts />}
       {activeTab === "profile" && <Profile />}

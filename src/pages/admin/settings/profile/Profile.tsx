@@ -44,7 +44,7 @@ const Profile = () => {
             Upload Profile Picture
           </button>
         </div>
-        <div className="px-8 pt-8 pb-4 space-y-6">
+        <div className="px-8 pt-8 pb-6 space-y-6">
           <InfoField label="First Name" value="Marvelous" />
           <InfoField label="Last Name" value="Afolabi" />
           <InfoField label="Phone Number" value="07088980354" />
