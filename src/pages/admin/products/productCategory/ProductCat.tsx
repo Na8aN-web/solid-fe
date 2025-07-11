@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Search, Plus, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Search, Plus, ArrowLeft, ArrowUpDown } from "lucide-react";
 import ProductIcon from "../../../assets/productIcon.svg";
 import carTyre from "../../../../assets/tyres.svg";
 import edit from "../../../../assets/edit.svg";
 import deLete from "../../../../assets/delete.svg";
+import AdminLayout from "../../components/AdminLayout";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: string;
@@ -65,7 +67,6 @@ const productsBrand: Product[] = [
     createdDate: "25th July, 2024",
   },
 ];
-
 
 const handleEdit = (id: string) => {
   console.log("Editing product with ID:", id);
@@ -257,75 +258,74 @@ const Vehicles = () => {
 };
 
 const ProductCat: React.FC = () => {
+  const navigate = useNavigate();
+  const filters: Array<{
+    label: string;
+    value: "categories" | "brands" | "vehicles";
+  }> = [
+    { label: "Product Categories", value: "categories" },
+    { label: "Brands", value: "brands" },
+    { label: "Vehicles", value: "vehicles" },
+  ];
   const [activeTab, setActiveTab] = useState<
     "categories" | "brands" | "vehicles"
   >("categories");
 
   return (
-    <div className="p-10">
-      <section className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-8">
-          <h1 className="text-xl font-bold text-gray-900">Products</h1>
-          <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search for products..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] w-[290px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-            />
+    <AdminLayout pageTitle="">
+      <div className="p-10">
+        <section className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-8">
+       <div className="flex gap-2 items-center text-xl font-semibold text-customBrown mb-8">
+               <button onClick={() => navigate("/admin/products")}>
+                 <ArrowLeft />
+               </button>
+               <h1>Product Category</h1>
+             </div>
+            <div className="relative">
+              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search for products..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] w-[290px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+              />
+            </div>
           </div>
-        </div>
-        <div>
-          <button className="flex gap-2 justify-center items-center w-[182px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold">
-            <Plus />
-            Add new Brand Name
-          </button>
-        </div>
-      </section>
-      <section className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-6">
-          <h2
-            onClick={() => setActiveTab("categories")}
-            className={`cursor-pointer ${
-              activeTab === "categories"
-                ? "text-sm bg-[#F3F3F3] p-2 rounded-[6px]"
-                : "text-sm text-customBrown"
-            }`}
-          >
-            Product Categories
-          </h2>
-          <h2
-            onClick={() => setActiveTab("brands")}
-            className={`cursor-pointer ${
-              activeTab === "brands"
-                ? "text-sm bg-[#F3F3F3] p-2 rounded-[6px]"
-                : "text-sm text-customBrown"
-            }`}
-          >
-            Brand Name
-          </h2>
-          <h2
-            onClick={() => setActiveTab("vehicles")}
-            className={`cursor-pointer ${
-              activeTab === "vehicles"
-                ? "text-sm bg-[#F3F3F3] p-2 rounded-[6px]"
-                : "text-sm text-customBrown"
-            }`}
-          >
-            Vehicle Types
-          </h2>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
-            <ArrowUpDown className="text-primary w-[19px]" />
-            <p className="text-primary font-semibold text-sm">Sort</p>
+          <div>
+            <button className="flex gap-2 justify-center items-center px-2 h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold">
+              <Plus />
+              Add new Product Category
+            </button>
           </div>
-        </div>
-      </section>
-      {activeTab === "categories" && <Categories />}
-      {activeTab === "brands" && <Brands />}
-      {activeTab === "vehicles" && <Brands />}
-    </div>
+        </section>
+        <section className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-6">
+            {filters.map(({ label, value }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
+                  activeTab === value
+                    ? "bg-[#003366] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
+              <ArrowUpDown className="text-primary w-[19px]" />
+              <p className="text-primary font-semibold text-sm">Sort</p>
+            </div>
+          </div>
+        </section>
+        {activeTab === "categories" && <Categories />}
+        {activeTab === "brands" && <Brands />}
+        {activeTab === "vehicles" && <Vehicles />}
+      </div>
+    </AdminLayout>
   );
 };
 

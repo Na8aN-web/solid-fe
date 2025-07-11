@@ -5,6 +5,7 @@ import carTyre from "../../../assets/tyres.svg";
 import edit from "../../../assets/edit.svg";
 import deLete from "../../../assets/delete.svg";
 import AdminLayout from "../components/AdminLayout";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: string;
@@ -19,6 +20,7 @@ interface Product {
 }
 
 const Products: React.FC = () => {
+  const navigate = useNavigate();
   const products: Product[] = [
     {
       id: "1",
@@ -101,11 +103,17 @@ const Products: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <button className="flex gap-2 justify-center items-center w-[154px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold">
+            <button
+              className="flex gap-2 justify-center items-center w-[154px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold"
+              onClick={() => navigate("/admin/add-product")}
+            >
               <Plus />
               Add new Product
             </button>
-            <button className="flex gap-2 justify-center items-center w-[154px] h-[48px] text-[#003366] border border-[#003366] rounded-[6px] bg-white text-[14px] font-semibold">
+            <button
+              className="flex gap-2 justify-center items-center w-[154px] h-[48px] text-[#003366] border border-[#003366] rounded-[6px] bg-white text-[14px] font-semibold"
+              onClick={() => navigate("/admin/product-category")}
+            >
               <img src={ProductIcon} alt="" />
               Product Category
             </button>
@@ -131,7 +139,9 @@ const Products: React.FC = () => {
               </div>
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">Store</h2>
+              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">
+                Store
+              </h2>
               <div className="relative w-[202px] h-[44px]">
                 <select
                   name=""
@@ -146,7 +156,9 @@ const Products: React.FC = () => {
               </div>
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">Price</h2>
+              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">
+                Price
+              </h2>
               <div className="relative w-[202px] h-[44px]">
                 <select
                   name=""
@@ -259,7 +271,10 @@ const Products: React.FC = () => {
                         <img src={edit} alt="" />
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(product.id)} className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]">
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]"
+                      >
                         <img src={deLete} alt="" />
                       </button>
                     </div>
