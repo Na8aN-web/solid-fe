@@ -40,6 +40,8 @@ import Transactions from "./pages/admin/transactions/Transactions";
 import Manufacturers from "./pages/admin/manufacturers/Manufacturers";
 import Partners from "./pages/admin/partners/Partners";
 import Settings from "./pages/admin/settings/Settings";
+// import Profile from "./pages/admin/settings/profile/Profile";
+// import Password from "./pages/admin/settings/password/Password"
 
 function App() {
   const dispatch = useAppDispatch();
@@ -156,6 +158,8 @@ function App() {
         <Route path="/admin/manufacturers" element={<Manufacturers />} />
         <Route path="/admin/partners" element={<Partners />} />
         <Route path="/admin/settings" element={<Settings />} />
+        {/* <Route path="/admin/profile" element={<Profile />} />
+        <Route path="/admin/password" element={<Password />} /> */}
       </Routes>
       {shouldShowFooter && <Footer />}
     </>

@@ -66,7 +66,6 @@ const productsBrand: Product[] = [
   },
 ];
 
-
 const handleEdit = (id: string) => {
   console.log("Editing product with ID:", id);
 };
@@ -257,6 +256,14 @@ const Vehicles = () => {
 };
 
 const ProductCat: React.FC = () => {
+  const filters: Array<{
+    label: string;
+    value: "categories" | "brands" | "vehicles";
+  }> = [
+    { label: "Product Categories", value: "categories" },
+    { label: "Brands", value: "brands" },
+    { label: "Vehicles", value: "vehicles" },
+  ];
   const [activeTab, setActiveTab] = useState<
     "categories" | "brands" | "vehicles"
   >("categories");
@@ -284,36 +291,19 @@ const ProductCat: React.FC = () => {
       </section>
       <section className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-6">
-          <h2
-            onClick={() => setActiveTab("categories")}
-            className={`cursor-pointer ${
-              activeTab === "categories"
-                ? "text-sm bg-[#F3F3F3] p-2 rounded-[6px]"
-                : "text-sm text-customBrown"
-            }`}
-          >
-            Product Categories
-          </h2>
-          <h2
-            onClick={() => setActiveTab("brands")}
-            className={`cursor-pointer ${
-              activeTab === "brands"
-                ? "text-sm bg-[#F3F3F3] p-2 rounded-[6px]"
-                : "text-sm text-customBrown"
-            }`}
-          >
-            Brand Name
-          </h2>
-          <h2
-            onClick={() => setActiveTab("vehicles")}
-            className={`cursor-pointer ${
-              activeTab === "vehicles"
-                ? "text-sm bg-[#F3F3F3] p-2 rounded-[6px]"
-                : "text-sm text-customBrown"
-            }`}
-          >
-            Vehicle Types
-          </h2>
+          {filters.map(({ label, value }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
+                activeTab === value
+                  ? "bg-[#003366] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <div className="flex items-center gap-2">
           <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
@@ -324,7 +314,7 @@ const ProductCat: React.FC = () => {
       </section>
       {activeTab === "categories" && <Categories />}
       {activeTab === "brands" && <Brands />}
-      {activeTab === "vehicles" && <Brands />}
+      {activeTab === "vehicles" && <Vehicles />}
     </div>
   );
 };

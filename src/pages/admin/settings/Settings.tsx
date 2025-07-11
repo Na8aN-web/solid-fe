@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import carTyre from "../../../assets/tyres.svg";
 import AdminLayout from "../components/AdminLayout";
 import remove from "../../../assets/cancel-rounded.svg";
 import modify from "../../../assets/modify.svg";
+import { Search, Plus, ArrowUpDown } from "lucide-react";
+import Profile from "./profile/Profile"
+import Password from "./password/Password";
 
 interface User {
   id: string;
@@ -13,7 +16,7 @@ interface User {
   isLoggedIn: boolean;
 }
 
-const Settings: React.FC = () => {
+const AdminAccounts = () => {
   const users: User[] = [
     {
       id: "1",
@@ -48,6 +51,16 @@ const Settings: React.FC = () => {
       isLoggedIn: false,
     },
   ];
+  const handleEdit = (id: string) => {
+    console.log("Editing product with ID:", id);
+    // Navigate to edit form or open modal
+  };
+
+  const handleDelete = (id: string) => {
+    console.log("Deleting product with ID:", id);
+    // Show confirm dialog or call API
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Manager":
@@ -61,93 +74,139 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleEdit = (id: string) => {
-    console.log("Editing product with ID:", id);
-    // Navigate to edit form or open modal
-  };
-
-  const handleDelete = (id: string) => {
-    console.log("Deleting product with ID:", id);
-    // Show confirm dialog or call API
-  };
   return (
-    <AdminLayout pageTitle="settings">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left text-sm bg-[#F8F8F8] text-gray-600 border-b">
-              <th className="p-4">
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="text-left text-sm bg-[#F8F8F8] text-gray-600 border-b">
+            <th className="p-4">
+              <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
+            </th>
+            <th className="p-4">Name</th>
+            <th className="p-4">User Role</th>
+            <th className="p-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr
+              key={user.id}
+              className="border-b text-[#5E5E5E] last:border-b-0"
+            >
+              <td className="p-4">
                 <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
-              </th>
-              <th className="p-4">Name</th>
-              <th className="p-4">User Role</th>
-              <th className="p-4">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className="border-b text-[#5E5E5E] last:border-b-0"
-              >
-                <td className="p-4">
-                  <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
-                </td>
-                <td className="p-4 text-sm flex items-center gap-12">
-                  <div className="flex items-center justify-start gap-1">
-                    <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center">
-                      <img
-                        src={user.image}
-                        alt={user.name}
-                        className="w-[35px]"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-0">
-                      <p> {user.name}</p>
-                      <p> {user.email}</p>
-                    </div>
+              </td>
+              <td className="p-4 text-sm flex items-center gap-12">
+                <div className="flex items-center justify-start gap-1">
+                  <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center">
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="w-[35px]"
+                    />
                   </div>
-                  {!user.isLoggedIn && (
-                    <span className="text-base font-normal text-[#FF5F00]">
-                      Not Logged In
+                  <div className="flex flex-col gap-0">
+                    <p> {user.name}</p>
+                    <p> {user.email}</p>
+                  </div>
+                </div>
+                {!user.isLoggedIn && (
+                  <span className="text-base font-normal text-[#FF5F00]">
+                    Not Logged In
+                  </span>
+                )}
+              </td>
+              <td className="p-4">
+                <div className="flex gap-4 flex-wrap">
+                  {user.roles.map((role) => (
+                    <span
+                      key={role}
+                      className={`px-2 py-[6px] rounded-[4px] text-xs font-normal ${getStatusColor(role)}`}
+                    >
+                      {role}
                     </span>
-                  )}
-                </td>
-                <td className="p-4">
-                  <div className="flex gap-4 flex-wrap">
-                    {user.roles.map((role) => (
-                      <span
-                        key={role}
-                        className={`px-2 py-[6px] rounded-[4px] text-xs font-normal ${getStatusColor(role)}`}
-                      >
-                        {role}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-6">
-                    <button
-                      onClick={() => handleEdit(user.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <img src={modify} alt="" />
-                      <span>Modify Roles</span>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <img src={remove} alt="" />
-                      <span>Remove User</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  ))}
+                </div>
+              </td>
+              <td className="p-4">
+                <div className="flex items-center gap-6">
+                  <button
+                    onClick={() => handleEdit(user.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <img src={modify} alt="" />
+                    <span>Modify Roles</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <img src={remove} alt="" />
+                    <span>Remove User</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+
+const Settings: React.FC = () => {
+  const filters: Array<{
+    label: string;
+    value: "admin" | "profile" | "password";
+  }> = [
+    { label: "Admin Accounts", value: "admin" },
+    { label: "Profile", value: "profile" },
+    { label: "Password", value: "password" },
+  ];
+  const [activeTab, setActiveTab] = useState<"admin" | "profile" | "password">(
+    "admin"
+  );
+
+  return (
+    <AdminLayout pageTitle="">
+      <section className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Settings</h1>
+        </div>
+        <div>
+          <button className="flex gap-2 justify-center items-center w-[182px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold">
+            <Plus />
+            Add new User
+          </button>
+        </div>
+      </section>
+      <section className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-6">
+          {filters.map(({ label, value }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
+                activeTab === value
+                  ? "bg-[#003366] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
+            <ArrowUpDown className="text-primary w-[19px]" />
+            <p className="text-primary font-semibold text-sm">Sort</p>
+          </div>
+        </div>
+      </section>
+      {activeTab === "admin" && <AdminAccounts />}
+      {activeTab === "profile" && <Profile />}
+      {activeTab === "password" && <Password />}
     </AdminLayout>
   );
 };
