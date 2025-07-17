@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import FileUploader from "./components/FileUploader";
+import FileUploader from "../components/FileUploader";
 import { Plus, ArrowLeft, Ban, CalendarCheck, CircleX } from "lucide-react";
 import circleX from "../../../../assets/circleX.svg";
 import AdminLayout from "../../components/AdminLayout";

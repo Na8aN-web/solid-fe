@@ -4,8 +4,9 @@ import AdminLayout from "../components/AdminLayout";
 import remove from "../../../assets/cancel-rounded.svg";
 import modify from "../../../assets/modify.svg";
 import { Search, Plus, ArrowUpDown } from "lucide-react";
-import Profile from "./profile/Profile"
+import Profile from "./profile/Profile";
 import Password from "./password/Password";
+import AddNewUser from "../components/AddNewUser";
 
 interface User {
   id: string;
@@ -154,8 +155,8 @@ const AdminAccounts = () => {
   );
 };
 
-
 const Settings: React.FC = () => {
+  const [openMenu, setOpenMenu] = useState(false);
   const filters: Array<{
     label: string;
     value: "admin" | "profile" | "password";
@@ -168,6 +169,10 @@ const Settings: React.FC = () => {
     "admin"
   );
 
+  function handleMenu() {
+    setOpenMenu(!openMenu);
+  }
+
   return (
     <AdminLayout pageTitle="">
       <section className="flex items-center justify-between mb-8">
@@ -175,12 +180,16 @@ const Settings: React.FC = () => {
           <h1 className="text-xl font-bold text-gray-900">Settings</h1>
         </div>
         <div>
-          <button className="flex gap-2 justify-center items-center w-[182px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold">
+          <button
+            className="flex gap-2 justify-center items-center w-[182px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold"
+            onClick={handleMenu}
+          >
             <Plus />
             Add new User
           </button>
         </div>
       </section>
+      {openMenu && <AddNewUser />}
       <section className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-6">
           {filters.map(({ label, value }) => (
