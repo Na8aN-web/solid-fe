@@ -160,7 +160,7 @@ function App() {
         <Route path="/admin/partners" element={<Partners />} />
         <Route path="/admin/settings" element={<Settings />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
-        <Route path="/admin/add-product" element={<Inbox />} />
+        <Route path="/admin/inbox" element={<Inbox />} />
         <Route path="/admin/kyc-verification" element={<KycVerification title={""} count={0} />} />
       </Routes>
       {shouldShowFooter && <Footer />}
