@@ -19,6 +19,7 @@ const sidebarItems = [
     { icon: SidebarIcon2, label: 'Products', path: '/admin/products' },
     { icon: SidebarIcon3, label: 'Orders', path: '/admin/orders' },
     { icon: SidebarIcon4, label: 'Users', path: '/admin/users' },
+    { icon: SidebarIcon4, label: 'KYC Verifications', path: '/admin/kyc-verification' },
     { icon: SidebarIcon5, label: 'Inventory', path: '/admin/inventory' },
     { icon: SidebarIcon6, label: 'Transactions', path: '/admin/transactions' },
     { icon: SidebarIcon7, label: 'Manufacturers', path: '/admin/manufacturers' },

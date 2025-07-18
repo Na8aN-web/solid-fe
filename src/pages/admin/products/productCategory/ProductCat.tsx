@@ -6,6 +6,7 @@ import edit from "../../../../assets/edit.svg";
 import deLete from "../../../../assets/delete.svg";
 import AdminLayout from "../../components/AdminLayout";
 import { useNavigate } from "react-router-dom";
+import AddNewProductCategory from "../components/AddNewProductCategory";
 
 interface Product {
   id: string;
@@ -258,6 +259,7 @@ const Vehicles = () => {
 };
 
 const ProductCat: React.FC = () => {
+    const [openMenu, setOpenMenu] = useState(false);
   const navigate = useNavigate();
   const filters: Array<{
     label: string;
@@ -270,6 +272,10 @@ const ProductCat: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "categories" | "brands" | "vehicles"
   >("categories");
+
+  function handleMenu() {
+    setOpenMenu(!openMenu);
+  }
 
   return (
     <AdminLayout pageTitle="">
@@ -292,12 +298,13 @@ const ProductCat: React.FC = () => {
             </div>
           </div>
           <div>
-            <button className="flex gap-2 justify-center items-center px-2 h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold">
+            <button className="flex gap-2 justify-center items-center px-2 h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold" onClick={handleMenu}>
               <Plus />
               Add new Product Category
             </button>
           </div>
         </section>
+          {openMenu && <AddNewProductCategory />}
         <section className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
             {filters.map(({ label, value }) => (
