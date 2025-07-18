@@ -42,6 +42,7 @@ import Partners from "./pages/admin/partners/Partners";
 import Settings from "./pages/admin/settings/Settings";
 import Inbox from "./pages/admin/inbox/Inbox";
 import KycVerification from "./pages/admin/kycverification/KycVerification";
+import ReportsAnalytics from "./pages/admin/report/Report";
 
 
 function App() {
@@ -154,6 +155,7 @@ function App() {
         <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/admin/orders" element={<Orders />} />
         <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/report" element={<ReportsAnalytics />} />
         <Route path="/admin/inventory" element={<Inventory />} />
         <Route path="/admin/transactions" element={<Transactions />} />
         <Route path="/admin/manufacturers" element={<Manufacturers />} />

@@ -24,7 +24,7 @@ const sidebarItems = [
     { icon: SidebarIcon6, label: 'Transactions', path: '/admin/transactions' },
     { icon: SidebarIcon7, label: 'Manufacturers', path: '/admin/manufacturers' },
     { icon: SidebarIcon8, label: 'Partners', path: '/admin/partners' },
-    { icon: SidebarIcon9, label: 'Reports & Analytics', path: '/admin/reports' },
+    { icon: SidebarIcon9, label: 'Reports & Analytics', path: '/admin/report' },
     { icon: SidebarIcon10, label: 'Send Notifications', path: '/admin/notifications' },
     { icon: SidebarIcon11, label: 'Inbox', path: '/admin/inbox' },
     { icon: SidebarIcon12, label: 'Settings', path: '/admin/settings' },
