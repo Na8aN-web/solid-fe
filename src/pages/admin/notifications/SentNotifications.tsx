@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
 import { ArrowUpDown, ListFilter, Search } from "lucide-react";
 
-const Inbox = () => {
+const SentNotifications = () => {
   const [activeFilter, setActiveFilter] = useState<string>("All Users");
   const [showMessages, setShowMessages] = useState<string>("All Messages");
 
@@ -125,4 +125,4 @@ const Inbox = () => {
   );
 };
 
-export default Inbox;
+export default SentNotifications;

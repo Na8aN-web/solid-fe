@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
-import { ArrowUpDown, ListFilter, Search } from "lucide-react";
+import { ListFilter, ArrowUpDown, Search } from "lucide-react";
 
-const Inbox = () => {
+const SendNotifications = () => {
   const [activeFilter, setActiveFilter] = useState<string>("All Users");
   const [showMessages, setShowMessages] = useState<string>("All Messages");
 
@@ -12,11 +12,12 @@ const Inbox = () => {
     "Wholesaler",
     "Importer",
     "Manufacturer",
+    "Specific User",
   ];
-  const messageOptions = ["All Messages", "Archived"];
 
+  const messageOptions = ["Sent Messages", "Drafts"];
   return (
-    <AdminLayout pageTitle="Inbox">
+    <AdminLayout pageTitle="">
       <div className="flex justify-between">
         <div className="flex items-center gap-4">
           {filterOptions.map((filter) => (
@@ -49,7 +50,8 @@ const Inbox = () => {
           ))}
         </div>
       </div>
-      <section className="flex gap-12 mt-8 w-full">
+      <div className="flex mt-6 gap-12">
+        <div className="w-3/5 h-[500px] border rounded"></div>
         <section className="border min-h-[520px] p-5 rounded-[8px] w-2/5">
           <div className="flex justify-between items-center border-b pb-2">
             <h2>All Messages</h2>
@@ -88,41 +90,13 @@ const Inbox = () => {
             </div>
           </div>
         </section>
-        <section className="w-3/5">
-          <div className="flex justify-center">
-            <span className="text-center bg-[#E7EAEA] px-2 py-1 text-xs text-customBrown">
-              12 May 2024
-            </span>
-          </div>
-          <div className="pt-4">
-            <div className="flex gap-2 pb-2">
-              <div className="h-[40px] w-[40px] rounded-full bg-[#E7EAEA]"></div>
-              <div className="max-w-[80%]">
-                <p className="w-full bg-primary py-3 px-4 rounded-r-[30px] rounded-tl-[30px] text-xs text-customLight font-normal">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Beatae pariatur similique iure laborum dolores nulla
-                  distinctio quo, quam, quae, nesciunt molestiae vitae
-                  praesentium! Impedit a laboriosam quam rerum, incidunt fuga.
-                </p>
-                <span className="text-[10px] text-shadeGray">6:30 PM</span>
-              </div>
-            </div>
-            <div className="flex flex-row-reverse gap-2">
-              <div className="h-[40px] w-[40px] rounded-full bg-[#E7EAEA]"></div>
-              <div className="max-w-[80%]">
-                <p className="bg-[#E7EAEA] py-3 px-4 rounded-l-[30px] rounded-tr-[30px] text-xs text-customGray1 font-normal">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                </p>
-                <span className="flex justify-end text-[10px] text-shadeGray">
-                  6:30 PM
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-      </section>
+      </div>
+      <div>
+        <span>Save as draft</span>
+        <button>Send</button>
+      </div>
     </AdminLayout>
   );
 };
 
-export default Inbox;
+export default SendNotifications;
