@@ -52,7 +52,9 @@ const Inbox = () => {
       <section className="flex gap-12 mt-8 w-full">
         <section className="border min-h-[520px] p-5 rounded-[8px] w-2/5">
           <div className="flex justify-between items-center border-b pb-2">
-            <h2>All Messages</h2>
+            <h2 className="text-base font-semibold text-customBrown">
+              All Messages
+            </h2>
             <div className="flex items-center gap-4">
               <ListFilter />
               <ArrowUpDown />
