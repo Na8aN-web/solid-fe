@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
 import { ArrowUpDown, ListFilter, Search } from "lucide-react";
 
-const Inbox = () => {
+const SentNotifications = () => {
   const [activeFilter, setActiveFilter] = useState<string>("All Users");
   const [showMessages, setShowMessages] = useState<string>("All Messages");
 
@@ -52,9 +52,7 @@ const Inbox = () => {
       <section className="flex gap-12 mt-8 w-full">
         <section className="border min-h-[520px] p-5 rounded-[8px] w-2/5">
           <div className="flex justify-between items-center border-b pb-2">
-            <h2 className="text-base font-semibold text-customBrown">
-              All Messages
-            </h2>
+            <h2>All Messages</h2>
             <div className="flex items-center gap-4">
               <ListFilter />
               <ArrowUpDown />
@@ -127,4 +125,4 @@ const Inbox = () => {
   );
 };
 
-export default Inbox;
+export default SentNotifications;

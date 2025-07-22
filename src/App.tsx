@@ -43,6 +43,8 @@ import Settings from "./pages/admin/settings/Settings";
 import Inbox from "./pages/admin/inbox/Inbox";
 import KycVerification from "./pages/admin/kycverification/KycVerification";
 import ReportsAnalytics from "./pages/admin/report/Report";
+import SendNotifications from "./pages/admin/notifications/SendNotifications";
+import SentNotifications from "./pages/admin/notifications/SentNotifications";
 
 
 function App() {
@@ -164,6 +166,8 @@ function App() {
         <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/admin/inbox" element={<Inbox />} />
         <Route path="/admin/kyc-verification" element={<KycVerification title={""} count={0} />} />
+        <Route path="/admin/send-notifications" element={<SendNotifications />} />
+        <Route path="/admin/sent-notifications" element={<SentNotifications />} />
       </Routes>
       {shouldShowFooter && <Footer />}
     </>
