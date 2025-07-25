@@ -81,7 +81,13 @@ const Users: React.FC = () => {
     },
   ];
 
-  const filterOptions = ["All Users", "Personal", "Wholesaler", "Importer", "Manufacturer"];
+  const filterOptions = [
+    "All Users",
+    "Personal",
+    "Wholesaler",
+    "Importer",
+    "Manufacturer",
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -120,9 +126,10 @@ const Users: React.FC = () => {
     }
   };
 
-  const filteredUsers = activeFilter === "All Users" 
-    ? users 
-    : users.filter(user => user.accountType === activeFilter);
+  const filteredUsers =
+    activeFilter === "All Users"
+      ? users
+      : users.filter((user) => user.accountType === activeFilter);
 
   const handleView = (id: string) => {
     console.log("Viewing user with ID:", id);
@@ -138,58 +145,70 @@ const Users: React.FC = () => {
 
   return (
     <AdminLayout pageTitle="">
-      <div className="p-6">
-        <section className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold text-gray-900">Users</h1>
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for users..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] w-[290px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
+      <div className="">
+        <section className="mb-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Left: Title + Search */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8 w-full">
+              <h1 className="text-xl font-bold text-gray-900">Users</h1>
+              <div className="relative w-full sm:w-[290px]">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search for users..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="flex gap-2 justify-center items-center px-4 py-2 bg-[#003366] rounded-[6px] text-white text-sm font-medium">
-              <Plus className="w-4 h-4" />
-              Send Notification
-            </button>
+
+            {/* Right: Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+              <button className="flex gap-2 justify-center items-center px-4 py-3 min-w-[170px] bg-[#003366] rounded-[6px] text-white text-sm font-medium">
+                <Plus className="w-4 h-4" />
+                Send Notification
+              </button>
+            </div>
           </div>
         </section>
 
-        <section className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            {filterOptions.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
-                  activeFilter === filter
-                    ? "bg-[#003366] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <select className="px-4 py-2 bg-white border border-gray-300 rounded-[6px] text-sm text-gray-700 pr-8 appearance-none min-w-[120px]">
-                <option value="">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+        <section className="mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Scrollable Filters */}
+            <div className="overflow-x-auto scrollbar-hide whitespace-nowrap w-full">
+              <div className="flex gap-4 shrink-0 w-max">
+                {filterOptions.map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
+                      activeFilter === filter
+                        ? "bg-[#003366] text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
-              <ArrowUpDown className="w-4 h-4" />
-              Sort
-            </button>
+
+            {/* Select + Sort Buttons */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="relative">
+                <select className="px-4 py-2 bg-white border border-gray-300 rounded-[6px] text-sm text-gray-700 pr-8 appearance-none min-w-[120px]">
+                  <option value="">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+              <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
+                <ArrowUpDown className="w-4 h-4" />
+                Sort
+              </button>
+            </div>
           </div>
         </section>
 
@@ -211,14 +230,21 @@ const Users: React.FC = () => {
             </thead>
             <tbody>
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr
+                  key={user.id}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
                   <td className="p-4">
                     <div className="w-4 h-4 border border-gray-300 bg-white rounded"></div>
                   </td>
                   <td className="p-4 text-sm text-gray-700">{user.userId}</td>
-                  <td className="p-4 text-sm font-medium text-gray-900">{user.name}</td>
+                  <td className="p-4 text-sm font-medium text-gray-900">
+                    {user.name}
+                  </td>
                   <td className="p-4 text-sm text-gray-700">{user.email}</td>
-                  <td className="p-4 text-sm text-gray-700">{user.accountType}</td>
+                  <td className="p-4 text-sm text-gray-700">
+                    {user.accountType}
+                  </td>
                   <td className="p-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}
@@ -226,7 +252,9 @@ const Users: React.FC = () => {
                       {user.status}
                     </span>
                   </td>
-                  <td className="p-4 text-sm text-gray-700">{user.dateJoined}</td>
+                  <td className="p-4 text-sm text-gray-700">
+                    {user.dateJoined}
+                  </td>
                   <td className="p-4">{getActionButtons(user)}</td>
                 </tr>
               ))}

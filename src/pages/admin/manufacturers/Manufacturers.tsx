@@ -94,25 +94,26 @@ const Manufacturers: React.FC = () => {
 
   return (
     <AdminLayout pageTitle="">
-      <div className="p-6">
-        <section className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-8">
+      <div>
+        <section className="mb-6">
+          {/* Left: Title + Search */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8 w-full">
             <h1 className="text-xl font-bold text-gray-900">Manufacturers</h1>
-            <div className="relative">
+            <div className="relative w-full sm:w-[290px]">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search for inventory..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] w-[290px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="Search for manufacturers..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
           </div>
         </section>
 
-        <section className="flex items-center justify-between mb-6">
+        <section className="flex flex-wrap items-center justify-between mb-6 w-full">
           <div className="flex items-center gap-6">
             <div>
-              <h2 className="text-sm font-medium text-gray-700 mb-2">Status</h2>
+              <label className="text-sm font-medium text-gray-700 mb-2">Status</label>
               <div className="relative w-[150px] h-[40px]">
                 <select className="w-full h-full bg-white px-3 pr-8 appearance-none rounded-[6px] text-sm border border-gray-300 text-gray-700">
                   <option value="">All Status</option>
@@ -126,7 +127,7 @@ const Manufacturers: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pt-2">
             <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
               <ArrowUpDown className="w-4 h-4" />
               Sort
@@ -164,8 +165,13 @@ const Manufacturers: React.FC = () => {
             </thead>
             <tbody>
               {manufacturers.map((manufacturer) => (
-                <tr key={manufacturer.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="p-4 text-sm text-gray-700">{manufacturer.serialNumber}</td>
+                <tr
+                  key={manufacturer.id}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="p-4 text-sm text-gray-700">
+                    {manufacturer.serialNumber}
+                  </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
@@ -191,8 +197,12 @@ const Manufacturers: React.FC = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-gray-700">{manufacturer.email}</td>
-                  <td className="p-4 text-sm text-gray-700">{manufacturer.contact}</td>
+                  <td className="p-4 text-sm text-gray-700">
+                    {manufacturer.email}
+                  </td>
+                  <td className="p-4 text-sm text-gray-700">
+                    {manufacturer.contact}
+                  </td>
                   <td className="p-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(manufacturer.status)}`}
