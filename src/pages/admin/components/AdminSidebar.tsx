@@ -47,7 +47,7 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-white border-r py-[40px]">
+    <div className="fixed z-0 overflow-y-auto w-full h-screen bg border-r py-[40px] bg-white">
       <div className="px-[40px]">
         <img src={Logo} alt="Logo" className="w-[140px]" />
       </div>

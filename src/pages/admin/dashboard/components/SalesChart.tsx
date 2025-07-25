@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Download } from 'lucide-react';
 
 // Sample data that matches your chart pattern
@@ -42,7 +42,8 @@ const SalesChart: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+
+      <div className="flex flex-wrap items-center justify-between mb-6 space-y-3">
         <div className="flex items-center gap-4">
           <h2 className="text-[16px] font-semibold text-gray-900">Sales Summary</h2>
           <span className="text-[12px] text-gray-500">
@@ -50,14 +51,14 @@ const SalesChart: React.FC = () => {
           </span>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
           {/* Time Range Buttons */}
-          <div className="flex bg-[#E3E6EA] rounded-lg p-1">
+          <div className="flex bg-[#E3E6EA] rounded-lg p-1 w-ful">
             {(['Quarterly', 'Monthly', 'Yearly'] as TimeRange[]).map((range) => (
               <button
                 key={range}
                 onClick={() => handleRangeChange(range)}
-                className={`px-4 py-2 text-[12px] font-medium rounded-md transition-colors ${
+                className={`px-2 py-2 sm:px-4 sm:py-2 text-[12px] font-medium rounded-md transition-colors ${
                   selectedRange === range
                     ? 'bg-white text-[#003366] shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'

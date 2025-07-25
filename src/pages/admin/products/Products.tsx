@@ -88,132 +88,127 @@ const Products: React.FC = () => {
     // Show confirm dialog or call API
   };
   return (
-    <AdminLayout pageTitle="Products">
-      <div className="p-10">
-        <section className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold text-gray-900">Products</h1>
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for products..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] w-[290px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <button
-              className="flex gap-2 justify-center items-center w-[154px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold"
-              onClick={() => navigate("/admin/add-product")}
-            >
-              <Plus />
-              Add new Product
-            </button>
-            <button
-              className="flex gap-2 justify-center items-center w-[154px] h-[48px] text-[#003366] border border-[#003366] rounded-[6px] bg-white text-[14px] font-semibold"
-              onClick={() => navigate("/admin/product-category")}
-            >
-              <img src={ProductIcon} alt="" />
-              Product Category
-            </button>
-          </div>
-        </section>
-        <section className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div>
-              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">
-                Category
-              </h2>
-              <div className="relative w-[202px] h-[44px]">
-                <select
-                  name=""
-                  id=""
-                  className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown"
-                >
-                  <option value="">All Category</option>
-                </select>
-                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <ChevronDown />
-                </div>
+    <AdminLayout pageTitle="">
+      <div className="">
+        <section className="mb-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Left: Title + Search */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8 w-full">
+              <h1 className="text-xl font-bold text-gray-900">Products</h1>
+              <div className="relative w-full sm:w-[290px]">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search for products..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
             </div>
-            <div>
-              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">
-                Store
-              </h2>
-              <div className="relative w-[202px] h-[44px]">
-                <select
-                  name=""
-                  id=""
-                  className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown"
-                >
-                  <option value="">Solid Spare Parts</option>
-                </select>
-                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <ChevronDown />
-                </div>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">
-                Price
-              </h2>
-              <div className="relative w-[202px] h-[44px]">
-                <select
-                  name=""
-                  id=""
-                  className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown"
-                >
-                  <option value="">₦250K - ₦5M</option>
-                </select>
-                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <ChevronDown />
-                </div>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-[#2D2828] pb-2">
-                Status
-              </h2>
-              <div className="relative w-[202px] h-[44px]">
-                <select
-                  name=""
-                  id=""
-                  className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown"
-                >
-                  <option value="">All Status</option>
-                </select>
-                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <ChevronDown />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
-              <ArrowUpDown className="text-primary w-[19px]" />
-              <p className="text-primary font-semibold text-sm">Sort</p>
-            </div>
-            <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="lucide lucide-funnel-icon lucide-funnel text-primary w-[17px]"
+
+            {/* Right: Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+              <button
+                className="flex gap-2 justify-center items-center px-4 py-2 md:min-w-[175px] md:min-h-[50px] bg-[#003366] rounded-[6px] text-white text-sm font-medium"
+                onClick={() => navigate("/admin/add-product")}
               >
-                <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
-              </svg>
-              <p className="text-primary font-semibold text-sm">Filter</p>
+                <Plus />
+                Add new Product
+              </button>
+              <button
+                className="flex gap-2 justify-center items-center px-4 py-3 md:min-w-[175px] md:min-h-[50px] text-[#003366] border border-[#003366] rounded-[6px] bg-white text-sm font-medium"
+                onClick={() => navigate("/admin/product-category")}
+              >
+                <img src={ProductIcon} alt="" />
+                Product Category
+              </button>
             </div>
           </div>
         </section>
+        <section className="mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Scrollable Filters */}
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide whitespace-nowrap">
+              {/* Each filter group */}
+              <div className="shrink-0">
+                <label className="text-sm font-semibold text-[#2D2828] pb-2">
+                  Category
+                </label>
+                <div className="relative w-[202px] h-[44px]">
+                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
+                    <option value="">All Category</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <ChevronDown />
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0">
+                <label className="text-sm font-semibold text-[#2D2828] pb-2">
+                  Store
+                </label>
+                <div className="relative w-[202px] h-[44px]">
+                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
+                    <option value="">Solid Spare Parts</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <ChevronDown />
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0">
+                <label className="text-sm font-semibold text-[#2D2828] pb-2">
+                  Price
+                </label>
+                <div className="relative w-[202px] h-[44px]">
+                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
+                    <option value="">₦250K - ₦5M</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <ChevronDown />
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0">
+                <label className="text-sm font-semibold text-[#2D2828] pb-2">
+                  Status
+                </label>
+                <div className="relative w-[202px] h-[44px]">
+                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
+                    <option value="">All Status</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <ChevronDown />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sort and Filter buttons */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
+                <ArrowUpDown className="text-primary w-[19px]" />
+                <p className="text-primary font-semibold text-sm">Sort</p>
+              </div>
+              <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-funnel text-primary w-[17px]"
+                >
+                  <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
+                </svg>
+                <p className="text-primary font-semibold text-sm">Filter</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -283,6 +278,25 @@ const Products: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+            &lt;
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center bg-[#003366] text-white rounded text-sm font-medium">
+            1
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+            2
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+            &gt;
+          </button>
+        </div>
+        <div className="text-center mt-2 text-sm text-gray-600">
+          1-12 of 18 Products
         </div>
       </div>
     </AdminLayout>

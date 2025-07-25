@@ -175,41 +175,52 @@ const Settings: React.FC = () => {
 
   return (
     <AdminLayout pageTitle="">
-      <section className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Settings</h1>
-        </div>
-        <div>
-          <button
-            className="flex gap-2 justify-center items-center w-[182px] h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold"
-            onClick={handleMenu}
-          >
-            <Plus />
-            Add new User
-          </button>
-        </div>
+      <section>
+        <section className="mb-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Left: Title + Search */}
+            <div className="w-full">
+              <h1 className="text-xl font-bold text-gray-900">Users</h1>
+            </div>
+
+            {/* Right: Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+              <button
+                className="flex gap-2 justify-center items-center px-4 py-3 min-w-[160px] bg-[#003366] rounded-[6px] text-white text-sm font-medium"
+                onClick={handleMenu}
+              >
+                <Plus />
+                Add new User
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {openMenu && <AddNewUser />}
+        <section className="mb-6">
+          {/* Scrollable Filters */}
+          <div className="overflow-x-auto scrollbar-hide whitespace-nowrap w-full">
+            <div className="flex gap-4 shrink-0 w-max">
+              {filters.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
+                    activeTab === value
+                      ? "bg-[#003366] text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+        {activeTab === "admin" && <AdminAccounts />}
+        {activeTab === "profile" && <Profile />}
+        {activeTab === "password" && <Password />}
       </section>
-      {openMenu && <AddNewUser />}
-      <section className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-6">
-          {filters.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setActiveTab(value)}
-              className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
-                activeTab === value
-                  ? "bg-[#003366] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </section>
-      {activeTab === "admin" && <AdminAccounts />}
-      {activeTab === "profile" && <Profile />}
-      {activeTab === "password" && <Password />}
     </AdminLayout>
   );
 };

@@ -126,29 +126,34 @@ const KycVerification: React.FC<KycCardProps> = () => {
 
   return (
     <AdminLayout pageTitle="">
-      <div className="relative p-6">
-        <section className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold text-gray-900">
-              KYC Verifications
-            </h1>
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for users..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] w-[290px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
+      <div className="relative">
+        <section className="mb-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Left: Title + Search */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8 w-full">
+              <h1 className="text-xl font-bold text-gray-900">
+                Kyc Verification
+              </h1>
+              <div className="relative w-full sm:w-[290px]">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search for KYC Verifications..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Right: Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+              <button className="flex gap-2 justify-center min-w-[170px] items-center px-4 py-3 bg-[#003366] rounded-[6px] text-white text-sm font-medium">
+                <Plus className="w-4 h-4" />
+                Send Notification
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="flex gap-2 justify-center items-center px-4 py-2 bg-[#003366] rounded-[6px] text-white text-sm font-medium">
-              <Plus className="w-4 h-4" />
-              Send Notification
-            </button>
-          </div>
         </section>
-        <section className="flex justify-between w-full gap-5 border-t border-l border-r p-6 mb-10">
+        <section className="flex flex-col lg:flex-row justify-between w-full gap-5 border-t border-l border-r p-6 mb-10">
           <KycCard title="Total Submitted" count={350} />
           <KycCard title="Pending" count={47} />
           <KycCard title="Approved" count={270} />
@@ -156,37 +161,46 @@ const KycVerification: React.FC<KycCardProps> = () => {
           <KycCard title="Flagged" count={8} />
         </section>
 
-        <section className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            {filterOptions.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
-                  activeFilter === filter
-                    ? "bg-[#003366] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <select className="px-4 py-2 bg-white border border-gray-300 rounded-[6px] text-sm text-gray-700 pr-8 appearance-none min-w-[120px]">
-                <option value="">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+        <section className="mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Scrollable Filters */}
+            <div className="overflow-x-auto scrollbar-hide whitespace-nowrap w-full">
+              <div className="flex gap-4 shrink-0 w-max">
+                {filterOptions.map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className={`px-4 py-2 text-sm font-medium rounded-[6px] transition-colors ${
+                      activeFilter === filter
+                        ? "bg-[#003366] text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
-              <ArrowUpDown className="w-4 h-4" />
-              Sort
-            </button>
+
+            {/* Select + Sort Buttons */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="relative">
+                <select className="px-4 py-2 bg-white border border-gray-300 rounded-[6px] text-sm text-gray-700 pr-8 appearance-none min-w-[120px]">
+                  <option value="">All</option>
+                  <option value="Active">Pending</option>
+                  <option value="Inactive">Approved</option>
+                  <option value="Inactive">Rejected</option>
+                  <option value="Inactive">Needs Resubmission</option>
+                </select>
+                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+              <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
+                <ArrowUpDown className="w-4 h-4" />
+                Sort
+              </button>
+            </div>
           </div>
         </section>
 
