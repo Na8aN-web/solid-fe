@@ -6,6 +6,7 @@ import edit from "../../../assets/edit.svg";
 import deLete from "../../../assets/delete.svg";
 import AdminLayout from "../components/AdminLayout";
 import { useNavigate } from "react-router-dom";
+import FilterSection from "../components/FilterSection";
 
 interface Product {
   id: string;
@@ -67,6 +68,13 @@ const Products: React.FC = () => {
       status: "Active",
     },
   ];
+
+  const filterOptions = [
+    { label: "Category", options: ["All Category", "Engine", "Brakes"] },
+    { label: "Store", options: ["Solid Spare Parts", "AutoHub"] },
+    { label: "Price", options: ["₦250K - ₦5M", "₦5M - ₦10M"] },
+    { label: "Status", options: ["All Status", "Available", "Out of Stock"] },
+  ];
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
@@ -124,90 +132,10 @@ const Products: React.FC = () => {
             </div>
           </div>
         </section>
-        <section className="mb-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Scrollable Filters */}
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide whitespace-nowrap">
-              {/* Each filter group */}
-              <div className="shrink-0">
-                <label className="text-sm font-semibold text-[#2D2828] pb-2">
-                  Category
-                </label>
-                <div className="relative w-[202px] h-[44px]">
-                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
-                    <option value="">All Category</option>
-                  </select>
-                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <ChevronDown />
-                  </div>
-                </div>
-              </div>
-              <div className="shrink-0">
-                <label className="text-sm font-semibold text-[#2D2828] pb-2">
-                  Store
-                </label>
-                <div className="relative w-[202px] h-[44px]">
-                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
-                    <option value="">Solid Spare Parts</option>
-                  </select>
-                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <ChevronDown />
-                  </div>
-                </div>
-              </div>
-              <div className="shrink-0">
-                <label className="text-sm font-semibold text-[#2D2828] pb-2">
-                  Price
-                </label>
-                <div className="relative w-[202px] h-[44px]">
-                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
-                    <option value="">₦250K - ₦5M</option>
-                  </select>
-                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <ChevronDown />
-                  </div>
-                </div>
-              </div>
-              <div className="shrink-0">
-                <label className="text-sm font-semibold text-[#2D2828] pb-2">
-                  Status
-                </label>
-                <div className="relative w-[202px] h-[44px]">
-                  <select className="w-full h-full bg-[#F8F8F8] px-2 pr-8 appearance-none rounded-[6px] text-sm font-normal text-customBrown">
-                    <option value="">All Status</option>
-                  </select>
-                  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <ChevronDown />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sort and Filter buttons */}
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
-                <ArrowUpDown className="text-primary w-[19px]" />
-                <p className="text-primary font-semibold text-sm">Sort</p>
-              </div>
-              <div className="w-[75px] h-[52px] bg-[#F8F8F8] flex items-center justify-center gap-1 rounded-[6px]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-funnel text-primary w-[17px]"
-                >
-                  <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
-                </svg>
-                <p className="text-primary font-semibold text-sm">Filter</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        
+        <div>
+          <FilterSection filters={filterOptions} />
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">

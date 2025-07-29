@@ -1,6 +1,7 @@
 import React from "react";
 import { Search, ChevronDown, ArrowUpDown } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
+import FilterSection from "../components/FilterSection";
 
 interface Manufacturer {
   id: string;
@@ -79,6 +80,13 @@ const Manufacturers: React.FC = () => {
     },
   ];
 
+  const filterOptions = [
+    {
+      label: "Status",
+      options: ["All Status", "Approved", "Rejected", "Pending"],
+    },
+  ];
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
@@ -109,47 +117,10 @@ const Manufacturers: React.FC = () => {
             </div>
           </div>
         </section>
-
-        <section className="flex flex-wrap items-center justify-between mb-6 w-full">
-          <div className="flex items-center gap-6">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2">Status</label>
-              <div className="relative w-[150px] h-[40px]">
-                <select className="w-full h-full bg-white px-3 pr-8 appearance-none rounded-[6px] text-sm border border-gray-300 text-gray-700">
-                  <option value="">All Status</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                  <option value="Pending">Pending</option>
-                </select>
-                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 pt-2">
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
-              <ArrowUpDown className="w-4 h-4" />
-              Sort
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-[6px] text-sm font-medium text-gray-700">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
-              </svg>
-              Filter
-            </button>
-          </div>
-        </section>
+        {/* filter section */}
+        <div>
+          <FilterSection filters={filterOptions} />
+        </div>
 
         <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
           <table className="w-full">
