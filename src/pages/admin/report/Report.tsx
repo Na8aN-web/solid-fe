@@ -1,4 +1,5 @@
 import React, { useState, FC } from "react";
+import { useMediaQuery } from "usehooks-ts";
 
 import {
   TrendingUp,
@@ -82,6 +83,9 @@ const ReportsAnalytics: FC = () => {
   const [retentionTab, setRetentionTab] = useState<string>("Jan - Dec 2024");
   const [transactionTab, setTransactionTab] =
     useState<string>("Jan - Dec 2024");
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+
+  const pieSize = isDesktop ? 300 : 200;
 
   // Sample data for charts
   const salesData: SalesDataPoint[] = [
@@ -533,7 +537,7 @@ const ReportsAnalytics: FC = () => {
                         percentage: 10,
                       },
                     ]}
-                    size={300}
+                    size={pieSize}
                   />
                 </div>
 

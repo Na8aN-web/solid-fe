@@ -21,7 +21,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
     <div className="flex h-screen font-roboto">
       {/* Sidebar */}
       <div
-        className={`${!sidebarCollapsed ? "w-[75px] md:w-64" : "w-64 md:w-[75px]"} shadow-sm transition-all duration-300`}
+        className={`${!sidebarCollapsed ? "w-[75px] md:w-64" : "w-full md:w-[75px]"} shadow-sm transition-all duration-300`}
       >
         <AdminSidebar />
       </div>
