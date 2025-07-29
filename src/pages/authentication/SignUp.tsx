@@ -6,18 +6,24 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { registerUser, prepareSignupData, clearError } from '../../store/slices/authSlice';
 
 interface SignupFormData {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    email: string;
+    // Personal/Individual fields
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    email?: string;
     companyName?: string;
-    password: string;
-    termsAccepted: boolean;
-    // Add business fields if needed for certain account types
+    
+    // Business-specific fields
+    businessOwnerName?: string;
+    businessPhoneNumber?: string;
+    businessEmail?: string;
     businessName?: string;
     businessAddress?: string;
     businessRCNumber?: string;
     businessWebsite?: string;
+    
+    password: string;
+    termsAccepted: boolean;
 }
 
 const SignupScreen: React.FC = () => {
@@ -27,6 +33,13 @@ const SignupScreen: React.FC = () => {
         phoneNumber: '',
         email: '',
         companyName: '',
+        businessOwnerName: '',
+        businessPhoneNumber: '',
+        businessEmail: '',
+        businessName: '',
+        businessAddress: '',
+        businessRCNumber: '',
+        businessWebsite: '',
         password: '',
         termsAccepted: false
     });
@@ -96,16 +109,231 @@ const SignupScreen: React.FC = () => {
     };
 
     const isFormValid = () => {
-        return (
-            formData.firstName &&
-            formData.lastName &&
-            formData.phoneNumber &&
-            formData.email &&
-            formData.password &&
-            formData.termsAccepted &&
-            Object.values(passwordRequirements).every(Boolean)
-        );
+        const passwordValid = Object.values(passwordRequirements).every(Boolean);
+        const termsAccepted = formData.termsAccepted;
+        const passwordFilled = formData.password;
+
+        if (selectedAccountType === 'sub-distributors') {
+            // Business form validation - include all required fields
+            return (
+                formData.businessOwnerName &&
+                formData.businessPhoneNumber &&
+                formData.businessEmail &&
+                formData.businessName &&
+                formData.businessAddress &&
+                passwordFilled &&
+                termsAccepted &&
+                passwordValid
+            );
+        } else {
+            // Individual/Mechanic form validation
+            return (
+                formData.firstName &&
+                formData.lastName &&
+                formData.phoneNumber &&
+                formData.email &&
+                passwordFilled &&
+                termsAccepted &&
+                passwordValid
+            );
+        }
     };
+
+    const renderBusinessForm = () => (
+        <>
+            <div>
+                <label htmlFor="businessOwnerName" className="block text-sm text-customBrown">
+                    Business Owner's Name
+                </label>
+                <input
+                    type="text"
+                    id="businessOwnerName"
+                    name="businessOwnerName"
+                    value={formData.businessOwnerName || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Name of business owner"
+                    required
+                />
+            </div>
+
+            <div>
+                <label htmlFor="businessPhoneNumber" className="block text-sm text-customBrown">
+                    Business Phone Number
+                </label>
+                <input
+                    type="tel"
+                    id="businessPhoneNumber"
+                    name="businessPhoneNumber"
+                    value={formData.businessPhoneNumber || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Business phone number"
+                    required
+                />
+            </div>
+
+            <div>
+                <label htmlFor="businessEmail" className="block text-sm text-customBrown">
+                    Business Email Address
+                </label>
+                <input
+                    type="email"
+                    id="businessEmail"
+                    name="businessEmail"
+                    value={formData.businessEmail || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter business email address"
+                    required
+                />
+            </div>
+
+            <div>
+                <label htmlFor="businessName" className="block text-sm text-customBrown">
+                    Business Name
+                </label>
+                <input
+                    type="text"
+                    id="businessName"
+                    name="businessName"
+                    value={formData.businessName || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Business Name"
+                />
+            </div>
+
+            <div>
+                <label htmlFor="businessAddress" className="block text-sm text-customBrown">
+                    Business Address
+                </label>
+                <input
+                    type="text"
+                    id="businessAddress"
+                    name="businessAddress"
+                    value={formData.businessAddress || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Business Address"
+                />
+            </div>
+
+            <div>
+                <label htmlFor="businessRCNumber" className="block text-sm text-customBrown">
+                    Business RC Number
+                </label>
+                <input
+                    type="text"
+                    id="businessRCNumber"
+                    name="businessRCNumber"
+                    value={formData.businessRCNumber || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Business RC Number"
+                />
+            </div>
+
+            <div>
+                <label htmlFor="businessWebsite" className="block text-sm text-customBrown">
+                    Business Website (Optional)
+                </label>
+                <input
+                    type="text"
+                    id="businessWebsite"
+                    name="businessWebsite"
+                    value={formData.businessWebsite || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Business Website"
+                />
+            </div>
+        </>
+    );
+
+    const renderIndividualForm = () => (
+        <>
+            <div className="flex flex-col md:flex-row md:space-x-4">
+                <div className="w-full md:w-1/2 mb-3 md:mb-0">
+                    <label htmlFor="firstName" className="block text-sm text-customBrown">
+                        First Name
+                    </label>
+                    <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        value={formData.firstName || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="First Name"
+                        required
+                    />
+                </div>
+                <div className="w-full md:w-1/2">
+                    <label htmlFor="lastName" className="block text-sm text-customBrown">
+                        Last Name
+                    </label>
+                    <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        value={formData.lastName || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Last Name"
+                        required
+                    />
+                </div>
+            </div>
+
+            <div>
+                <label htmlFor="phoneNumber" className="block text-sm text-customBrown">
+                    Phone Number
+                </label>
+                <input
+                    type="tel"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={formData.phoneNumber || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Mobile Number"
+                    required
+                />
+            </div>
+
+            <div>
+                <label htmlFor="email" className="block text-sm text-customBrown">
+                    Email Address
+                </label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter your email address"
+                    required
+                />
+            </div>
+
+            <div>
+                <label htmlFor="companyName" className="block text-sm text-customBrown">
+                    Company Name (Optional)
+                </label>
+                <input
+                    type="text"
+                    id="companyName"
+                    name="companyName"
+                    value={formData.companyName || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Company Name"
+                />
+            </div>
+        </>
+    );
 
     return (
         <>
@@ -129,148 +357,13 @@ const SignupScreen: React.FC = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="flex flex-col md:flex-row md:space-x-4">
-                            <div className="w-full md:w-1/2 mb-3 md:mb-0">
-                                <label htmlFor="firstName" className="block text-sm text-customBrown">
-                                    First Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="firstName"
-                                    name="firstName"
-                                    value={formData.firstName}
-                                    onChange={handleInputChange}
-                                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="First Name"
-                                    required
-                                />
-                            </div>
-                            <div className="w-full md:w-1/2">
-                                <label htmlFor="lastName" className="block text-sm text-customBrown">
-                                    Last Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="lastName"
-                                    name="lastName"
-                                    value={formData.lastName}
-                                    onChange={handleInputChange}
-                                    className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Last Name"
-                                    required
-                                />
-                            </div>
-                        </div>
+                        {/* Render different forms based on account type */}
+                        {selectedAccountType === 'sub-distributors' 
+                            ? renderBusinessForm() 
+                            : renderIndividualForm()
+                        }
 
-                        <div>
-                            <label htmlFor="phoneNumber" className="block text-sm text-customBrown">
-                                Phone Number
-                            </label>
-                            <input
-                                type="tel"
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                value={formData.phoneNumber}
-                                onChange={handleInputChange}
-                                className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Mobile Number"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="email" className="block text-sm text-customBrown">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter your email address"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="companyName" className="block text-sm text-customBrown">
-                                Company Name (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                id="companyName"
-                                name="companyName"
-                                value={formData.companyName}
-                                onChange={handleInputChange}
-                                className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Company Name"
-                            />
-                        </div>
-
-                        {/* Conditionally render business fields based on account type */}
-                        {selectedAccountType && selectedAccountType !== 'mechanics' && (
-                            <>
-                                <div>
-                                    <label htmlFor="businessName" className="block text-sm text-customBrown">
-                                        Business Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="businessName"
-                                        name="businessName"
-                                        value={formData.businessName || ''}
-                                        onChange={handleInputChange}
-                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Business Name"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="businessAddress" className="block text-sm text-customBrown">
-                                        Business Address
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="businessAddress"
-                                        name="businessAddress"
-                                        value={formData.businessAddress || ''}
-                                        onChange={handleInputChange}
-                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Business Address"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="businessRCNumber" className="block text-sm text-customBrown">
-                                        Business RC Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="businessRCNumber"
-                                        name="businessRCNumber"
-                                        value={formData.businessRCNumber || ''}
-                                        onChange={handleInputChange}
-                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Business RC Number"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="businessWebsite" className="block text-sm text-customBrown">
-                                        Business Website (Optional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="businessWebsite"
-                                        name="businessWebsite"
-                                        value={formData.businessWebsite || ''}
-                                        onChange={handleInputChange}
-                                        className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Business Website"
-                                    />
-                                </div>
-                            </>
-                        )}
-
+                        {/* Password field - common to all forms */}
                         <div>
                             <label htmlFor="password" className="block text-sm text-customBrown">
                                 Password
@@ -316,6 +409,7 @@ const SignupScreen: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Terms and conditions - common to all forms */}
                         <div>
                             <div className="flex items-center">
                                 <input

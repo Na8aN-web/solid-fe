@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from "../../../../store/hooks";
 
 interface NavProps {
@@ -9,12 +10,38 @@ interface NavProps {
 
 const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const userRole = user?.role;
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
+
+  const navigate = useNavigate();
 
   const getInitial = (name: string | undefined | null): string => {
     if (!name) {
       return "";
     }
     return name.charAt(0).toUpperCase();
+  };
+
+  const handleAdminNavigation = () => {
+    // Double-check authentication before navigating
+    if (!isAuthenticated || !user) {
+      // If not authenticated, redirect to login
+      navigate('/login');
+      return;
+    }
+
+    if (user.role !== 'SubDistributor') {
+      // If not a subdistributor, show error or redirect
+      console.warn('Unauthorized access to admin section');
+      return;
+    }
+
+    // Navigate to admin dashboard
+    navigate('/admin/dashboard');
+
+    // Close the profile dropdown
+    setIsProfileOpen(false);
   };
 
   useEffect(() => {
@@ -28,6 +55,21 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       document.body.classList.remove("overflow-hidden");
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
 
   return (
     <div className="relative bg-white">
@@ -119,24 +161,76 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   <p className="text-sm">My Cart</p>
                 </div>
               </Link>
-              <div className="flex gap-1 items-center">
-                <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-[200px] flex items-center justify-center">
-                  <p className="text-base font-semibold text-customBrown">
-                    {getInitial(isAuthenticated && user?.firstName)}
-                  </p>
+              <div className="relative" ref={profileRef}>
+                <div
+                  className="flex gap-1 items-center cursor-pointer"
+                  onClick={() => setIsProfileOpen((prev) => !prev)}
+                >
+                  <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-full flex items-center justify-center">
+                    <p className="text-base font-semibold text-customBrown">
+                      {getInitial(isAuthenticated && user?.firstName)}
+                    </p>
+                  </div>
+                  <img src="arrow-down.svg" alt="dropdown arrow" className="w-4" />
                 </div>
-                <img src="arrow-down.svg" alt="" className="w-4" />
+
+                {/* Dropdown menu */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-3 w-60 bg-white border rounded-lg shadow-lg z-20">
+                    <div className="px-4 py-4 ">
+                      <p className="text-[16px] text-center font-semibold">Hi, {user?.firstName}</p>
+                    </div>
+                    <ul className="flex flex-col gap-6 p-6 text-sm">
+                      <li className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary">
+                        <img src="/profile.svg" className="w-4 h-4" />
+                        Profile
+                      </li>
+                      <li className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary">
+                        <img src="/orders.svg" className="w-4 h-4" />
+                        Orders
+                      </li>
+                      <li className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary">
+                        <img src="/favourite.svg" className="w-4 h-4" />
+                        Saved Items
+                      </li>
+                      <li className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary">
+                        <img src="/track-orders.svg" className="w-4 h-4" />
+                        Track Order
+                      </li>
+                      <li className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary">
+                        <img src="/chat.svg" className="w-4 h-4" />
+                        Messages
+                      </li>
+                      {userRole === "SubDistributor" && (
+                        <li
+                          className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                          onClick={handleAdminNavigation}
+                        >
+                          <img src="/sellermode.png" alt="seller mode" />
+                         
+                        </li>
+                      )}
+                      <li className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-red-600 border-t pt-2 mt-2">
+                        <img src="/logout-icon.png" className="w-4 h-4" />
+                        Log out
+                      </li>
+                    </ul>
+                   
+
+
+                  </div>
+                )}
               </div>
+
             </div>
           </div>
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen
-              ? "translate-y-0 opacity-100 visible"
-              : "-translate-y-10 opacity-0 invisible"
-          }`}
+          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
+            ? "translate-y-0 opacity-100 visible"
+            : "-translate-y-10 opacity-0 invisible"
+            }`}
         >
           <div className="py-5 px-5">
             <div className="flex gap-3 items-center">
