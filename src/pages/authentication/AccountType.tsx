@@ -29,16 +29,6 @@ const AccountTypeSelection: React.FC = () => {
       label: 'Sub-distributors/Bulk buyers',
       description: 'Designed for businesses or sub-distributors reselling in various cities. Get wholesale pricing, and connect with distributors.'
     },
-    {
-      type: AccountType.Importers,
-      label: 'Importers',
-      description: 'Designed for importers ordering abroad. Connect with manufacturers and get manufacturers pricing.'
-    },
-    {
-      type: AccountType.Manufacturers,
-      label: 'Manufacturers',
-      description: 'Register as a manufacturer to sell directly to importers and distributors. Showcase your product, and grow your network.'
-    }
   ];
 
   const handleAccountTypeSelect = (type: AccountType) => {
