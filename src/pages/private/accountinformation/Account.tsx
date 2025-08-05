@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import Navbar from "./components/Navbar";
+import Navbar from "../../private/home/components/Navbar";
 import BrandNav from "../home/components/BrandNav";
 import Recents from "./components/Recents";
-import AccountInformation from "./components/AccountInformation";
-import { Outlet } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 
 const Account = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { section } = useParams<{ section?: string }>();
+
+
   return (
     <div>
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
@@ -20,8 +22,8 @@ const Account = () => {
               Home
             </a>
             <img src="/arrow-right.svg" alt="arrow facing right" />
-            <a href="#" className="text-gray-900 font-semibold">
-              Profile
+            <a href="#" className="text-gray-900 font-semibold first-letter:uppercase">
+              {section}
             </a>
           </div>
         </div>

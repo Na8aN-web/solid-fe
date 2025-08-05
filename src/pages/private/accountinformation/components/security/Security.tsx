@@ -1,7 +1,27 @@
 import React, { useState } from "react";
+import { useAppSelector } from "../../../../../store/hooks";
+
+interface PasswordForm {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
 const Security = () => {
   const [showPage, setShowPage] = useState<boolean>(false);
+  const { user } = useAppSelector((state) => state.auth);
+  
+  // Password form state
+  const [passwordForm, setPasswordForm] = useState<PasswordForm>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+   // Loading and error states
+   const [isLoading, setIsLoading] = useState<boolean>(false);
+   const [errors, setErrors] = useState<Partial<PasswordForm>>({});
+   const [successMessage, setSuccessMessage] = useState<string>("");
 
   const handleRateProduct = () => {
     setShowPage(true);
