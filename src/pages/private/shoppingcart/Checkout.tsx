@@ -109,10 +109,13 @@ const Checkout: React.FC = () => {
         <h2 className="text-xl text-customBrown font-semibold lg:hidden">
           Checkout
         </h2>
-        <div className="hidden lg:flex items-center gap-2 pb-6 pt-2">
+        <Link
+          to="/cart"
+          className="hidden lg:flex items-center gap-2 pb-6 pt-2"
+        >
           <img src="/arrowleft.svg" alt="" />
           <p className="text-sm text-primary font-semibold">Back to cart</p>
-        </div>
+        </Link>
         <section className="lg:flex lg:gap-5 lg:pb-12">
           {/* Payment details and review Desktop*/}
           <section className="bg-white w-full lg:w-2/3 lg:px-10 self-start lg:pb-8 lg:rounded-lg lg:border lg:border-[#D9D9D9]">
