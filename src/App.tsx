@@ -48,6 +48,7 @@ import SentNotifications from "./pages/admin/notifications/SentNotifications";
 
 import { useAppSelector } from "./store/hooks";
 import { Navigate } from "react-router-dom";
+import Order from "./pages/private/accountinformation/components/orders/Orders";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -206,6 +207,7 @@ function App() {
         <Route path="/rate-product" element={<RateReviewProduct />} /> */}
         <Route path="/account-information" element={<Account />}>
           <Route index element={<AccountInformation />} />
+          <Route path=":section" element={<AccountInformation />} />
           <Route path="rate-product" element={<RateReviewProduct />} />
         </Route>
 
