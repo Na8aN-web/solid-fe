@@ -163,7 +163,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
               </div>
               <Link to="/cart">
                 <div className="flex gap-1 items-center">
-                  <img src="cart.svg" alt="cart" className="w-6" />
+                  <img src="/cart.svg" alt="cart" className="w-6" />
                   <p className="text-sm">My Cart</p>
                 </div>
               </Link>
@@ -178,7 +178,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                     </p>
                   </div>
                   <img
-                    src="arrow-down.svg"
+                    src="/arrow-down.svg"
                     alt="dropdown arrow"
                     className="w-4"
                   />
