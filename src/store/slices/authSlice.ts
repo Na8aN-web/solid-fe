@@ -23,11 +23,22 @@ interface AuthState {
   };
 }
 
-// Initial state
+// Helper function to get user from localStorage
+const getUserFromStorage = () => {
+  try {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    console.error('Error parsing user from localStorage:', error);
+    return null;
+  }
+};
+
+// Initial state with proper user loading
 const initialState: AuthState = {
-  user: null,
+  user: getUserFromStorage(),
   token: localStorage.getItem("authToken"),
-  isAuthenticated: !!localStorage.getItem("authToken"),
+  isAuthenticated: !!(localStorage.getItem("authToken") && getUserFromStorage()),
   isLoading: false,
   error: null,
   selectedAccountType: sessionStorage.getItem("selectedAccountType"),
@@ -49,9 +60,10 @@ export const registerUser = createAsyncThunk(
         signupData
       );
 
-      // If registration is successful, store the token
+      // If registration is successful, store the token and user
       if (response.data.user && response.data.user.token) {
         localStorage.setItem("authToken", response.data.user.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
       }
 
       return response.data;
@@ -163,28 +175,37 @@ export const prepareSignupData = (
   const role =
     accountTypeToUserRole[accountType as keyof typeof accountTypeToUserRole];
 
-  // Create the base signup data
-  const signupData: SignupData = {
-    email: userData.email,
-    phoneNumber: userData.phoneNumber,
-    password: userData.password,
-    role: role,
-    firstName: userData.firstName,
-    lastName: userData.lastName,
-  };
+  let signupData: SignupData;
 
-  // Add optional fields if they exist
-  if (userData.companyName) signupData.companyName = userData.companyName;
+  if (accountType === 'sub-distributors') {
+    // For business accounts, map business fields to the expected API fields
+    signupData = {
+      email: userData.businessEmail || '', // Use business email
+      phoneNumber: userData.businessPhoneNumber || '', // Use business phone
+      password: userData.password,
+      role: role,
+      firstName: userData.businessOwnerName || '', // Map business owner name to firstName
+      lastName: '', // You might want to split businessOwnerName or leave empty
+      businessName: userData.businessName || '',
+      businessAddress: userData.businessAddress || '',
+      businessRCNumber: userData.businessRCNumber || '',
+      businessWebsite: userData.businessWebsite || '',
+    };
+  } else {
+    // For individual accounts (mechanics), use personal fields
+    signupData = {
+      email: userData.email || '',
+      phoneNumber: userData.phoneNumber || '',
+      password: userData.password,
+      role: role,
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+    };
 
-  // Add business-specific fields based on role
-  if (role !== UserRole.Individual) {
-    if (userData.businessName) signupData.businessName = userData.businessName;
-    if (userData.businessAddress)
-      signupData.businessAddress = userData.businessAddress;
-    if (userData.businessRCNumber)
-      signupData.businessRCNumber = userData.businessRCNumber;
-    if (userData.businessWebsite)
-      signupData.businessWebsite = userData.businessWebsite;
+    // Add optional company name for individuals
+    if (userData.companyName) {
+      signupData.companyName = userData.companyName;
+    }
   }
 
   return signupData;
@@ -197,6 +218,10 @@ const authSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<any>) => {
       state.user = action.payload;
+      // Also persist to localStorage
+      if (action.payload) {
+        localStorage.setItem('user', JSON.stringify(action.payload));
+      }
     },
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
@@ -210,9 +235,10 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      state.selectedAccountType = null;
       localStorage.removeItem("authToken");
-      sessionStorage.removeItem("selectedAccountType");
       localStorage.removeItem('user');
+      sessionStorage.removeItem("selectedAccountType");
     },
     clearError: (state) => {
       state.error = null;
@@ -224,6 +250,22 @@ const authSlice = createSlice({
         onetimePassword: null,
         resetSuccess: false,
       };
+    },
+    // Add a new action to rehydrate user state (useful for app initialization)
+    rehydrateAuth: (state) => {
+      const token = localStorage.getItem("authToken");
+      const user = getUserFromStorage();
+      const selectedAccountType = sessionStorage.getItem("selectedAccountType");
+      
+      if (token && user) {
+        state.token = token;
+        state.user = user;
+        state.isAuthenticated = true;
+      }
+      
+      if (selectedAccountType) {
+        state.selectedAccountType = selectedAccountType;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -237,6 +279,9 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.user?.token || null;
+      // Clear selectedAccountType after successful registration
+      state.selectedAccountType = null;
+      sessionStorage.removeItem("selectedAccountType");
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.isLoading = false;
@@ -253,7 +298,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.isLoading = false;
@@ -306,13 +350,14 @@ const authSlice = createSlice({
 });
 
 // Export actions
-export const { 
-  setUser, 
-  setAuthenticated, 
-  setAccountType, 
-  logout, 
+export const {
+  setUser,
+  setAuthenticated,
+  setAccountType,
+  logout,
   clearError,
-  resetPasswordState 
+  resetPasswordState,
+  rehydrateAuth
 } = authSlice.actions;
 
 // Export reducer

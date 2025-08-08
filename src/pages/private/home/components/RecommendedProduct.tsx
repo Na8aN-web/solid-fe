@@ -14,6 +14,7 @@ const RecommendedProduct = () => {
       <div className="flex flex-wrap justify-between gap-4 py-4">
         {dummyProducts.map((_, index) => (
           <ProductCard
+          productId={`dummy-product-${index}`} 
             key={index}
             image="/shock-absorber.svg"
             title="Shock Absorber"
@@ -21,7 +22,7 @@ const RecommendedProduct = () => {
             price="N60,000.00"
             oldPrice="N80,000.00"
             discount="-18%"
-            reviews="88"
+            numReviews={88}
           />
         ))}
       </div>

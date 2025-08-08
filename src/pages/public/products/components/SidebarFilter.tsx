@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PriceRange from "./PriceRange";
+import { RootState, AppDispatch } from '../../../../store'
+import { fetchBrands } from '../../../../store/slices/brandSlice';
+import { fetchCategories } from '../../../../store/slices/categoriesSlice';
+import { fetchVehicleTypes } from '../../../../store/slices/vehicleSlice';
+import { useDispatch, useSelector } from "react-redux";
 
 interface FilterSectionProps {
   title: string;
@@ -31,6 +36,7 @@ interface SidebarFilterProps {
 }
 
 
+
 // Filter Section Component for reusable collapsible sections
 const FilterSection: React.FC<FilterSectionProps> = ({ title, isExpanded, toggleSection, children }) => (
   <div className="p-4 font-roboto">
@@ -58,12 +64,25 @@ const CheckboxItem = ({ name, count }: { name: string; count: number }) => (
   </div>
 );
 
-const SidebarFilter: React.FC<SidebarFilterProps> = ({ 
-  filters, 
-  handlePriceChange, 
-  expandedSections, 
-  toggleSection 
+const SidebarFilter: React.FC<SidebarFilterProps> = ({
+  filters,
+  handlePriceChange,
+  expandedSections,
+  toggleSection
 }) => {
+
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { brands, loading, error } = useSelector((state: RootState) => state.brands);
+  const { vehicleTypes, totalVehicleTypes, loading: vehicleLoading, error: vehicleError } = useSelector((state: RootState) => state.vehicle);
+  const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
+
+  useEffect(() => {
+    dispatch(fetchBrands());
+    dispatch(fetchCategories());
+    dispatch(fetchVehicleTypes());
+  }, [dispatch]);
+
   return (
     <div className="w-full">
       {/* Yellow search box */}
@@ -140,21 +159,26 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
           isExpanded={expandedSections.category} 
           toggleSection={() => toggleSection('category')}
         >
-          {[
-            { name: 'Repair Parts', count: 11 },
-            { name: 'Body Parts', count: 11 },
-            { name: 'Performance Parts', count: 11 },
-            { name: 'Electronics', count: 2 },
-            { name: 'Lighting', count: 5 }
-          ].map((category) => (
-            <CheckboxItem key={category.name} name={category.name} count={category.count} />
-          ))}
+          {categoriesLoading ? (
+            <div className="py-4 text-center text-gray-500">Loading categories...</div>
+          ) : categoriesError ? (
+            <div className="py-4 text-center text-red-500">Error loading categories</div>
+          ) : (
+            categories?.map((category) => (
+              <CheckboxItem 
+                key={category._id} 
+                name={category.name} 
+                count={0} // You might want to fetch actual counts later
+              />
+            ))
+          )}
+         
         </FilterSection>
 
         {/* Department filter */}
-        <FilterSection 
-          title="Department" 
-          isExpanded={expandedSections.department} 
+        <FilterSection
+          title="Department"
+          isExpanded={expandedSections.department}
           toggleSection={() => toggleSection('department')}
         >
           {[
@@ -168,35 +192,45 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
         </FilterSection>
 
         {/* Vehicle Type filter */}
-        <FilterSection 
-          title="Vehicle Type" 
-          isExpanded={expandedSections.vehicleType} 
+        <FilterSection
+          title="Vehicle Type"
+          isExpanded={expandedSections.vehicleType}
           toggleSection={() => toggleSection('vehicleType')}
         >
-          {[
-            { name: 'Passenger Cars', count: 11 },
-            { name: 'SUVs & Crossovers', count: 11 },
-            { name: 'Buses', count: 11 },
-            { name: 'Tricycles', count: 2 }
-          ].map((type) => (
-            <CheckboxItem key={type.name} name={type.name} count={type.count} />
-          ))}
+          {vehicleLoading ? (
+            <div className="py-4 text-center text-gray-500">Loading brands...</div>
+          ) : vehicleError ? (
+            <div className="py-4 text-center text-red-500">Error loading brands</div>
+          ) : (
+            vehicleTypes?.map((vehicle) => (
+              <CheckboxItem
+                key={vehicle._id}
+                name={vehicle.name}
+                count={0}
+              />
+            ))
+          )}
         </FilterSection>
 
         {/* Brand filter */}
-        <FilterSection 
-          title="Brand" 
-          isExpanded={expandedSections.brand} 
+        <FilterSection
+          title="Brand"
+          isExpanded={expandedSections.brand}
           toggleSection={() => toggleSection('brand')}
         >
-          {[
-            { name: 'Chevrolet', count: 11 },
-            { name: 'Toyota', count: 11 },
-            { name: 'Lexus', count: 11 },
-            { name: 'Honda', count: 2 }
-          ].map((brand) => (
-            <CheckboxItem key={brand.name} name={brand.name} count={brand.count} />
-          ))}
+          {loading ? (
+            <div className="py-4 text-center text-gray-500">Loading brands...</div>
+          ) : error ? (
+            <div className="py-4 text-center text-red-500">Error loading brands</div>
+          ) : (
+            brands?.map((brand) => (
+              <CheckboxItem
+                key={brand._id}
+                name={brand.name}
+                count={0}
+              />
+            ))
+          )}
         </FilterSection>
       </div>
     </div>

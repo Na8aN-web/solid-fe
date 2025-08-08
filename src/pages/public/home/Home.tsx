@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../../store';
+import { fetchCategories } from '../../../store/slices/categoriesSlice';
 import Navbar from './components/LandingNavbar';
 import HeroSection from './components/Hero';
 import HowItWorks from './components/HowItWorks';
@@ -14,6 +17,13 @@ import VehicleBlogPage from './components/Blog';
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -31,11 +41,36 @@ const Header = () => {
           Find Your Vehicle Parts
         </h2>
         <div className="flex flex-wrap flex-col md:flex-row justify-between gap-4">
-          {["Category", "Maker", "Model", "Year", "Engine"].map((item, index) => (
-            <div key={item} className="relative">
+          {/* Category Select - now using API data */}
+          <div className="relative w-full md:w-[250px]">
+            <select
+              className="appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-white"
+            >
+              <option>Select Category</option>
+              {categoriesLoading ? (
+                <option disabled>Loading categories...</option>
+              ) : categoriesError ? (
+                <option disabled>Error loading categories</option>
+              ) : (
+                categories?.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))
+              )}
+            </select>
+            <img
+              src="/arrow-down.svg"
+              alt="arrow-down"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-[14px] h-[14px]"
+            />
+          </div>
+
+          {/* Other selects remain unchanged */}
+          {["Maker", "Model", "Year", "Engine"].map((item) => (
+            <div key={item} className="relative w-full md:w-[220px]">
               <select
-                className={`appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-${index === 0 ? "full md:[250px] bg-white" : "full md:[220px]"}"
-                  }`}
+                className="appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-full"
               >
                 <option>Select {item}</option>
               </select>
@@ -46,7 +81,8 @@ const Header = () => {
               />
             </div>
           ))}
-          <button className="px-[50px] py-[20px] bg-primary text-white rounded-[12px]">
+
+          <button className="px-[50px] py-[20px] bg-primary text-white rounded-[12px] w-full md:w-auto">
             Search
           </button>
         </div>
@@ -121,7 +157,6 @@ const Header = () => {
       <InteractiveFAQPage />
       <VehicleBlogPage />
     </div>
-
   );
 };
 

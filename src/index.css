@@ -13,3 +13,11 @@
     @apply font-roboto;
   }
 }
+@layer components {
+  .editor [contenteditable="true"]:focus {
+    @apply outline-none ring-0 border-transparent;
+  }
+  .message-title {
+    @apply bg-red-500 text-white p-2 rounded;
+  }
+}

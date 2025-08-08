@@ -1,12 +1,23 @@
 // src/store/index.ts
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
-import productReducer from './slices/productSlice'
+import productReducer from './slices/productSlice';
+import brandReducer from './slices/brandSlice';
+import categoriesReducer from './slices/categoriesSlice'
+import vehicleReducer from './slices/vehicleSlice'
+import wishlistReducer from './slices/wishlistSlice'
+import cartReducer from './slices/cartSlice'
+
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     products: productReducer,
+    brands: brandReducer, 
+    categories: categoriesReducer,
+    vehicle: vehicleReducer,
+    wishlist: wishlistReducer,
+    cart: cartReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
