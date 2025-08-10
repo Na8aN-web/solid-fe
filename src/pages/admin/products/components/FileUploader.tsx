@@ -14,6 +14,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload, onRemove }) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const selectedFile = files[0];
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        alert("File size must not exceed 5MB");
+        return;
+      }
       const imageUrl = URL.createObjectURL(selectedFile);
       setPreviewUrl(imageUrl);
       onUpload?.();
@@ -40,7 +44,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload, onRemove }) => {
         ref={uploadRef}
         onChange={handleFileChange}
         style={{ display: "none" }}
-        accept="image/*"
+        accept=".pdf, image/*"
       />
 
       {previewUrl ? (
@@ -75,7 +79,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload, onRemove }) => {
         >
           <ImagePlus className="pb-1" />
           <p className="text-sm font-medium text-customBrown">
-            <span className="underline text-sm font-medium text-primary">Click to upload</span> or drag and drop
+            <span className="underline text-sm font-medium text-primary">
+              Click to upload
+            </span>{" "}
+            or drag and drop
           </p>
         </button>
       )}

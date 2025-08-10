@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
-import { logout } from "../../../../store/slices/authSlice";
+import { logout } from "../store/slices/authSlice";
+import {useAppSelector, useAppDispatch } from "../store/hooks";
 
 interface NavProps {
   isMenuOpen: boolean;

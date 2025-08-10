@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
 import { setUser } from "../../../../store/slices/authSlice";
+import ionwarning from "../../../../assets/ion_warning.svg";
+import annoucement from "../../../../assets/announcement.svg";
+import { Link } from "react-router-dom";
 
 type UserProfile = {
   firstName: string;
@@ -98,8 +101,8 @@ const Profile = () => {
   // Get user initials for avatar
   const getInitials = () => {
     const firstName = userProfile.firstName || user?.firstName || "";
-    const lastName = userProfile.lastName || user?.lastName || "";
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    // const lastName = userProfile.lastName || user?.lastName || "";
+    return `${firstName.charAt(0)}`.toUpperCase();
   };
 
   // Get display name
@@ -162,11 +165,34 @@ const Profile = () => {
       <h2 className="text-xl font-semibold text-[#2D2828] mb-4">
         Profile Details
       </h2>
-      <div className="bg-primary text-white p-8 rounded-t-lg flex items-center space-x-4">
-        <div className="bg-[#E3E6EA] text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-semibold">
-          {getInitials()}
+      <div className="w-full border border-[#FFC300] bg-[#F6EED7] rounded-[8px] flex items-center p-4 gap-3 mb-6">
+        <img src={annoucement} alt="" />
+        <span className="text-xs text-customBrown">
+          To complete your profile and begin selling, please upload and verify
+          your business verification documents
+        </span>
+      </div>
+      <div className="bg-primary text-white p-8 rounded-t-lg flex items-center space-x-4 justify-between">
+        <div className="flex gap-3 items-center">
+          <div className="bg-[#E3E6EA] text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-semibold">
+            {getInitials()}
+          </div>
+          <div>
+            <span className="text-lg">{getDisplayName()}</span>
+            <div className="flex gap-1">
+              <img src={ionwarning} alt="" />
+              <p>Unverified</p>
+            </div>
+          </div>
         </div>
-        <span className="text-lg">{getDisplayName()}</span>
+        <div>
+          <Link
+            to="/kyc-form"
+            className="bg-[#FFC300] p-2 rounded-[4px] text-customBrown text-base font-semibold"
+          >
+            Verify Documents
+          </Link>
+        </div>
       </div>
       <div className="bg-white p-6 rounded-b-lg border border-gray-200 space-y-6">
         {renderEditableField("firstName", "First Name")}

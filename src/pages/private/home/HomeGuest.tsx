@@ -1,18 +1,18 @@
-import {useState} from "react";
-import Navbar from "./components/Navbar";
-import BrandNav from "./components/BrandNav";
+// import {useState} from "react";
+// import Navbar from "./components/Navbar";
+// import BrandNav from "./components/BrandNav";
 import PopularVehicleTypes from "./components/PopularVehicleTypes";
 import NewArrivals from "./components/NewArrivals";
 import FeaturedProducts from "./components/FeaturedProducts";
 import DealsOfTheDay from "./components/DealsOfTheDay";
 
 const HomeGuest = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <div className="pb-16">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-      <BrandNav isMenuOpen={isMenuOpen} />
+      {/* <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <BrandNav isMenuOpen={isMenuOpen} /> */}
       <main>
         <div className="px-5 sm:px-8 lg:px-10">
           {/* Hero content */}

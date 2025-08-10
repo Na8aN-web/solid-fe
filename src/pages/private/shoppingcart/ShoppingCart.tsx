@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import Navbar from "../../private/home/components/Navbar";
 import { Plus, Minus, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ShoppingCart = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [quantityCount, setQuantityCount] = useState<number>(1);
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="bg-[#F5F5F5]">
         <div className="px-5 py-6 bg-white lg:bg-[#F5F5F5] w-full">
           <h2 className="text-xl font-semibold">Shopping Cart</h2>

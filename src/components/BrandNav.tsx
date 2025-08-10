@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "../../../../store";
-import { fetchBrands } from "../../../../store/slices/brandSlice";
-import { fetchCategories } from "../../../../store/slices/categoriesSlice"; // Import the categories slice
+import { RootState, AppDispatch } from "../store";
+import { fetchBrands } from "../store/slices/brandSlice";
+import { fetchCategories } from "../store/slices/categoriesSlice"; // Import the categories slice
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
