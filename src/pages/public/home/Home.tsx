@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../../store";
 import { fetchCategories } from "../../../store/slices/categoriesSlice";
-import Navbar from "../../../components/LandingNavbar";
 import HeroSection from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
 import PopularCategories from "./components/PopularCategories";
@@ -37,7 +36,6 @@ const Header = () => {
     <div>
       <header className="w-full">
         {/* Top Navigation Bar */}
-        <Navbar />
         <HeroSection />
       </header>
       <div className="bg-[#FFF6D9] px-[40px] md:px-[80px] py-[40px] font-roboto">
