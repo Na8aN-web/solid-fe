@@ -1,24 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../store';
-import { fetchCategories } from '../../../store/slices/categoriesSlice';
-import Navbar from './components/LandingNavbar';
-import HeroSection from './components/Hero';
-import HowItWorks from './components/HowItWorks';
-import PopularCategories from './components/PopularCategories';
-import WhyChooseSolidParts from './components/WhyChooseSolid';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import Testimonial from './components/Testimonial';
-import ManufacturersGrid from './components/Manufacturers';
-import DealsOfTheDay from './components/DealsOfTheDay';
-import Features from './components/Features';
-import InteractiveFAQPage from './components/Faq';
-import VehicleBlogPage from './components/Blog';
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../../store";
+import { fetchCategories } from "../../../store/slices/categoriesSlice";
+import HeroSection from "./components/Hero";
+import HowItWorks from "./components/HowItWorks";
+import PopularCategories from "./components/PopularCategories";
+import WhyChooseSolidParts from "./components/WhyChooseSolid";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import Testimonial from "./components/Testimonial";
+import ManufacturersGrid from "./components/Manufacturers";
+import DealsOfTheDay from "./components/DealsOfTheDay";
+import Features from "./components/Features";
+import InteractiveFAQPage from "./components/Faq";
+import VehicleBlogPage from "./components/Blog";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
+  const {
+    categories,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useSelector((state: RootState) => state.categories);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -33,7 +36,6 @@ const Header = () => {
     <div>
       <header className="w-full">
         {/* Top Navigation Bar */}
-        <Navbar />
         <HeroSection />
       </header>
       <div className="bg-[#FFF6D9] px-[40px] md:px-[80px] py-[40px] font-roboto">
@@ -43,9 +45,7 @@ const Header = () => {
         <div className="flex flex-wrap flex-col md:flex-row justify-between gap-4">
           {/* Category Select - now using API data */}
           <div className="relative w-full md:w-[250px]">
-            <select
-              className="appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-white"
-            >
+            <select className="appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-white">
               <option>Select Category</option>
               {categoriesLoading ? (
                 <option disabled>Loading categories...</option>
@@ -69,9 +69,7 @@ const Header = () => {
           {/* Other selects remain unchanged */}
           {["Maker", "Model", "Year", "Engine"].map((item) => (
             <div key={item} className="relative w-full md:w-[220px]">
-              <select
-                className="appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-full"
-              >
+              <select className="appearance-none pl-[50px] py-[20px] border rounded-[12px] pr-[60px] outline-none focus:ring-0 focus:border-gray-300 w-full">
                 <option>Select {item}</option>
               </select>
               <img
@@ -92,11 +90,7 @@ const Header = () => {
       <section className="py-[20px] px-[20px] md:px-[80px]">
         <div className="flex justify-between items-center pb-2 sm:pb-6">
           <div className="flex gap-0 items-center">
-            <img
-              src="/double-right.png"
-              alt="right"
-              className="w-9 md:w-16"
-            />
+            <img src="/double-right.png" alt="right" className="w-9 md:w-16" />
             <h2 className="text-xl sm:text-2xl text-customGray1 font-semibold">
               Popular Vehicles Types
             </h2>
@@ -125,9 +119,7 @@ const Header = () => {
           </div>
           <div className="sm:flex flex-col items-center hidden">
             <img src="/trucks.svg" alt="trucks" />
-            <p className="text-sm text-customBrown font-normal pt-4">
-              Trucks
-            </p>
+            <p className="text-sm text-customBrown font-normal pt-4">Trucks</p>
           </div>
           <div className="sm:flex flex-col items-center hidden">
             <img src="/equip-heavy.svg" alt="heavy-equipment" />
@@ -143,9 +135,7 @@ const Header = () => {
           </div>
           <div className="lg:flex flex-col items-center hidden">
             <img src="/buses.svg" alt="buses" />
-            <p className="text-sm text-customBrown font-normal pt-4">
-              Buses
-            </p>
+            <p className="text-sm text-customBrown font-normal pt-4">Buses</p>
           </div>
         </div>
       </section>

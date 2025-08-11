@@ -27,6 +27,12 @@ import RateReviewProduct from "./pages/private/accountinformation/components/rat
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
 import Store from "./pages/public/visitstore/Store";
 import HelpCenter from "./pages/private/help/Help";
+import KycForm from "./pages/private/accountinformation/kyc/KycForm";
+import PrivateLayout from "./components/PrivateLayout";
+import PrivateLayoutBrand from "./components/PrivateLayoutBrand";
+import PrivateLayoutMobileBrand from "./components/PrivateLayoutMobileBrand";
+import Layout from "./components/Layout";
+import BusinessInfo from "./pages/private/accountinformation/kyc/BusinessInfo";
 
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
@@ -50,6 +56,7 @@ import { useAppSelector } from "./store/hooks";
 import { Navigate } from "react-router-dom";
 import Order from "./pages/private/accountinformation/components/orders/Orders";
 
+
 interface AdminRouteProps {
   children: React.ReactNode;
   adminOnly?: boolean; // New prop to restrict to full admins only
@@ -60,29 +67,45 @@ interface UnauthorizedAccessProps {
 }
 
 // Component to show when subdistributor tries to access admin-only pages
-const UnauthorizedAccess: React.FC<UnauthorizedAccessProps> = ({ userRole }) => (
+const UnauthorizedAccess: React.FC<UnauthorizedAccessProps> = ({
+  userRole,
+}) => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
       <div className="mb-6">
         <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-          <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          <svg
+            className="w-8 h-8 text-red-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
           </svg>
         </div>
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Restricted</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        Access Restricted
+      </h2>
       <p className="text-gray-600 mb-6">
-        This page is only available to full administrators. As a {userRole === 'SubDistributor' ? 'Subdistributor' : userRole}, you don't have permission to access this resource.
+        This page is only available to full administrators. As a{" "}
+        {userRole === "SubDistributor" ? "Subdistributor" : userRole}, you don't
+        have permission to access this resource.
       </p>
       <div className="space-y-3">
-        <button 
+        <button
           onClick={() => window.history.back()}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Go Back
         </button>
-        <button 
-          onClick={() => window.location.href = '/admin/dashboard'}
+        <button
+          onClick={() => (window.location.href = "/admin/dashboard")}
           className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
         >
           Go to Dashboard
@@ -100,7 +123,10 @@ function App() {
   // Hide footer for all admin routes
   const shouldShowFooter = !location.pathname.startsWith("/admin");
 
-  const AdminRoute: React.FC<AdminRouteProps> = ({ children, adminOnly = false }) => {
+  const AdminRoute: React.FC<AdminRouteProps> = ({
+    children,
+    adminOnly = false,
+  }) => {
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
     // Check if user is authenticated
@@ -109,9 +135,10 @@ function App() {
     }
 
     // Check if user has admin access (either SubDistributor or full Admin)
-    const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
-    const isSubDistributor = user.role === 'SubDistributor' || user.role === 'sub-distributors';
-    
+    const isAdmin = user.role === "Admin" || user.role === "SuperAdmin";
+    const isSubDistributor =
+      user.role === "SubDistributor" || user.role === "sub-distributors";
+
     // If user doesn't have any admin access, redirect to home
     if (!isAdmin && !isSubDistributor) {
       return <Navigate to="/home" replace />;
@@ -139,46 +166,69 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
-        {/* Private Routes: This component is only accessible to authenticated users */}
-        <Route
-          path="/home"
-          element={
-            <HomeGuest />
-          }
-        />
+        {/* layout for landing page without siging in */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/contact" element={<ContactUs />} />
+        </Route>
 
-        {/* <Route path="/home" element={<HomeGuest />} /> */}
-        <Route path="/products" element={<Product />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/store" element={<Store />} />
+        {/* Private layout with brands nav */}
+        <Route element={<PrivateLayoutBrand />}>
+          {/* Private Routes: This component is only accessible to authenticated users */}
+          <Route path="/home" element={<HomeGuest />} />
+          <Route path="/products" element={<Product />} />
+          <Route path="/store" element={<Store />} />
+          <Route
+            path="/product/:id"
+            element={
+              <PrivateRoute>
+                <ProductDetails />
+              </PrivateRoute>
+            }
+          />
+        </Route>
 
-        {/* Authentication */}
-        <Route path="/account-type" element={<AccountTypeSelection />} />
-        <Route path="/signup" element={<SignupScreen />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/recover-password" element={<RecoverPassword />} />
-        <Route path="/create-new-password" element={<CreateNewPassword />} />
-        <Route path="/enter-code" element={<EnterCode />} />
+        {/* Private layout without brands nav */}
+        <Route element={<PrivateLayout />}>
+          {/* Authentication */}
+          <Route path="/account-type" element={<AccountTypeSelection />} />
+          <Route path="/signup" element={<SignupScreen />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/recover-password" element={<RecoverPassword />} />
+          <Route path="/create-new-password" element={<CreateNewPassword />} />
+          <Route path="/enter-code" element={<EnterCode />} />
+          <Route path="/kyc-form" element={<KycForm />} />
+          <Route path="/business-information" element={<BusinessInfo />} />
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute>
+                <Checkout />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <PrivateRoute>
+                <ShoppingCart />
+              </PrivateRoute>
+            }
+          />
+        </Route>
 
-        <Route
-          path="/product/:id"
-          element={
-            <PrivateRoute>
-              <ProductDetails />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/cart"
-          element={
-            <PrivateRoute>
-              <ShoppingCart />
-            </PrivateRoute>
-          }
-        />
+        {/* Private layout with brands nav */}
+        <Route element={<PrivateLayoutMobileBrand />}>
+          <Route path="/account-information" element={<Account />}>
+            <Route index element={<AccountInformation />} />
+            <Route path=":section" element={<AccountInformation />} />
+            <Route path="rate-product" element={<RateReviewProduct />} />
+          </Route>
+          <Route path="/help" element={<HelpCenter />} />
+        </Route>
+
         <Route
           path="/add-address"
           element={
@@ -195,29 +245,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/checkout"
-          element={
-            <PrivateRoute>
-              <Checkout />
-            </PrivateRoute>
-          }
-        />
-        {/* <Route path="/account-information" element={<Account />} />
-        <Route path="/rate-product" element={<RateReviewProduct />} /> */}
-        <Route path="/account-information" element={<Account />}>
-          <Route index element={<AccountInformation />} />
-          <Route path=":section" element={<AccountInformation />} />
-          <Route path="rate-product" element={<RateReviewProduct />} />
-        </Route>
-
-        <Route path="/help" element={<HelpCenter />} />
-        <Route
-          path="/help"
-          element={
-            <HelpCenter />
-          }
-        />
 
         {/* Admin Routes - Accessible to both SubDistributors and full Admins */}
         <Route
@@ -228,131 +255,134 @@ function App() {
             </AdminRoute>
           }
         />
-        <Route 
-          path="/admin/products" 
+        <Route
+          path="/admin/products"
           element={
             <AdminRoute>
               <Products />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/product-category" 
+        <Route
+          path="/admin/product-category"
           element={
             <AdminRoute>
               <ProductCategory />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/add-product" 
+        <Route
+          path="/admin/add-product"
           element={
             <AdminRoute>
               <AddProduct />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/orders" 
+        <Route
+          path="/admin/orders"
           element={
             <AdminRoute>
               <Orders />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/users" 
+        <Route
+          path="/admin/users"
           element={
             <AdminRoute>
               <Users />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/report" 
+        <Route
+          path="/admin/report"
           element={
             <AdminRoute>
               <ReportsAnalytics />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/inventory" 
+        <Route
+          path="/admin/inventory"
           element={
             <AdminRoute>
               <Inventory />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/transactions" 
+        <Route
+          path="/admin/transactions"
           element={
             <AdminRoute>
               <Transactions />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/settings" 
+        <Route
+          path="/admin/settings"
           element={
             <AdminRoute>
               <Settings />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/inbox" 
+        <Route
+          path="/admin/inbox"
           element={
             <AdminRoute>
               <Inbox />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/send-notifications" 
+        <Route
+          path="/admin/send-notifications"
           element={
             <AdminRoute>
               <SendNotifications />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/sent-notifications" 
+        <Route
+          path="/admin/sent-notifications"
           element={
             <AdminRoute>
               <SentNotifications />
             </AdminRoute>
-          } 
+          }
         />
 
         {/* Admin-Only Routes - Restricted from SubDistributors */}
-        <Route 
-          path="/admin/manufacturers" 
+        <Route
+          path="/admin/manufacturers"
           element={
             <AdminRoute adminOnly={true}>
               <Manufacturers />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/partners" 
+        <Route
+          path="/admin/partners"
           element={
             <AdminRoute adminOnly={true}>
               <Partners />
             </AdminRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/kyc-verification" 
+        <Route
+          path="/admin/kyc-verification"
           element={
             <AdminRoute adminOnly={true}>
               <KycVerification title={""} count={0} />
             </AdminRoute>
-          } 
+          }
         />
 
         {/* Redirect /admin to dashboard */}
-        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route
+          path="/admin"
+          element={<Navigate to="/admin/dashboard" replace />}
+        />
       </Routes>
       {shouldShowFooter && <Footer />}
     </>

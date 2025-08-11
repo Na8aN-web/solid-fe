@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../private/home/components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { requestPasswordResetOTP, clearError } from "../../store/slices/authSlice";
 import { RootState, AppDispatch } from "../../store";
 
 const RecoverPassword = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -34,7 +32,6 @@ const RecoverPassword = () => {
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">

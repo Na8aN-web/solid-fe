@@ -1,20 +1,13 @@
 import React, { useState } from "react";
-import Navbar from "../../private/home/components/Navbar";
-import BrandNav from "../home/components/BrandNav";
 import Recents from "./components/Recents";
 import { Outlet, useParams } from "react-router-dom";
 
 const Account = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { section } = useParams<{ section?: string }>();
 
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-      <div className="hidden md:block">
-        <BrandNav isMenuOpen={isMenuOpen} />
-      </div>
       <nav className="bg-[#F5F5F5] p-4 border-b hidden md:block">
         <div className="mx-auto flex items-center">
           <div className="flex space-x-6 ml-[50px]">
