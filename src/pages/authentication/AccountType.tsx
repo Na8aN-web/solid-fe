@@ -8,8 +8,6 @@ import { setAccountType } from '../../store/slices/authSlice';
 enum AccountType {
   MechanicsIndividuals = 'mechanics',
   SubDistributors = 'sub-distributors',
-  Importers = 'importers',
-  Manufacturers = 'manufacturers'
 }
 
 const AccountTypeSelection: React.FC = () => {
@@ -22,12 +20,14 @@ const AccountTypeSelection: React.FC = () => {
     {
       type: AccountType.MechanicsIndividuals,
       label: 'Mechanics/Individuals',
-      description: 'For mechanics and vehicle owners looking for reliable spare parts at great prices'
+      description: 'For mechanics and vehicle owners looking for reliable spare parts at great prices',
+      role: 'Individual'
     },
     {
       type: AccountType.SubDistributors,
       label: 'Sub-distributors/Bulk buyers',
-      description: 'Designed for businesses or sub-distributors reselling in various cities. Get wholesale pricing, and connect with distributors.'
+      description: 'Designed for businesses or sub-distributors reselling in various cities. Get wholesale pricing, and connect with distributors.',
+      role: 'Wholesaler'
     },
   ];
 
@@ -78,9 +78,14 @@ const AccountTypeSelection: React.FC = () => {
                   >
                     {selectedType === accountType.type && <span className="text-xs">✓</span>}
                   </div>
-                  <h3 className={`font-semibold ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#5E5E5E]'}`}>
-                    {accountType.label}
-                  </h3>
+                  <div className="flex-1">
+                    <h3 className={`font-semibold ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#5E5E5E]'}`}>
+                      {accountType.label}
+                    </h3>
+                    <span className={`text-xs ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#827E7E]'}`}>
+                      Role: {accountType.role}
+                    </span>
+                  </div>
                 </div>
                 <p className={`text-sm mt-2 pl-8 ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#5E5E5E]'}`}>
                   {accountType.description}

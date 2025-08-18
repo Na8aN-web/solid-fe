@@ -1,0 +1,171 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
+import Navbar from './components/Navbar';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { verifyEmailOTP, clearEmailVerificationError } from '../../store/slices/authSlice';
+
+const EmailVerification: React.FC = () => {
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [timer, setTimer] = useState(60);
+
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+
+    const {
+        user,
+        emailVerification: { isLoading, error, isRequired },
+        isAuthenticated
+    } = useAppSelector(state => state.auth);
+
+    // Timer effect
+    useEffect(() => {
+        if (timer > 0) {
+            const interval = setInterval(() => {
+                setTimer(prev => prev - 1);
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [timer]);
+
+    // Clear errors when component mounts
+    useEffect(() => {
+        dispatch(clearEmailVerificationError());
+    }, [dispatch]);
+
+    // Redirect if email verification is not required
+    useEffect(() => {
+        if (!isRequired && !user) {
+            navigate('/account-type');
+        } else if (isAuthenticated && user?.verified) {
+            navigate('/home');
+        }
+    }, [isRequired, user, isAuthenticated, navigate]);
+
+    const handleInputChange = (index: number, value: string) => {
+        if (value.length > 1) return; // Prevent multiple characters
+
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+
+        // Auto-focus next input
+        if (value && index < 5) {
+            inputRefs.current[index + 1]?.focus();
+        }
+    };
+
+    const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text');
+        const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+
+        const newOtp = [...otp];
+        for (let i = 0; i < digits.length; i++) {
+            newOtp[i] = digits[i];
+        }
+        setOtp(newOtp);
+
+        // Focus the next empty input or the last input
+        const nextIndex = Math.min(digits.length, 5);
+        inputRefs.current[nextIndex]?.focus();
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const otpString = otp.join('');
+
+        if (otpString.length !== 6) {
+            return;
+        }
+
+        dispatch(verifyEmailOTP(otpString));
+    };
+
+    const isOtpComplete = otp.every(digit => digit !== '');
+
+    return (
+        <>
+            <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+            <div className="min-h-screen bg-white flex items-center justify-center p-0 md:p-4 font-roboto">
+                <div className="w-full max-w-[500px] bg-white rounded-lg md:border border-[#D9D9D9] shadow-md p-[20px] md:p-[60px]">
+                    <div className="flex items-center mb-6">
+                        <button
+                            className="mr-4 text-gray-600 hover:text-gray-800"
+                            onClick={() => navigate(-1)}
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                        
+                    </div>
+
+                    <div className="text-center mb-8">
+                        <div className="flex flex-col items-center justify-center mx-auto mb-4">
+                            <img src='/verify-email.png' alt='verify email' />
+                            <h2 className="text-[24px] text-[#2D2828] font-bold">Verify Your Email Address</h2>
+                        </div>
+                        <p className="text-[#827E7E] text-[14px]">
+                            We've sent a verification code to
+                        </p>
+                        <p className="font-semibold text-[#2D2828]">
+                            {user?.email || 'your email'}
+                        </p>
+                        <p className="text-[#827E7E] text-[12px] mt-2">
+                            Please enter the 6-digit code to verify your email address
+                        </p>
+                    </div>
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="flex justify-center gap-3 mb-6">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    ref={(el) => {
+                                        inputRefs.current[index] = el;
+                                    }}
+                                    type="text"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleInputChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                    onPaste={index === 0 ? handlePaste : undefined}
+                                    className="w-12 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                                    inputMode="numeric"
+                                />
+                            ))}
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={!isOtpComplete || isLoading}
+                            className={`
+                w-full py-3 rounded-lg text-white font-bold transition-all duration-300 mb-4
+                ${isOtpComplete && !isLoading
+                                    ? 'bg-[#003366] hover:bg-blue-700 active:bg-blue-800'
+                                    : 'bg-gray-400 cursor-not-allowed'}
+              `}
+                        >
+                            {isLoading ? 'Verifying...' : 'Verify Email'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </>
+    );
+};
+
+export default EmailVerification;

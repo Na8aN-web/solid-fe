@@ -23,6 +23,8 @@ const Header = () => {
     error: categoriesError,
   } = useSelector((state: RootState) => state.categories);
 
+  console.log(categories)
+
   // Fetch categories on component mount
   useEffect(() => {
     dispatch(fetchCategories());
