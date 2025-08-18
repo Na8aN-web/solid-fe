@@ -3,6 +3,8 @@ import axiosInstance from "../../services/api/axios";
 import {
   SignupData,
   AuthResponse,
+  LoginResponse,
+  EmailVerificationResponse,
   UserRole,
   accountTypeToUserRole,
 } from "../../services/auth/types";
@@ -15,6 +17,12 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   selectedAccountType: string | null;
+  emailVerification: {
+    isRequired: boolean;
+    isLoading: boolean;
+    isVerified: boolean;
+    error: string | null;
+  };
   passwordReset: {
     otpRequested: boolean;
     otpVerified: boolean;
@@ -42,6 +50,12 @@ const initialState: AuthState = {
   isLoading: false,
   error: null,
   selectedAccountType: sessionStorage.getItem("selectedAccountType"),
+  emailVerification: {
+    isRequired: false,
+    isLoading: false,
+    isVerified: false,
+    error: null,
+  },
   passwordReset: {
     otpRequested: false,
     otpVerified: false,
@@ -60,10 +74,10 @@ export const registerUser = createAsyncThunk(
         signupData
       );
 
-      // If registration is successful, store the token and user
-      if (response.data.user && response.data.user.token) {
-        localStorage.setItem("authToken", response.data.user.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Note: Don't store token immediately since email verification is required
+      // Store user data temporarily for email verification flow
+      if (response.data.user) {
+        localStorage.setItem("unverifiedUser", JSON.stringify(response.data.user));
       }
 
       return response.data;
@@ -80,7 +94,39 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Login thunk
+// Email verification thunk
+export const verifyEmailOTP = createAsyncThunk(
+  "auth/verifyEmailOTP",
+  async (otp: string, { rejectWithValue, getState }) => {
+    try {
+      const response = await axiosInstance.post<EmailVerificationResponse>(
+        "/auth/verify-email-otp",
+        { otp }
+      );
+
+      // After successful email verification, the user should be fully registered
+      // You might want to get a token from this response or make another call to login
+      if (response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.removeItem("unverifiedUser");
+        
+        // If the response includes a token, store it
+        // Otherwise, you might need to automatically log the user in
+      }
+
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Email verification failed"
+        );
+      }
+      return rejectWithValue("Network error. Please try again.");
+    }
+  }
+);
+
+// Login thunk - updated to handle new response structure
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (
@@ -88,11 +134,10 @@ export const loginUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await axiosInstance.post<{
-        message: string;
-        user: any;
-        token: string;
-      }>("/auth/login", credentials);
+      const response = await axiosInstance.post<LoginResponse>(
+        "/auth/login", 
+        credentials
+      );
 
       if (response.data.token) {
         localStorage.setItem("authToken", response.data.token);
@@ -172,27 +217,27 @@ export const prepareSignupData = (
   userData: any
 ): SignupData => {
   // Map the account type to the appropriate role
-  const role =
-    accountTypeToUserRole[accountType as keyof typeof accountTypeToUserRole];
+  const role = accountTypeToUserRole[accountType as keyof typeof accountTypeToUserRole];
 
   let signupData: SignupData;
 
   if (accountType === 'sub-distributors') {
-    // For business accounts, map business fields to the expected API fields
+    // For wholesaler accounts
     signupData = {
-      email: userData.businessEmail || '', // Use business email
-      phoneNumber: userData.businessPhoneNumber || '', // Use business phone
+      email: userData.businessEmail || '',
+      phoneNumber: userData.businessPhoneNumber || '',
       password: userData.password,
       role: role,
-      firstName: userData.businessOwnerName || '', // Map business owner name to firstName
-      lastName: '', // You might want to split businessOwnerName or leave empty
+      // For wholesaler, the backend expects 'name' instead of firstName/lastName
+      name: userData.businessOwnerName || '',
+      // Business-specific fields
       businessName: userData.businessName || '',
       businessAddress: userData.businessAddress || '',
       businessRCNumber: userData.businessRCNumber || '',
       businessWebsite: userData.businessWebsite || '',
     };
   } else {
-    // For individual accounts (mechanics), use personal fields
+    // For individual accounts (mechanics)
     signupData = {
       email: userData.email || '',
       phoneNumber: userData.phoneNumber || '',
@@ -200,12 +245,8 @@ export const prepareSignupData = (
       role: role,
       firstName: userData.firstName || '',
       lastName: userData.lastName || '',
+      companyName: userData.companyName || '',
     };
-
-    // Add optional company name for individuals
-    if (userData.companyName) {
-      signupData.companyName = userData.companyName;
-    }
   }
 
   return signupData;
@@ -236,12 +277,24 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       state.selectedAccountType = null;
+      // Reset email verification state
+      state.emailVerification = {
+        isRequired: false,
+        isLoading: false,
+        isVerified: false,
+        error: null,
+      };
       localStorage.removeItem("authToken");
       localStorage.removeItem('user');
+      localStorage.removeItem("unverifiedUser");
       sessionStorage.removeItem("selectedAccountType");
     },
     clearError: (state) => {
       state.error = null;
+      state.emailVerification.error = null;
+    },
+    clearEmailVerificationError: (state) => {
+      state.emailVerification.error = null;
     },
     resetPasswordState: (state) => {
       state.passwordReset = {
@@ -251,13 +304,21 @@ const authSlice = createSlice({
         resetSuccess: false,
       };
     },
+    resetEmailVerificationState: (state) => {
+      state.emailVerification = {
+        isRequired: false,
+        isLoading: false,
+        isVerified: false,
+        error: null,
+      };
+    },
     // Add a new action to rehydrate user state (useful for app initialization)
     rehydrateAuth: (state) => {
       const token = localStorage.getItem("authToken");
       const user = getUserFromStorage();
       const selectedAccountType = sessionStorage.getItem("selectedAccountType");
       
-      if (token && user) {
+      if (token && user && user.verified) {
         state.token = token;
         state.user = user;
         state.isAuthenticated = true;
@@ -265,6 +326,12 @@ const authSlice = createSlice({
       
       if (selectedAccountType) {
         state.selectedAccountType = selectedAccountType;
+      }
+
+      // Check if there's an unverified user
+      const unverifiedUser = localStorage.getItem("unverifiedUser");
+      if (unverifiedUser && !user) {
+        state.emailVerification.isRequired = true;
       }
     },
   },
@@ -276,9 +343,9 @@ const authSlice = createSlice({
     });
     builder.addCase(registerUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.isAuthenticated = true;
+      // Don't set as authenticated yet - email verification required
       state.user = action.payload.user;
-      state.token = action.payload.user?.token || null;
+      state.emailVerification.isRequired = true;
       // Clear selectedAccountType after successful registration
       state.selectedAccountType = null;
       sessionStorage.removeItem("selectedAccountType");
@@ -288,6 +355,25 @@ const authSlice = createSlice({
       state.error = action.payload as string;
     });
 
+    // Email verification cases
+    builder.addCase(verifyEmailOTP.pending, (state) => {
+      state.emailVerification.isLoading = true;
+      state.emailVerification.error = null;
+    });
+    builder.addCase(verifyEmailOTP.fulfilled, (state, action) => {
+      state.emailVerification.isLoading = false;
+      state.emailVerification.isRequired = false;
+      state.emailVerification.isVerified = true;
+      state.user = action.payload.user;
+      // Note: You might need to set isAuthenticated to true here 
+      // depending on whether the verification response includes a token
+      // or if you need to make another call to get the token
+    });
+    builder.addCase(verifyEmailOTP.rejected, (state, action) => {
+      state.emailVerification.isLoading = false;
+      state.emailVerification.error = action.payload as string;
+    });
+
     // Login cases
     builder.addCase(loginUser.pending, (state) => {
       state.isLoading = true;
@@ -295,9 +381,18 @@ const authSlice = createSlice({
     });
     builder.addCase(loginUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.isAuthenticated = true;
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+      
+      // Check if user is verified
+      if (action.payload.user.verified) {
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+      } else {
+        // User exists but not verified, require email verification
+        state.user = action.payload.user;
+        state.emailVerification.isRequired = true;
+        localStorage.setItem("unverifiedUser", JSON.stringify(action.payload.user));
+      }
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.isLoading = false;
@@ -356,7 +451,9 @@ export const {
   setAccountType,
   logout,
   clearError,
+  clearEmailVerificationError,
   resetPasswordState,
+  resetEmailVerificationState,
   rehydrateAuth
 } = authSlice.actions;
 

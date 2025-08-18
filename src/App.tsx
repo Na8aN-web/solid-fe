@@ -7,6 +7,7 @@ import SignupScreen from "./pages/authentication/SignUp";
 import Login from "./pages/authentication/Login";
 import RecoverPassword from "./pages/authentication/RecoverPassword";
 import CreateNewPassword from "./pages/authentication/CreateNewPassword";
+import EmailVerification from "./pages/authentication/EmailVerification";
 import EnterCode from "./pages/authentication/EnterCode";
 import Product from "./pages/public/products/Product";
 import About from "./pages/public/about/About";
@@ -105,7 +106,11 @@ const UnauthorizedAccess: React.FC<UnauthorizedAccessProps> = ({
           Go Back
         </button>
         <button
+<<<<<<< Updated upstream
           onClick={() => (window.location.href = "/admin/dashboard")}
+=======
+          onClick={() => window.location.href = '/admin/dashboard'}
+>>>>>>> Stashed changes
           className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
         >
           Go to Dashboard
@@ -114,6 +119,22 @@ const UnauthorizedAccess: React.FC<UnauthorizedAccessProps> = ({
     </div>
   </div>
 );
+
+const EmailVerificationRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { emailVerification, user } = useAppSelector(state => state.auth);
+
+  // If email verification is not required, redirect
+  if (!emailVerification.isRequired && !user) {
+    return <Navigate to="/account-type" replace />;
+  }
+
+  // If user is already verified, redirect to home
+  if (user?.verified) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
   const dispatch = useAppDispatch();
@@ -135,9 +156,14 @@ function App() {
     }
 
     // Check if user has admin access (either SubDistributor or full Admin)
+<<<<<<< Updated upstream
     const isAdmin = user.role === "Admin" || user.role === "SuperAdmin";
     const isSubDistributor =
       user.role === "SubDistributor" || user.role === "sub-distributors";
+=======
+    const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
+    const isSubDistributor = user.role === 'SubDistributor' || user.role === 'sub-distributors';
+>>>>>>> Stashed changes
 
     // If user doesn't have any admin access, redirect to home
     if (!isAdmin && !isSubDistributor) {
@@ -190,6 +216,7 @@ function App() {
           />
         </Route>
 
+<<<<<<< Updated upstream
         {/* Private layout without brands nav */}
         <Route element={<PrivateLayout />}>
           {/* Authentication */}
@@ -228,6 +255,23 @@ function App() {
           </Route>
           <Route path="/help" element={<HelpCenter />} />
         </Route>
+=======
+        {/* Authentication */}
+        <Route path="/account-type" element={<AccountTypeSelection />} />
+        <Route path="/signup" element={<SignupScreen />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/recover-password" element={<RecoverPassword />} />
+        <Route path="/create-new-password" element={<CreateNewPassword />} />
+        <Route path="/enter-code" element={<EnterCode />} />
+        <Route
+          path="/verify-email"
+          element={
+            <EmailVerificationRoute>
+              <EmailVerification />
+            </EmailVerificationRoute>
+          }
+        />
+>>>>>>> Stashed changes
 
         <Route
           path="/add-address"

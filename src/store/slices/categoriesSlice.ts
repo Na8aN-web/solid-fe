@@ -17,9 +17,11 @@ export const fetchCategories = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get<CategoriesResponse>("/categories");
+            // Ensure we always return an array
+            const categories = Array.isArray(response.data) ? response.data : [];
             return {
-                categories: response.data,
-                total: response.data.length
+                categories,
+                total: categories.length
             };
         } catch (error: any) {
             if (error.response) {
@@ -113,12 +115,16 @@ const categoriesSlice = createSlice({
         });
         builder.addCase(fetchCategories.fulfilled, (state, action) => {
             state.loading = false;
-            state.categories = action.payload.categories || [];
-            state.totalCategories = action.payload.total || (action.payload.categories ? action.payload.categories.length : 0);
+            // Ensure categories is always an array
+            state.categories = Array.isArray(action.payload.categories) ? action.payload.categories : [];
+            state.totalCategories = action.payload.total || state.categories.length;
         });
         builder.addCase(fetchCategories.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
+            // Keep categories as empty array on error
+            state.categories = [];
+            state.totalCategories = 0;
         });
 
         // Fetch category by ID
@@ -142,9 +148,13 @@ const categoriesSlice = createSlice({
         });
         builder.addCase(createCategory.fulfilled, (state, action) => {
             state.loading = false;
-            if (state.categories) {
+            // Ensure categories is an array before pushing
+            if (Array.isArray(state.categories)) {
                 state.categories.push(action.payload);
                 state.totalCategories += 1;
+            } else {
+                state.categories = [action.payload];
+                state.totalCategories = 1;
             }
         });
         builder.addCase(createCategory.rejected, (state, action) => {
@@ -159,7 +169,7 @@ const categoriesSlice = createSlice({
         });
         builder.addCase(updateCategory.fulfilled, (state, action) => {
             state.loading = false;
-            if (state.categories) {
+            if (Array.isArray(state.categories)) {
                 const index = state.categories.findIndex(cat => cat._id === action.payload._id);
                 if (index !== -1) {
                     state.categories[index] = action.payload;
@@ -181,9 +191,9 @@ const categoriesSlice = createSlice({
         });
         builder.addCase(deleteCategory.fulfilled, (state, action) => {
             state.loading = false;
-            if (state.categories) {
+            if (Array.isArray(state.categories)) {
                 state.categories = state.categories.filter(cat => cat._id !== action.payload);
-                state.totalCategories -= 1;
+                state.totalCategories = Math.max(0, state.totalCategories - 1);
             }
             if (state.category && state.category._id === action.payload) {
                 state.category = null;

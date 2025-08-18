@@ -48,7 +48,13 @@ const SignupScreen: React.FC = () => {
     const navigate = useNavigate();
     
     const dispatch = useAppDispatch();
-    const { selectedAccountType, isLoading, error, isAuthenticated } = useAppSelector(state => state.auth);
+    const { 
+        selectedAccountType, 
+        isLoading, 
+        error, 
+        isAuthenticated,
+        emailVerification 
+    } = useAppSelector(state => state.auth);
     
     const [passwordRequirements, setPasswordRequirements] = useState({
         minLength: false,
@@ -67,12 +73,16 @@ const SignupScreen: React.FC = () => {
         }
     }, [dispatch, navigate, selectedAccountType]);
 
-    // Redirect on successful authentication
+    // Handle navigation after successful registration
     useEffect(() => {
-        if (isAuthenticated) {
+        if (emailVerification.isRequired) {
+            // Navigate to email verification page
+            navigate('/verify-email');
+        } else if (isAuthenticated) {
+            // If somehow authenticated without verification, go to home
             navigate('/home');
         }
-    }, [isAuthenticated, navigate]);
+    }, [emailVerification.isRequired, isAuthenticated, navigate]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -108,41 +118,39 @@ const SignupScreen: React.FC = () => {
     };
 
     const isFormValid = () => {
-        const passwordValid = Object.values(passwordRequirements).every(Boolean);
-        const termsAccepted = formData.termsAccepted;
-        const passwordFilled = formData.password;
+    const passwordValid = Object.values(passwordRequirements).every(Boolean);
+    const termsAccepted = formData.termsAccepted;
+    const passwordFilled = formData.password;
 
-        if (selectedAccountType === 'sub-distributors') {
-            // Business form validation - include all required fields
-            return (
-                formData.businessOwnerName &&
-                formData.businessPhoneNumber &&
-                formData.businessEmail &&
-                formData.businessName &&
-                formData.businessAddress &&
-                passwordFilled &&
-                termsAccepted &&
-                passwordValid
-            );
-        } else {
-            // Individual/Mechanic form validation
-            return (
-                formData.firstName &&
-                formData.lastName &&
-                formData.phoneNumber &&
-                formData.email &&
-                passwordFilled &&
-                termsAccepted &&
-                passwordValid
-            );
-        }
-    };
+    if (selectedAccountType === 'sub-distributors') {
+        // Business form validation - required fields only
+        return (
+            formData.businessOwnerName &&
+            formData.businessPhoneNumber &&
+            formData.businessEmail &&
+            passwordFilled &&
+            termsAccepted &&
+            passwordValid
+        );
+    } else {
+        // Individual/Mechanic form validation
+        return (
+            formData.firstName &&
+            formData.lastName &&
+            formData.phoneNumber &&
+            formData.email &&
+            passwordFilled &&
+            termsAccepted &&
+            passwordValid
+        );
+    }
+};
 
     const renderBusinessForm = () => (
         <>
             <div>
                 <label htmlFor="businessOwnerName" className="block text-sm text-customBrown">
-                    Business Owner's Name
+                    Business Owner's Name <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="text"
@@ -158,7 +166,7 @@ const SignupScreen: React.FC = () => {
 
             <div>
                 <label htmlFor="businessPhoneNumber" className="block text-sm text-customBrown">
-                    Business Phone Number
+                    Business Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="tel"
@@ -174,7 +182,7 @@ const SignupScreen: React.FC = () => {
 
             <div>
                 <label htmlFor="businessEmail" className="block text-sm text-customBrown">
-                    Business Email Address
+                    Business Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="email"
@@ -188,7 +196,8 @@ const SignupScreen: React.FC = () => {
                 />
             </div>
 
-            <div>
+            {/* Optional business fields */}
+            {/* <div>
                 <label htmlFor="businessName" className="block text-sm text-customBrown">
                     Business Name
                 </label>
@@ -199,7 +208,7 @@ const SignupScreen: React.FC = () => {
                     value={formData.businessName || ''}
                     onChange={handleInputChange}
                     className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Business Name"
+                    placeholder="Your business name"
                 />
             </div>
 
@@ -214,7 +223,7 @@ const SignupScreen: React.FC = () => {
                     value={formData.businessAddress || ''}
                     onChange={handleInputChange}
                     className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Business Address"
+                    placeholder="Business address"
                 />
             </div>
 
@@ -229,24 +238,24 @@ const SignupScreen: React.FC = () => {
                     value={formData.businessRCNumber || ''}
                     onChange={handleInputChange}
                     className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Business RC Number"
+                    placeholder="RC number"
                 />
             </div>
 
             <div>
                 <label htmlFor="businessWebsite" className="block text-sm text-customBrown">
-                    Business Website (Optional)
+                    Business Website
                 </label>
                 <input
-                    type="text"
+                    type="url"
                     id="businessWebsite"
                     name="businessWebsite"
                     value={formData.businessWebsite || ''}
                     onChange={handleInputChange}
                     className="mt-1 text-[16px] block w-full border border-gray-300 rounded-md shadow-sm py-4 px-4 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Business Website"
+                    placeholder="https://yourwebsite.com"
                 />
-            </div>
+            </div> */}
         </>
     );
 
@@ -255,7 +264,7 @@ const SignupScreen: React.FC = () => {
             <div className="flex flex-col md:flex-row md:space-x-4">
                 <div className="w-full md:w-1/2 mb-3 md:mb-0">
                     <label htmlFor="firstName" className="block text-sm text-customBrown">
-                        First Name
+                        First Name <span className="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -270,7 +279,7 @@ const SignupScreen: React.FC = () => {
                 </div>
                 <div className="w-full md:w-1/2">
                     <label htmlFor="lastName" className="block text-sm text-customBrown">
-                        Last Name
+                        Last Name <span className="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -287,7 +296,7 @@ const SignupScreen: React.FC = () => {
 
             <div>
                 <label htmlFor="phoneNumber" className="block text-sm text-customBrown">
-                    Phone Number
+                    Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="tel"
@@ -303,7 +312,7 @@ const SignupScreen: React.FC = () => {
 
             <div>
                 <label htmlFor="email" className="block text-sm text-customBrown">
-                    Email Address
+                    Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="email"
@@ -346,6 +355,11 @@ const SignupScreen: React.FC = () => {
                             <ChevronLeft size={24} />
                         </button>
                         <h2 className="text-[24px] text-[#2D2828] font-bold">Sign up</h2>
+                        {selectedAccountType && (
+                            <span className="ml-auto text-sm text-gray-500 capitalize">
+                                {selectedAccountType === 'sub-distributors' ? 'Wholesaler' : 'Individual'}
+                            </span>
+                        )}
                     </div>
 
                     {error && (
@@ -364,7 +378,7 @@ const SignupScreen: React.FC = () => {
                         {/* Password field - common to all forms */}
                         <div>
                             <label htmlFor="password" className="block text-sm text-customBrown">
-                                Password
+                                Password <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
                                 <input
