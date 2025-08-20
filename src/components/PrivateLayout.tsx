@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "./Navbar";
+import Navbar from "./LandingNavbar";
 import Footer from "./Footer";
 
 type LayoutProps = {
   children: React.ReactNode;
 };
 
+
 const PrivateLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar />
       <main>
         <Outlet />
       </main>
