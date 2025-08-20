@@ -63,6 +63,7 @@ export interface LoginResponse {
 }
 
 export interface EmailVerificationResponse {
+  token: string | null;
   message: string;
   user: {
     _id: string;

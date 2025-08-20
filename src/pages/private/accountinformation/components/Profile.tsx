@@ -4,6 +4,7 @@ import { setUser } from "../../../../store/slices/authSlice";
 import ionwarning from "../../../../assets/ion_warning.svg";
 import annoucement from "../../../../assets/announcement.svg";
 import { Link } from "react-router-dom";
+import { fetchUserKYC } from "../../../../store/slices/kycSlice";
 
 type UserProfile = {
   firstName: string;
@@ -15,6 +16,7 @@ type UserProfile = {
 const Profile = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { userKYC, loading } = useAppSelector((state) => state.kyc);
 
   // State to track which field is being edited
   const [editingField, setEditingField] = useState<keyof UserProfile | null>(
@@ -40,6 +42,64 @@ const Profile = () => {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    dispatch(fetchUserKYC());
+  }, [dispatch]);
+
+  const isKYCCompleted = userKYC?.status === 'Approved';
+
+  // Check if KYC is pending or in review
+  const isKYCPending = userKYC?.status === 'Pending' || userKYC?.status === 'Flagged';
+
+  // Check if KYC was rejected
+  const isKYCRejected = userKYC?.status === 'Rejected';
+
+  // Check if user has no KYC submission at all
+  const hasNoKYC = !userKYC;
+
+  // Get KYC status message
+  const getKYCStatusMessage = () => {
+    if (isKYCCompleted) {
+      return "Your business verification has been approved! You can now start selling.";
+    }
+    if (isKYCPending) {
+      return "Your business verification documents are under review. Please check back later.";
+    }
+    if (isKYCRejected) {
+      return "Your business verification was rejected. Please resubmit your documents.";
+    }
+    return "To complete your profile and begin selling, please upload and verify your business verification documents";
+  };
+
+  // Get KYC status color and icon
+  const getKYCStatusInfo = () => {
+    if (isKYCCompleted) {
+      return {
+        color: "bg-green-100 border-green-300 text-green-800",
+        icon: "✅" // You can replace with a checkmark icon
+      };
+    }
+    if (isKYCPending) {
+      return {
+        color: "bg-blue-100 border-blue-300 text-blue-800",
+        icon: "⏳" // You can replace with a clock icon
+      };
+    }
+    if (isKYCRejected) {
+      return {
+        color: "bg-red-100 border-red-300 text-red-800",
+        icon: "❌" // You can replace with a cross icon
+      };
+    }
+    return {
+      color: "bg-[#F6EED7] border-[#FFC300] text-customBrown",
+      icon: annoucement
+    };
+  };
+
+  const statusInfo = getKYCStatusInfo();
+
 
   const handleEdit = (field: keyof UserProfile, value: string) => {
     setUserProfile((prev) => ({
@@ -137,7 +197,7 @@ const Profile = () => {
           ) : (
             <p
               className="font-medium cursor-pointer hover:text-primary transition-colors py-1 border-b border-transparent hover:border-gray-200"
-              //   onClick={() => handleFieldClick(field)}
+            //   onClick={() => handleFieldClick(field)}
             >
               {value || "Not set - Click to add"}
             </p>
@@ -165,13 +225,15 @@ const Profile = () => {
       <h2 className="text-xl font-semibold text-[#2D2828] mb-4">
         Profile Details
       </h2>
-      <div className="w-full border border-[#FFC300] bg-[#F6EED7] rounded-[8px] flex items-center p-4 gap-3 mb-6">
-        <img src={annoucement} alt="" />
-        <span className="text-xs text-customBrown">
-          To complete your profile and begin selling, please upload and verify
-          your business verification documents
-        </span>
-      </div>
+        {!isKYCCompleted && (
+          <div className={`w-full border ${statusInfo.color} rounded-[8px] flex items-center p-4 gap-3 mb-6`}>
+            <img src={statusInfo.icon} alt="" className="w-5 h-5" />
+            <span className="text-xs">
+              {getKYCStatusMessage()}
+            </span>
+          </div>
+        )}
+      
       <div className="bg-primary text-white p-8 rounded-t-lg flex items-center space-x-4 justify-between">
         <div className="flex gap-3 items-center">
           <div className="bg-[#E3E6EA] text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-semibold">
@@ -186,12 +248,16 @@ const Profile = () => {
           </div>
         </div>
         <div>
-          <Link
-            to="/kyc-form"
-            className="bg-[#FFC300] p-2 rounded-[4px] text-customBrown text-base font-semibold"
-          >
-            Verify Documents
-          </Link>
+          {!isKYCCompleted && (
+            <div>
+              <Link
+                to={isKYCRejected ? "/kyc-resubmit" : "/kyc-form"}
+                className="bg-[#FFC300] p-2 rounded-[4px] text-customBrown text-base font-semibold hover:bg-[#FFD54F] transition-colors"
+              >
+                {isKYCRejected ? "Resubmit Documents" : "Verify Documents"}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
       <div className="bg-white p-6 rounded-b-lg border border-gray-200 space-y-6">

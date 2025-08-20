@@ -47,7 +47,7 @@ const AccountTypeSelection: React.FC = () => {
 
   return (
     <>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+
       <div className="flex items-center justify-center bg-white font-roboto p-0 md:p-6">
         <div className="w-full max-w-[600px] bg-white md:border border-[#D9D9D9] rounded-lg shadow-md p-[20px] md:p-[60px]">
           <h2 className="text-[24px] font-normal text-center mb-4 text-[#1D192B]">Create an Account</h2>

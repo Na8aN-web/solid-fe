@@ -22,6 +22,7 @@ interface AuthState {
     isLoading: boolean;
     isVerified: boolean;
     error: string | null;
+    redirectToLogin: boolean; 
   };
   passwordReset: {
     otpRequested: boolean;
@@ -31,7 +32,6 @@ interface AuthState {
   };
 }
 
-// Helper function to get user from localStorage
 const getUserFromStorage = () => {
   try {
     const userStr = localStorage.getItem('user');
@@ -55,6 +55,7 @@ const initialState: AuthState = {
     isLoading: false,
     isVerified: false,
     error: null,
+    redirectToLogin: false,
   },
   passwordReset: {
     otpRequested: false,
@@ -94,28 +95,24 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Email verification thunk
+// In verifyEmailOTP thunk, add logging
 export const verifyEmailOTP = createAsyncThunk(
   "auth/verifyEmailOTP",
   async (otp: string, { rejectWithValue, getState }) => {
     try {
+      console.log('Sending OTP verification request:', otp);
+      
       const response = await axiosInstance.post<EmailVerificationResponse>(
         "/auth/verify-email-otp",
-        { otp }
+        { otp },
+        { withCredentials: true }
       );
 
-      // After successful email verification, the user should be fully registered
-      // You might want to get a token from this response or make another call to login
-      if (response.data.user) {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        localStorage.removeItem("unverifiedUser");
-        
-        // If the response includes a token, store it
-        // Otherwise, you might need to automatically log the user in
-      }
-
+      console.log('OTP verification response:', response.data);
       return response.data;
+      
     } catch (error: any) {
+      console.error('OTP verification error:', error.response?.data || error.message);
       if (error.response) {
         return rejectWithValue(
           error.response.data.message || "Email verification failed"
@@ -135,7 +132,7 @@ export const loginUser = createAsyncThunk(
   ) => {
     try {
       const response = await axiosInstance.post<LoginResponse>(
-        "/auth/login", 
+        "/auth/login",
         credentials
       );
 
@@ -177,7 +174,11 @@ export const verifyOTP = createAsyncThunk(
   "auth/verifyOTP",
   async (otp: string, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/verify-otp", { otp });
+      const response = await axiosInstance.post(
+        "/auth/verify-otp", 
+        { otp },
+        { withCredentials: true } // Add this option
+      );
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -264,6 +265,9 @@ const authSlice = createSlice({
         localStorage.setItem('user', JSON.stringify(action.payload));
       }
     },
+     resetRedirectToLogin: (state) => {
+      state.emailVerification.redirectToLogin = false;
+    },
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
     },
@@ -283,6 +287,7 @@ const authSlice = createSlice({
         isLoading: false,
         isVerified: false,
         error: null,
+        redirectToLogin: false
       };
       localStorage.removeItem("authToken");
       localStorage.removeItem('user');
@@ -310,6 +315,7 @@ const authSlice = createSlice({
         isLoading: false,
         isVerified: false,
         error: null,
+        redirectToLogin: false
       };
     },
     // Add a new action to rehydrate user state (useful for app initialization)
@@ -317,13 +323,13 @@ const authSlice = createSlice({
       const token = localStorage.getItem("authToken");
       const user = getUserFromStorage();
       const selectedAccountType = sessionStorage.getItem("selectedAccountType");
-      
+
       if (token && user && user.verified) {
         state.token = token;
         state.user = user;
         state.isAuthenticated = true;
       }
-      
+
       if (selectedAccountType) {
         state.selectedAccountType = selectedAccountType;
       }
@@ -359,12 +365,19 @@ const authSlice = createSlice({
     builder.addCase(verifyEmailOTP.pending, (state) => {
       state.emailVerification.isLoading = true;
       state.emailVerification.error = null;
+      state.emailVerification.redirectToLogin = false;
     });
     builder.addCase(verifyEmailOTP.fulfilled, (state, action) => {
       state.emailVerification.isLoading = false;
       state.emailVerification.isRequired = false;
       state.emailVerification.isVerified = true;
       state.user = action.payload.user;
+      state.isAuthenticated = true;
+      state.token = action.payload.token;
+      state.emailVerification.redirectToLogin = true;
+
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.removeItem('unverifiedUser');
       // Note: You might need to set isAuthenticated to true here 
       // depending on whether the verification response includes a token
       // or if you need to make another call to get the token
@@ -372,6 +385,7 @@ const authSlice = createSlice({
     builder.addCase(verifyEmailOTP.rejected, (state, action) => {
       state.emailVerification.isLoading = false;
       state.emailVerification.error = action.payload as string;
+      state.emailVerification.redirectToLogin = false;
     });
 
     // Login cases
@@ -381,7 +395,7 @@ const authSlice = createSlice({
     });
     builder.addCase(loginUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      
+
       // Check if user is verified
       if (action.payload.user.verified) {
         state.isAuthenticated = true;
@@ -454,7 +468,8 @@ export const {
   clearEmailVerificationError,
   resetPasswordState,
   resetEmailVerificationState,
-  rehydrateAuth
+  rehydrateAuth,
+  resetRedirectToLogin 
 } = authSlice.actions;
 
 // Export reducer

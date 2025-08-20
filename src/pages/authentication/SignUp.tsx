@@ -80,7 +80,7 @@ const SignupScreen: React.FC = () => {
             navigate('/verify-email');
         } else if (isAuthenticated) {
             // If somehow authenticated without verification, go to home
-            navigate('/home');
+            navigate('/login');
         }
     }, [emailVerification.isRequired, isAuthenticated, navigate]);
 
