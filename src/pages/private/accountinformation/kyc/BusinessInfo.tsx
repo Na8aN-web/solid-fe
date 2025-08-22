@@ -21,11 +21,13 @@ interface StepsDataType {
 const BusinessInfo = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { submitting, error } = useSelector((state: RootState) => state.kyc);
+  const { submitting, error, userKYC } = useSelector((state: RootState) => state.kyc);
+   const { user } = useSelector((state: RootState) => state.auth);
 
   const [businessCert, setBusinessCert] = useState<File | null>(null);
   const [proofOfAddress, setProofOfAddress] = useState<File | null>(null);
-  const [idCard, setIdCard] = useState<File | null>(null);
+  const [proofOfSourcing, setProofOfSourcing] = useState<File | null>(null);
+  // const [idCard, setIdCard] = useState<File | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [buttonLabel, setButtonLabel] = useState("Continue");
   const [isCompleted, setIsCompleted] = useState(false);
@@ -62,22 +64,16 @@ const BusinessInfo = () => {
 
     if (!businessCert) errors.businessCert = "Business certificate is required";
     if (!proofOfAddress) errors.proofOfAddress = "Proof of address is required";
-    if (!idCard) errors.idCard = "Valid ID card is required";
-
+    if (!proofOfSourcing) errors.proofOfSourcing = "Proof of sourcing is required";
     setFileErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const allUploaded = businessCert && proofOfAddress && idCard;
+  const allUploaded = businessCert && proofOfAddress && proofOfSourcing;
 
   const handleContinue = async () => {
-    if (!formData) return;
+    if (!formData || !validateFiles() || !user?.email) return;
 
-    if (!validateFiles()) {
-      return;
-    }
-
-    // Prepare submission data
     const kycData: KYCFormData = {
       businessName: formData.businessName,
       registrationNumber: formData.registrationNumber,
@@ -85,35 +81,28 @@ const BusinessInfo = () => {
       dateOfIncorporation: formData.dateOfIncorporation,
       businessAddress: formData.businessAddress,
       taxId: formData.taxId,
+      emailAddress: user.email,
       website: formData.website || undefined,
       businessCert: businessCert!,
       proofOfAddress: proofOfAddress!,
-      proofOfSourcing: idCard!, // Using idCard as proofOfSourcing based on your upload structure
+      proofOfSourcing: proofOfSourcing!,
     };
 
     try {
       const result = await dispatch(submitKYC(kycData)).unwrap();
 
-      // Scroll to the top
       window.scrollTo({ top: 0, behavior: "smooth" });
-
       setIsCompleted(true);
       setShowSuccess(true);
-
-      // Clear form data from storage
       sessionStorage.removeItem('kycFormData');
 
       setTimeout(() => {
         setShowSuccess(false);
         setButtonLabel("Go to Dashboard");
-        // Navigate to dashboard or home
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1000);
+        navigate("/account-information/profile");
       }, 2000);
 
     } catch (error) {
-      // Error is handled by useEffect
       console.error('KYC submission failed:', error);
     }
   };
@@ -270,24 +259,24 @@ const BusinessInfo = () => {
             <div className="basis-[45%]">
               <div className="border w-full px-4 py-6 rounded-[10px]">
                 <h2 className="text-xl font-semibold text-customBrown pb-2">
-                  Valid ID Card
+                  Proof of Sourcing
                 </h2>
                 <p className="text-sm font-normal text-customGray3">
-                  Please upload a clear copy of your valid government-issued
-                  identification document (e.g., National ID, Driver's License,
-                  or International Passport). Ensure the document is not expired
-                  and all information is clearly visible.
+                  Please upload documents that verify your business's sourcing 
+                  capabilities and supply chain legitimacy. This could include supplier 
+                  agreements, import/export documentation, or certificates of origin. 
+                  Ensure documents are clear and in PDF, JPG, or PNG format.
                 </p>
               </div>
             </div>
             <div className="basis-[55%]">
               <UploadCard
-                title="Upload Your Valid ID Card"
-                onFileUpload={setIdCard}
-                fileType="idCard"
+                title="Upload Proof of Sourcing"
+                onFileUpload={setProofOfSourcing} // Changed from setIdCard
+                fileType="proofOfSourcing" // Changed from idCard
               />
-              {fileErrors.businessCert && (
-                <p className="text-red-500 text-sm mt-1">{fileErrors.idCard}</p>
+              {fileErrors.proofOfSourcing && ( // Changed from idCard
+                <p className="text-red-500 text-sm mt-1">{fileErrors.proofOfSourcing}</p>
               )}
             </div>
           </div>

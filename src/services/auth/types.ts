@@ -17,6 +17,7 @@ export interface SignupData {
 
 export interface AuthResponse {
   message: string;
+  otpToken?: string; 
   user: {
     _id: string;
     email: string;
@@ -34,9 +35,8 @@ export interface AuthResponse {
     businessAddress?: string;
     businessRCNumber?: string;
     businessWebsite?: string;
-    token?: string; // Optional for cases where token is included in user object
   };
-  token?: string; // Optional for cases where token is separate
+  
 }
 
 export interface LoginResponse {
@@ -63,7 +63,6 @@ export interface LoginResponse {
 }
 
 export interface EmailVerificationResponse {
-  token: string | null;
   message: string;
   user: {
     _id: string;

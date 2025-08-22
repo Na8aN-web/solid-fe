@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
 
 // Types
+
 export interface KYCSubmission {
     _id: string;
     businessName: string;
@@ -11,6 +12,7 @@ export interface KYCSubmission {
     dateOfIncorporation: string;
     businessAddress: string;
     taxId: string;
+    emailAddress: string;
     website?: string;
     status: 'Pending' | 'Approved' | 'Rejected' | 'Flagged';
     businessCert?: string;
@@ -34,6 +36,7 @@ export interface KYCFormData {
     dateOfIncorporation: string;
     businessAddress: string;
     taxId: string;
+    emailAddress: string;
     website?: string;
     businessCert: File;
     proofOfAddress: File;
@@ -68,6 +71,7 @@ export interface KYCState {
     currentPage: number;
     itemsPerPage: number;
     totalSubmissions: number;
+    formData: Partial<KYCFormData> | null;
 }
 
 const initialState: KYCState = {
@@ -80,6 +84,7 @@ const initialState: KYCState = {
     currentPage: 1,
     itemsPerPage: 20,
     totalSubmissions: 0,
+    formData: null,
 };
 
 // Async thunks
@@ -96,6 +101,7 @@ export const submitKYC = createAsyncThunk(
             data.append('dateOfIncorporation', formData.dateOfIncorporation);
             data.append('businessAddress', formData.businessAddress);
             data.append('taxId', formData.taxId);
+            data.append('emailAddress', formData.emailAddress);
 
             if (formData.website) {
                 data.append('website', formData.website);
@@ -126,6 +132,19 @@ export const submitKYC = createAsyncThunk(
     }
 );
 
+export const saveKYCFormData = createAsyncThunk(
+    "kyc/saveFormData",
+    async (formData: Partial<KYCFormData>, { rejectWithValue }) => {
+        try {
+            // Store in localStorage/sessionStorage or make API call if needed
+            sessionStorage.setItem('kycFormData', JSON.stringify(formData));
+            return formData;
+        } catch (error: any) {
+            return rejectWithValue("Failed to save form data");
+        }
+    }
+);
+
 // Get all KYC submissions (Admin only)
 export const fetchAllKYCSubmissions = createAsyncThunk(
     "kyc/fetchAll",
@@ -146,14 +165,11 @@ export const fetchAllKYCSubmissions = createAsyncThunk(
     }
 );
 
-// Get current user's KYC submissions
 export const fetchUserKYC = createAsyncThunk(
     "kyc/fetchUserKYC",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get<{
-                kyc: KYCSubmission[] | KYCSubmission
-            }>("/kyc/my");
+            const response = await axiosInstance.get<KYCSubmission[] | KYCSubmission>("/kyc/my");
             return response.data;
         } catch (error: any) {
             if (error.response) {
@@ -255,6 +271,12 @@ const kycSlice = createSlice({
             state.itemsPerPage = action.payload;
             state.currentPage = 1; // Reset to first page when changing items per page
         },
+        setFormData: (state, action: PayloadAction<Partial<KYCFormData>>) => {
+            state.formData = { ...state.formData, ...action.payload };
+        },
+        clearFormData: (state) => {
+            state.formData = null;
+        },
         clearError: (state) => {
             state.error = null;
         },
@@ -280,10 +302,6 @@ const kycSlice = createSlice({
         builder.addCase(submitKYC.rejected, (state, action) => {
             state.submitting = false;
             state.error = action.payload as string;
-
-            setTimeout(() => {
-                state.error = null;
-            }, 5000);
         });
 
         // Fetch all KYC submissions (Admin)
@@ -301,7 +319,6 @@ const kycSlice = createSlice({
             state.error = action.payload as string;
         });
 
-        // Fetch user KYC
         builder.addCase(fetchUserKYC.pending, (state) => {
             state.loading = true;
             state.error = null;
@@ -309,10 +326,10 @@ const kycSlice = createSlice({
         builder.addCase(fetchUserKYC.fulfilled, (state, action) => {
             state.loading = false;
             // Handle both array and single object responses
-            if (Array.isArray(action.payload.kyc)) {
-                state.userKYC = action.payload.kyc[0] || null;
+            if (Array.isArray(action.payload)) {
+                state.userKYC = action.payload[0] || null;
             } else {
-                state.userKYC = action.payload.kyc;
+                state.userKYC = action.payload;
             }
         });
         builder.addCase(fetchUserKYC.rejected, (state, action) => {

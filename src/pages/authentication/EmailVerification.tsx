@@ -3,17 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import Navbar from './components/Navbar';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { 
-  verifyEmailOTP, 
-  clearEmailVerificationError,
-  resetRedirectToLogin // NEW: Import the reset action
+import {
+    verifyEmailOTP,
+    clearEmailVerificationError,
+    resetRedirectToLogin // Import the reset action
 } from '../../store/slices/authSlice';
 
 const EmailVerification: React.FC = () => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [timer, setTimer] = useState(60);
-    const [showSuccess, setShowSuccess] = useState(false); // NEW: Success state
+    const [showSuccess, setShowSuccess] = useState(false); // Success state
 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const navigate = useNavigate();
@@ -21,11 +21,12 @@ const EmailVerification: React.FC = () => {
 
     const {
         user,
-        emailVerification: { 
-          isLoading, 
-          error, 
-          isRequired, 
-          redirectToLogin // NEW: Get redirect flag from Redux
+        emailVerification: {
+            isLoading,
+            error,
+            isRequired,
+            redirectToLogin, // Get redirect flag from Redux
+            otpToken // NEW: Get the OTP token from Redux
         },
         isAuthenticated
     } = useAppSelector(state => state.auth);
@@ -45,32 +46,35 @@ const EmailVerification: React.FC = () => {
         dispatch(clearEmailVerificationError());
     }, [dispatch]);
 
-    // NEW: Handle successful verification and redirect
+    // Handle successful verification and redirect
     useEffect(() => {
         if (redirectToLogin) {
             // Show success message
             setShowSuccess(true);
-            
+
             // Redirect to login after 2 seconds
             const redirectTimer = setTimeout(() => {
                 navigate('/login');
                 dispatch(resetRedirectToLogin()); // Reset the flag
                 setShowSuccess(false);
             }, 2000);
-            
+
             return () => clearTimeout(redirectTimer);
         }
     }, [redirectToLogin, navigate, dispatch]);
 
-    // Redirect if email verification is not required
+    // Redirect if email verification is not required or if missing OTP token
     useEffect(() => {
         if (isAuthenticated && user?.verified) {
             navigate('/home');
         } else if (user?.verified && !isAuthenticated) {
             // This shouldn't normally happen, but handle it just in case
             navigate('/login');
+        } else if (!isRequired && !otpToken) {
+            // No verification required and no OTP token available
+            navigate('/login');
         }
-    }, [isRequired, user, isAuthenticated, navigate]);
+    }, [isRequired, user, isAuthenticated, otpToken, navigate]);
 
     const handleInputChange = (index: number, value: string) => {
         if (value.length > 1) return; // Prevent multiple characters
@@ -115,10 +119,45 @@ const EmailVerification: React.FC = () => {
             return;
         }
 
-        dispatch(verifyEmailOTP(otpString));
+        // Check if we have the OTP token
+        if (!otpToken) {
+            console.error('OTP token not found');
+            // You might want to redirect to registration or show an error
+            navigate('/register');
+            return;
+        }
+
+        // NEW: Pass both otp and otpToken to the dispatch
+        dispatch(verifyEmailOTP({ otp: otpString, otpToken }));
     };
 
     const isOtpComplete = otp.every(digit => digit !== '');
+
+    if (!otpToken && !showSuccess) {
+        return (
+            <>
+                <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+                <div className="min-h-screen bg-white flex items-center justify-center p-0 md:p-4 font-roboto">
+                    <div className="w-full max-w-[500px] bg-white rounded-lg md:border border-[#D9D9D9] shadow-md p-[20px] md:p-[60px]">
+                        <div className="text-center">
+                            <h2 className="text-[24px] text-[#2D2828] font-bold mb-4">
+                                Verification Session Expired
+                            </h2>
+                            <p className="text-[#827E7E] text-[14px] mb-6">
+                                Your verification session has expired. Please register again to receive a new verification code.
+                            </p>
+                            <button
+                                onClick={() => navigate('/register')}
+                                className="w-full py-3 rounded-lg text-white font-bold bg-[#003366] hover:bg-blue-700 transition-colors"
+                            >
+                                Back to Registration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -141,7 +180,7 @@ const EmailVerification: React.FC = () => {
                                 {showSuccess ? 'Email Verified Successfully!' : 'Verify Your Email Address'}
                             </h2>
                         </div>
-                        
+
                         {showSuccess ? (
                             <>
                                 <p className="text-green-600 text-[14px] font-semibold mb-2">
