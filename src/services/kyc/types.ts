@@ -24,16 +24,17 @@ export interface KYCSubmission {
 }
 
 export interface KYCFormData {
-  businessName: string;
-  registrationNumber: string;
-  typeOfBusiness: string;
-  dateOfIncorporation: string;
-  businessAddress: string;
-  taxId: string;
-  website?: string;
-  businessCert: File;
-  proofOfAddress: File;
-  proofOfSourcing: File;
+    businessName: string;
+    registrationNumber: string;
+    typeOfBusiness: string;
+    dateOfIncorporation: string;
+    businessAddress: string;
+    taxId: string;
+    website?: string;
+    emailAddress: string; 
+    businessCert: File;
+    proofOfAddress: File;
+    proofOfSourcing: File;
 }
 
 export interface KYCReviewData {

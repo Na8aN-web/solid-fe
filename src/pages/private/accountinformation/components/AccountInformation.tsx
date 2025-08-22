@@ -41,6 +41,8 @@ const AccountInformation = () => {
   // Set activeItem based on URL param, default to 'profile'
   const activeItem = section || "profile";
 
+  const isWholesaler = !user?.firstName && !user?.lastName && user?.name;
+
   const sidebarItems: SidebarItem[] = [
     { id: "profile", icon: <UserCircle size={20} />, label: "Profile" },
     { id: "address", icon: <BookOpen size={20} />, label: "Address Book" },
@@ -65,18 +67,28 @@ const AccountInformation = () => {
     navigate(`/account-information/${id}`);
   };
 
-    // Get user initials for avatar
     const getInitials = () => {
-      const firstName = user?.firstName || "";
-      const lastName =  user?.lastName || "";
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    };
-  
-    // Get display name
-    const getDisplayName = () => {
-      return  user?.firstName || "User";
-    };
+    if (isWholesaler) {
+      return user?.name ? user.name.charAt(0).toUpperCase() : "W";
+    }
+    
+    const firstName = user?.firstName || "";
+    const lastName = user?.lastName || "";
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
 
+  // Get display name
+  const getDisplayName = () => {
+    if (isWholesaler) {
+      return user?.name || "Wholesaler";
+    }
+    return user?.firstName || "User";
+  };
+
+  // Get username/email for display
+  const getUsername = () => {
+    return user?.email || user?.emailAddress || "";
+  };
   // Update activeItem when URL parameter changes
   // useEffect(() => {
   //   if (section && sidebarItems.find((item) => item.id === section)) {
@@ -170,7 +182,7 @@ const AccountInformation = () => {
               </div>
               <div>
                 <div className="font-medium">{getDisplayName()}</div>
-                <div className="text-xs text-[#827E7E]">{getDisplayName()}</div>
+                <div className="text-xs text-[#827E7E]">{getUsername()}</div>
               </div>
             </div>
           </div>

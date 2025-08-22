@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../store/slices/authSlice";
-import {useAppSelector, useAppDispatch } from "../store/hooks";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -189,7 +189,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   <div className="absolute right-0 mt-3 w-60 bg-white border rounded-lg shadow-lg z-20">
                     <div className="px-4 py-4 ">
                       <p className="text-[16px] text-center font-semibold">
-                        Hi, {user?.firstName}
+                        Hi, {user?.firstName || user?.name}
                       </p>
                     </div>
                     <ul className="flex flex-col gap-6 p-6 text-sm">
@@ -267,11 +267,10 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen
+          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
               ? "translate-y-0 opacity-100 visible"
               : "-translate-y-10 opacity-0 invisible"
-          }`}
+            }`}
         >
           <div className="py-5 px-5">
             <div className="flex gap-3 items-center">
@@ -351,9 +350,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"   onClick={() => {
-                  navigate("/account-information/track");
-                }}>
+              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer" onClick={() => {
+                navigate("/account-information/track");
+              }}>
                 <div className="flex items-center gap-4">
                   <img
                     src="/track-orders.svg"
@@ -370,9 +369,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"   onClick={() => {
-                  navigate("/account-information/messages");
-                }}>
+              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer" onClick={() => {
+                navigate("/account-information/messages");
+              }}>
                 <div className="flex items-center gap-4">
                   <img src="/chat.svg" alt="chat" className="w-5 h-5" />
                   <span className="text-sm font-normal text-shadeGray">

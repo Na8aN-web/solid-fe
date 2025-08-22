@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../../store";
 
@@ -38,6 +38,7 @@ const KycForm = () => {
     termsAccepted: false,
   });
 
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<Partial<FormData>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,18 +86,16 @@ const KycForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  {
-    errors.termsAccepted && (
-      <p className="text-red-500 text-sm mt-1">You must accept the terms and conditions</p>
-    )
-  }
+  {errors.termsAccepted && (
+  <p className="text-red-500 text-sm mt-1">You must accept the terms and conditions</p>
+)}
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
       // Store form data in sessionStorage or pass to next step
       sessionStorage.setItem('kycFormData', JSON.stringify(formData));
-      // Navigate to next step handled by Link component
+      navigate("/business-information");
     }
   };
 
@@ -359,14 +358,14 @@ const KycForm = () => {
             )}
           </div>
 
-          <Link to="/business-information">
+         
             <button
               type="submit"
               className="w-full py-3 rounded-lg text-white font-bold transition-all duration-300 bg-primary hover:bg-blue-700 active:bg-blue-800"
             >
               Continue
             </button>
-          </Link>
+          
         </form>
       </div>
     </div>
