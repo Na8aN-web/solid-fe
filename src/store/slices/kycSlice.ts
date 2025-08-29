@@ -5,28 +5,64 @@ import axiosInstance from "../../services/api/axios";
 // Types
 
 export interface KYCSubmission {
+  _id: string;
+  businessName: string;
+  registrationNumber: string;
+  typeOfBusiness: string;
+  dateOfIncorporation: string;
+  businessAddress: string;
+  taxId: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Flagged';
+  submissionDate: string;
+  createdAt: string;
+  updatedAt: string;
+  
+  // These are the properties that are different from your initial interface
+  documents: {
+    businessCert: string;
+    proofOfAddress: string;
+    proofOfSourcing: string;
+  };
+  ownerId: {
     _id: string;
-    businessName: string;
-    registrationNumber: string;
-    typeOfBusiness: string;
-    dateOfIncorporation: string;
-    businessAddress: string;
-    taxId: string;
-    emailAddress: string;
-    website?: string;
-    status: 'Pending' | 'Approved' | 'Rejected' | 'Flagged';
-    businessCert?: string;
-    proofOfAddress?: string;
-    proofOfSourcing?: string;
-    reviewComment?: string;
-    checklist?: {
-        documentQuality: boolean;
-        matchingDetails: boolean;
-        validExpiryDates: boolean;
-    };
-    createdAt: string;
-    updatedAt: string;
-    userId: string;
+    email: string;
+    role: string;
+    name: string;
+  };
+  
+  // Optional properties that might not be in all responses
+  website?: string;
+  reviewComment?: string;
+  checklist?: {
+    documentQuality: boolean;
+    matchingDetails: boolean;
+    validExpiryDates: boolean;
+  };
+}
+
+export interface TransformedKYCSubmission {
+  _id: string;
+  businessName: string;
+  registrationNumber: string;
+  typeOfBusiness: string;
+  dateOfIncorporation: string;
+  businessAddress: string;
+  taxId: string;
+  emailAddress: string; // This will be extracted from ownerId.email
+  website?: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Flagged';
+  businessCert?: string;
+  proofOfAddress?: string;
+  proofOfSourcing?: string;
+  reviewComment?: string;
+  checklist?: {
+    documentQuality: boolean;
+    matchingDetails: boolean;
+    validExpiryDates: boolean;
+  };
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
 }
 
 export interface KYCFormData {
@@ -71,7 +107,12 @@ export interface KYCState {
     currentPage: number;
     itemsPerPage: number;
     totalSubmissions: number;
+    totalPages: number;
     formData: Partial<KYCFormData> | null;
+    filters: {
+        status: string;
+        searchTerm: string;
+    };
 }
 
 const initialState: KYCState = {
@@ -85,6 +126,11 @@ const initialState: KYCState = {
     itemsPerPage: 20,
     totalSubmissions: 0,
     formData: null,
+    filters: {
+        status: 'All',
+        searchTerm: ''
+    },
+    totalPages: 0
 };
 
 // Async thunks
@@ -145,26 +191,44 @@ export const saveKYCFormData = createAsyncThunk(
     }
 );
 
-// Get all KYC submissions (Admin only)
 export const fetchAllKYCSubmissions = createAsyncThunk(
-    "kyc/fetchAll",
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axiosInstance.get<{
-                submissions: KYCSubmission[]
-            }>("/kyc");
-            return response.data;
-        } catch (error: any) {
-            if (error.response) {
-                return rejectWithValue(
-                    error.response.data.message || "Failed to fetch KYC submissions"
-                );
-            }
-            return rejectWithValue("Network error. Please try again.");
-        }
+  "kyc/fetchAll",
+  async (params: { page?: number; limit?: number; status?: string; search?: string } = {}, { rejectWithValue }) => {
+    try {
+      const { page = 1, limit = 20, status, search } = params;
+      let url = `/kyc?page=${page}&limit=${limit}`;
+      
+      if (status && status !== 'All') {
+        url += `&status=${status}`;
+      }
+      
+      if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+      }
+      
+      const response = await axiosInstance.get(url);
+      
+      // Handle the actual API response format
+      const responseData = response.data;
+      
+      // Transform the API response to match what your code expects
+      return {
+        submissions: responseData.data || [], // Extract from "data" field
+        total: responseData.meta?.total || 0, // Extract from "meta.total"
+        page: responseData.meta?.page || 1,   // Extract from "meta.page"
+        pages: responseData.meta?.pages || 1  // Extract from "meta.pages"
+      };
+      
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Failed to fetch KYC submissions"
+        );
+      }
+      return rejectWithValue("Network error. Please try again.");
     }
+  }
 );
-
 export const fetchUserKYC = createAsyncThunk(
     "kyc/fetchUserKYC",
     async (_, { rejectWithValue }) => {
@@ -271,6 +335,9 @@ const kycSlice = createSlice({
             state.itemsPerPage = action.payload;
             state.currentPage = 1; // Reset to first page when changing items per page
         },
+        setFilters: (state, action: PayloadAction<{ status: string; searchTerm: string }>) => {
+            state.filters = action.payload;
+        },
         setFormData: (state, action: PayloadAction<Partial<KYCFormData>>) => {
             state.formData = { ...state.formData, ...action.payload };
         },
@@ -311,8 +378,10 @@ const kycSlice = createSlice({
         });
         builder.addCase(fetchAllKYCSubmissions.fulfilled, (state, action) => {
             state.loading = false;
-            state.submissions = action.payload.submissions;
-            state.totalSubmissions = action.payload.submissions.length;
+            state.submissions = action.payload.submissions; // Extract the submissions array
+            state.totalSubmissions = action.payload.total;   // Use the total count from API
+            state.currentPage = action.payload.page;         // Update current page
+            state.totalPages = action.payload.pages;         // Update total pages
         });
         builder.addCase(fetchAllKYCSubmissions.rejected, (state, action) => {
             state.loading = false;
@@ -391,6 +460,7 @@ export const {
     setCurrentPage,
     setItemsPerPage,
     clearError,
+    setFilters,
     clearUserKYC,
     resetSubmissions,
 } = kycSlice.actions;

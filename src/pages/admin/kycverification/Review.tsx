@@ -4,6 +4,13 @@ interface VerificationChecklistProps {
   label: string;
 }
 
+const handleViewDocument = (documentUrl: string | undefined) => {
+    if (!documentUrl) return;
+    
+    // Open document in a new tab
+    window.open(documentUrl, '_blank');
+};
+
 const VerificationChecklist: React.FC<VerificationChecklistProps> = ({
   label,
 }) => {

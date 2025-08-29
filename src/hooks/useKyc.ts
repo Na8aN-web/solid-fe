@@ -36,14 +36,19 @@ export const useKYC = () => {
   }, [dispatch]);
 
   // Fetch all KYC submissions (Admin)
-  const handleFetchAllSubmissions = useCallback(async () => {
-    try {
-      const result = await dispatch(fetchAllKYCSubmissions()).unwrap();
-      return { success: true, data: result };
-    } catch (error) {
-      return { success: false, error: error as string };
-    }
-  }, [dispatch]);
+  const handleFetchAllSubmissions = useCallback(async (params: { 
+  page?: number; 
+  limit?: number; 
+  status?: string; 
+  search?: string; 
+} = {}) => {
+  try {
+    const result = await dispatch(fetchAllKYCSubmissions(params)).unwrap();
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, error: error as string };
+  }
+}, [dispatch]);
 
   // Fetch user's KYC
   const handleFetchUserKYC = useCallback(async () => {

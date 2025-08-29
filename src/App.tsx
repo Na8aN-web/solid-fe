@@ -395,7 +395,7 @@ function App() {
           path="/admin/kyc-verification"
           element={
             <AdminRoute adminOnly={true}>
-              <KycVerification title={""} count={0} />
+              <KycVerification />
             </AdminRoute>
           }
         />
