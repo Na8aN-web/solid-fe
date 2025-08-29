@@ -184,7 +184,6 @@ export const verifyOTP = createAsyncThunk(
       const response = await axiosInstance.post(
         "/auth/verify-otp",
         { otp },
-        { withCredentials: true } // Add this option
       );
       return response.data;
     } catch (error: any) {
