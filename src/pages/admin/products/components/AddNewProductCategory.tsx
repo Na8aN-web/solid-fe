@@ -4,6 +4,21 @@ import FileUploader from "./FileUploader";
 
 const AddNewProductCategory = () => {
   const [fileUploaded, setFileUploaded] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+
+  function handleImageUpload(files: File[]): void {
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setImages((prev) => [...prev, ...urls]);
+    setFileUploaded(true);
+  }
+
+  function handleRemoveImage(url: string): void {
+    setImages((prev) => prev.filter((img) => img !== url));
+    if (images.length <= 1) {
+      setFileUploaded(false);
+    }
+  }
+
   return (
     <section className="absolute right-5 w-[500px] bg-customLight border pt-14 px-7 pb-10 rounded-[16px]">
       <h2 className="text-[24px] font-semibold text-customBrown pb-4">
@@ -33,12 +48,12 @@ const AddNewProductCategory = () => {
           </div>
         </div>
 
-          <button
-            type="submit"
-            className="bg-primary w-full h-[58px] rounded-[16px] font-semibold text-base text-customLight"
-          >
-            Continue
-          </button>
+        <button
+          type="submit"
+          className="bg-primary w-full h-[58px] rounded-[16px] font-semibold text-base text-customLight"
+        >
+          Continue
+        </button>
       </form>
     </section>
   );

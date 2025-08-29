@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { Search, Plus, ChevronDown, ArrowUpDown } from "lucide-react";
 import ProductIcon from "../../../assets/productIcon.svg";
 import carTyre from "../../../assets/tyres.svg";
@@ -7,67 +7,25 @@ import deLete from "../../../assets/delete.svg";
 import AdminLayout from "../components/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import FilterSection from "../components/FilterSection";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { deleteProduct, fetchAllProducts, type Product  } from "../../../store/slices/adminDashboardSlice";
 
-interface Product {
-  id: string;
-  product: string;
-  productId: string;
-  category: string;
-  store: string;
-  price: string;
-  stock: string;
-  image: string;
-  status: "Active" | "Inactive";
-}
+// interface Product {
+//   id: string;
+//   product: string;
+//   productId: string;
+//   category: string;
+//   store: string;
+//   price: string;
+//   stock: string;
+//   image: string;
+//   status: "Active" | "Inactive";
+// }
 
 const Products: React.FC = () => {
   const navigate = useNavigate();
-  const products: Product[] = [
-    {
-      id: "1",
-      product: "Michellene Tyre",
-      productId: "2563823270",
-      category: "Body Parts",
-      store: "Solid Spare Parts",
-      price: "₦250,000.00",
-      stock: "20/250",
-      image: carTyre,
-      status: "Inactive",
-    },
-    {
-      id: "2",
-      product: "Michellene Tyre",
-      productId: "2563823270",
-      category: "Body Parts",
-      store: "Solid Spare Parts",
-      price: "₦250,000.00",
-      stock: "20/250",
-      image: carTyre,
-      status: "Active",
-    },
-    {
-      id: "3",
-      product: "Michellene Tyre",
-      productId: "2563823270",
-      category: "Body Parts",
-      store: "Solid Spare Parts",
-      price: "₦250,000.00",
-      stock: "20/250",
-      image: carTyre,
-      status: "Active",
-    },
-    {
-      id: "4",
-      product: "Michellene Tyre",
-      productId: "2563823270",
-      category: "Body Parts",
-      store: "Solid Spare Parts",
-      price: "₦250,000.00",
-      stock: "20/250",
-      image: carTyre,
-      status: "Active",
-    },
-  ];
+  const dispatch = useAppDispatch();
+  const { products, loading, error } = useAppSelector(state => state.adminDashboard);
 
   const filterOptions = [
     { label: "Category", options: ["All Category", "Engine", "Brakes"] },
@@ -75,26 +33,27 @@ const Products: React.FC = () => {
     { label: "Price", options: ["₦250K - ₦5M", "₦5M - ₦10M"] },
     { label: "Status", options: ["All Status", "Available", "Out of Stock"] },
   ];
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-[#E1F1E0] text-[#15B70D]";
-      case "Inactive":
-        return "bg-[#F3F3F3] text-[#919191]";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  const getStockStatus = (stock: number) => {
+    if (stock === 0) return { text: "Out of Stock", color: "bg-[#F3F3F3] text-[#919191]" };
+    if (stock <= 20) return { text: "Low Stock", color: "bg-[#FFF3E0] text-[#FF8A00]" };
+    return { text: "In Stock", color: "bg-[#E1F1E0] text-[#15B70D]" };
   };
 
   const handleEdit = (id: string) => {
     console.log("Editing product with ID:", id);
-    // Navigate to edit form or open modal
+    // Navigate to edit product page
+    navigate(`/admin/edit-product/${id}`);
   };
 
-  const handleDelete = (id: string) => {
-    console.log("Deleting product with ID:", id);
-    // Show confirm dialog or call API
+  const handleDelete = async (id: string) => {
+ 
   };
+
+
+  useEffect(() => {
+    dispatch(fetchAllProducts());
+  }, [dispatch]);
+
   return (
     <AdminLayout pageTitle="">
       <div className="">
@@ -155,9 +114,16 @@ const Products: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+            {products.map((product) => {
+                const currentStock = product.stock || product.quantity || 0;
+                const stockStatus = getStockStatus(currentStock);
+                
+                if (loading.products) return <div>Loading...</div>;
+                if (error.products) return <div>Error: {error.products}</div>;
+                
+                return (
                 <tr
-                  key={product.id}
+                key={product._id}
                   className="border-b text-[#5E5E5E] last:border-b-0"
                 >
                   <td className="p-4">
@@ -167,35 +133,35 @@ const Products: React.FC = () => {
                     <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center">
                       <img
                         src={product.image}
-                        alt={product.product}
+                        alt={product.name}
                         className="w-[26px]"
                       />
                     </div>
-                    {product.product}
+                    {product.name}
                   </td>
-                  <td className="p-4 text-sm">{product.productId}</td>
-                  <td className="p-4 text-sm">{product.category}</td>
-                  <td className="p-4 text-sm font-medium">{product.store}</td>
-                  <td className="p-4 text-sm">{product.price}</td>
-                  <td className="p-4 text-sm font-medium">{product.stock}</td>
+                  <td className="p-4 text-sm">{product._id.slice(-8).toUpperCase()}</td>
+                    <td className="p-4 text-sm">{product.categoryName}</td>
+                    <td className="p-4 text-sm font-medium">{product.brandName}</td>
+                    <td className="p-4 text-sm">₦{product.displayPrice.toLocaleString()}</td>
+                    <td className="p-4 text-sm font-medium">{currentStock}</td>
                   <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded-[4px] text-xs font-normal ${getStatusColor(product.status)}`}
-                    >
-                      {product.status}
+                  <span
+                        className={`px-2 py-1 rounded-[4px] text-xs font-normal ${stockStatus.color}`}
+                      >
+                      {stockStatus.text}
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-6">
                       <button
-                        onClick={() => handleEdit(product.id)}
+                        onClick={() => handleEdit(product._id)}
                         className="w-[55px] h-[30px] bg-primary rounded-[6px] text-white flex items-center justify-center text-xs font-semibold gap-1"
                       >
                         <img src={edit} alt="" />
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => handleDelete(product._id)}
                         className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]"
                       >
                         <img src={deLete} alt="" />
@@ -203,10 +169,22 @@ const Products: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+               );
+              })}
             </tbody>
           </table>
         </div>
+
+         {/* Empty state */}
+         {products.length === 0 && !loading.products && (
+          <div className="text-center py-8 text-gray-500">
+            <div className="mb-4">
+              <img src={ProductIcon} alt="" className="mx-auto w-16 h-16 opacity-50" />
+            </div>
+            <p className="text-lg font-medium">No products found</p>
+            <p className="text-sm">Add your first product to get started</p>
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="flex items-center justify-center gap-2 mt-6">
