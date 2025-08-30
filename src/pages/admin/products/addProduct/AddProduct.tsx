@@ -10,36 +10,110 @@ import {
 } from "../../../../store/slices/adminDashboardSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 
+// Corrected interface matching your backend API schema
 interface ProductFormData {
+  // Basic product info
   name: string;
-  displayPrice: number;
-  regularPrice: number;
-  images: string[];
-  categoryName: string;
-  brandName: string;
-  // Additional fields for your comprehensive form
   briefDescription?: string;
   fullDescription?: string;
+  description?: string; // Backend expects this field
+
+  // Images
+  imageFiles: File[];
+
+  // Category and brand (form uses these names, but backend expects different names)
+  categoryName: string; // Maps to 'category' in backend
+  brandName: string; // Maps to 'brand' in backend
+
+  // Additional product details
+  partNumber?: string; // Backend expects this
+  department?: string; // Backend expects this
+  vehicleType?: string; // Backend expects this (you can map productType to this)
+  productType?: string; // Keep this for your form
+
+  // Physical properties
   weight?: string;
   length?: string;
   breadth?: string;
   width?: string;
   material?: string;
-  productType?: string;
+
+  // Inventory
   stockStatus?: string;
-  stock?: number;
+  stock?: number; // Maps to 'quantityInStock' in backend
   units?: string;
   sku?: string;
   minStock?: number;
-  salesPrice?: number;
+
+  // Pricing - CORRECTED NAMES
+  regularPrice: number;
+  displayPrice: number; // Maps to 'salesPrice' in backend
   discount?: number;
   discountPrice?: number;
-  // Wholesale fields
-  wholesaleRegularPrice?: number;
-  wholesaleSalesPrice?: number;
+
+  // Remove these fields that don't exist in backend:
+  // salesPrice?: number;           // This should be displayPrice
+  // wholesaleRegularPrice?: number; // Not in backend schema
+  // wholesaleSalesPrice?: number;   // Not in backend schema
+
+  // Wholesale/bulk pricing
   minOrderQuantity?: number;
   tieredPricingType?: string;
+
+  // Additional backend fields you might want to add to your form later
+  store?: string;
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isDealOfTheDay?: boolean;
 }
+
+// Alternative: Create a separate interface that exactly matches the backend
+interface BackendProductData {
+  _id?: string;
+  store?: string;
+  name: string;
+  briefDescription?: string;
+  fullDescription?: string;
+  images?: string[];
+  description?: string;
+  partNumber?: string;
+  category: string;
+  department?: string;
+  brand: string;
+  vehicleType?: string;
+  weight?: number;
+  packageSize?: {
+    length: number;
+    breadth: number;
+    width: number;
+  };
+  material?: string;
+  stockStatus?: string;
+  quantityInStock?: number;
+  units?: string;
+  sku?: string;
+  minStock?: number;
+  regularPrice: number;
+  salesPrice: number;
+  discount?: number;
+  discountPrice?: number;
+  minOrderQuantity?: number;
+  tieredPricingType?: string;
+  tieredPricing?: Array<{
+    quantity: number;
+    price: number;
+  }>;
+  rating?: number;
+  numReviews?: number;
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isDealOfTheDay?: boolean;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Updated form data initialization
 
 interface TieredPrice {
   id: string;
@@ -53,33 +127,56 @@ const AddProduct: React.FC = () => {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.adminDashboard);
 
+  // Fixed form state initialization matching the corrected interface
   const [formData, setFormData] = useState<ProductFormData>({
+    // Basic product info
     name: "",
-    displayPrice: 0,
-    regularPrice: 0,
-    images: [],
-    categoryName: "",
-    brandName: "",
     briefDescription: "",
     fullDescription: "",
+    description: "",
+
+    // Images
+    imageFiles: [],
+
+    // Category and brand
+    categoryName: "",
+    brandName: "",
+
+    // Additional product details
+    partNumber: "",
+    department: "",
+    vehicleType: "",
+    productType: "",
+
+    // Physical properties
     weight: "",
     length: "",
     breadth: "",
     width: "",
     material: "",
-    productType: "",
+
+    // Inventory
     stockStatus: "",
     stock: 0,
     units: "",
     sku: "",
     minStock: 10,
-    salesPrice: 0,
+
+    // Pricing - CORRECTED (removed fields not in backend)
+    regularPrice: 0,
+    displayPrice: 0, // This maps to salesPrice in backend
     discount: 0,
     discountPrice: 0,
-    wholesaleRegularPrice: 0,
-    wholesaleSalesPrice: 0,
+
+    // Wholesale/bulk pricing
     minOrderQuantity: 1,
     tieredPricingType: "",
+
+    // Additional backend fields
+    store: "",
+    isFeatured: false,
+    isNewArrival: false,
+    isDealOfTheDay: false,
   });
 
   const [tieredPrices, setTieredPrices] = useState<TieredPrice[]>([
@@ -179,23 +276,18 @@ const AddProduct: React.FC = () => {
 
   // Updated handleImageUpload with compression
   // Simple image handler
-  const handleImageUpload = (imageData: string) => {
+  const handleImageUpload = (file: File) => {
     setFormData((prev) => ({
       ...prev,
-      images: [...prev.images, imageData],
+      imageFiles: [...prev.imageFiles, file],
     }));
-    setFileUploaded(true);
   };
 
-  const handleRemoveImage = (imageUrl: string) => {
+  const handleRemoveImage = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter((img) => img !== imageUrl),
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index),
     }));
-
-    if (formData.images.length <= 1) {
-      setFileUploaded(false);
-    }
   };
 
   // const handleRemoveImage = (url: string) => {
@@ -234,132 +326,193 @@ const AddProduct: React.FC = () => {
     );
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+ // Update your validateForm to be less strict temporarily
+const validateForm = (): boolean => {
+  const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Product name is required";
+  if (!formData.name?.trim()) {
+    newErrors.name = "Product name is required";
+  }
+
+  if (!formData.regularPrice || formData.regularPrice <= 0) {
+    newErrors.regularPrice = "Regular price must be greater than 0";
+  }
+
+  if (!formData.displayPrice || formData.displayPrice <= 0) {
+    newErrors.displayPrice = "Display price must be greater than 0";
+  }
+
+  if (!formData.categoryName?.trim()) {
+    newErrors.categoryName = "Category is required";
+  }
+
+  if (!formData.brandName?.trim()) {
+    newErrors.brandName = "Brand name is required";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+const handleSubmit = async () => {
+  if (!validateForm()) {
+    alert("Please fix the form errors before submitting");
+    return;
+  }
+
+  try {
+    // Create FormData object
+    const formDataToSend = new FormData();
+    
+    // ABSOLUTELY REQUIRED FIELDS FIRST
+    formDataToSend.append('name', formData.name.trim());
+    formDataToSend.append('category', formData.categoryName.trim());
+    formDataToSend.append('brand', formData.brandName.trim());
+    formDataToSend.append('regularPrice', formData.regularPrice.toString());
+    formDataToSend.append('salesPrice', formData.displayPrice.toString());
+    
+    // DESCRIPTION FIELDS (your backend might require at least one)
+    const briefDesc = formData.briefDescription?.trim() || '';
+    const fullDesc = formData.fullDescription?.trim() || '';
+    const description = briefDesc || fullDesc || `${formData.name} - Product description`;
+    
+    formDataToSend.append('briefDescription', briefDesc);
+    formDataToSend.append('fullDescription', fullDesc);
+    formDataToSend.append('description', description); // Fallback description
+    
+    // INVENTORY FIELDS (might be required)
+    formDataToSend.append('quantityInStock', (formData.stock ?? 0).toString());
+    formDataToSend.append('stockStatus', formData.stockStatus || 'In Stock');
+    
+    // CREATOR FIELD (likely required for audit)
+    formDataToSend.append('createdBy', 'admin-user-id');
+    
+    // ADDITIONAL FIELDS YOUR BACKEND EXPECTS
+    formDataToSend.append('partNumber', formData.sku || ''); // Use SKU as partNumber
+    formDataToSend.append('department', formData.department || 'General');
+    formDataToSend.append('vehicleType', formData.productType || 'Universal');
+    formDataToSend.append('store', 'default-store-id');
+    
+    // PHYSICAL PROPERTIES
+    formDataToSend.append('weight', formData.weight ? parseFloat(formData.weight).toString() : '0');
+    formDataToSend.append('material', formData.material || '');
+    
+    // PACKAGE SIZE (as JSON object - your backend expects this structure)
+    const packageSize = {
+      length: parseFloat(formData.length || '0'),
+      breadth: parseFloat(formData.breadth || '0'),
+      width: parseFloat(formData.width || '0'),
+    };
+    formDataToSend.append('packageSize', JSON.stringify(packageSize));
+    
+    // INVENTORY DETAILS
+    formDataToSend.append('units', formData.units || 'pcs');
+    formDataToSend.append('sku', formData.sku || '');
+    formDataToSend.append('minStock', (formData.minStock ?? 0).toString());
+    
+    // PRICING DETAILS
+    formDataToSend.append('discount', (formData.discount ?? 0).toString());
+    formDataToSend.append('discountPrice', (formData.discountPrice ?? 0).toString());
+    formDataToSend.append('minOrderQuantity', (formData.minOrderQuantity ?? 1).toString());
+    formDataToSend.append('tieredPricingType', formData.tieredPricingType || 'Fixed');
+    
+    // TIERED PRICING
+    const tieredPricingData = tieredPrices.map((tier) => ({
+      quantity: tier.quantity || 0,
+      price: tier.price || 0,
+    }));
+    formDataToSend.append('tieredPricing', JSON.stringify(tieredPricingData));
+    
+    // BOOLEAN FLAGS (convert to strings)
+    formDataToSend.append('rating', '0');
+    formDataToSend.append('numReviews', '0');
+    formDataToSend.append('isFeatured', 'false');
+    formDataToSend.append('isNewArrival', 'false');
+    formDataToSend.append('isDealOfTheDay', 'false');
+    
+    // IMAGES (must be last)
+    if (formData.imageFiles && formData.imageFiles.length > 0) {
+      formData.imageFiles.forEach((file) => {
+        formDataToSend.append('images', file);
+      });
     }
 
-    // Fix validation field names
-    if (formData.displayPrice <= 0) {
-      newErrors.displayPrice = "Display price must be greater than 0";
-    }
-
-    if (formData.regularPrice <= 0) {
-      newErrors.regularPrice = "Regular price must be greater than 0";
-    }
-
-    if (!formData.categoryName.trim()) {
-      newErrors.categoryName = "Category is required";
-    }
-
-    if (!formData.brandName.trim()) {
-      newErrors.brandName = "Brand name is required";
-    }
-
-    if (!formData.images || formData.images.length === 0) {
-      newErrors.images = "At least one product image is required"; // Fixed field name
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      alert("Please fix the form errors before submitting");
+    // ENHANCED DEBUG LOGGING
+    console.log('=== ENHANCED FormData Debug ===');
+    console.log('Form validation passed:', !validateForm());
+    console.log('Image files count:', formData.imageFiles?.length || 0);
+    
+    // Check for empty required fields
+    const requiredFields = ['name', 'category', 'brand', 'regularPrice', 'salesPrice'];
+    const emptyFields: string[] = [];
+    
+    const entries = Array.from(formDataToSend.entries());
+    entries.forEach(([key, value]) => {
+      if (requiredFields.includes(key)) {
+        if (value instanceof File) {
+          console.log(`${key}:`, `File(${value.name}, ${value.size} bytes)`);
+        } else {
+          console.log(`${key}:`, `"${value}" (length: ${value.toString().length})`);
+          if (!value || value.toString().trim() === '' || value === '0') {
+            emptyFields.push(key);
+          }
+        }
+      } else if (value instanceof File) {
+        console.log(`${key}:`, `File(${value.name}, ${value.size} bytes)`);
+      } else {
+        console.log(`${key}:`, value);
+      }
+    });
+    
+    if (emptyFields.length > 0) {
+      console.error('EMPTY REQUIRED FIELDS:', emptyFields);
+      alert(`The following required fields are empty: ${emptyFields.join(', ')}`);
       return;
     }
-
-    try {
-      // Debug: Log the current form data
-      console.log("Current form data:", formData);
-
-      const productData: CreateProductData = {
-        name: formData.name,
-        briefDescription: formData.briefDescription || "",
-        fullDescription: formData.fullDescription || "",
-        images: formData.images,
-        regularPrice: formData.regularPrice,
-        salesPrice: formData.displayPrice, // ✅ map displayPrice -> salesPrice
-        category: formData.categoryName, // ✅ map categoryName -> category
-        brand: formData.brandName, // ✅ map brandName -> brand
-        stockStatus: formData.stockStatus || "In Stock",
-        quantityInStock: formData.stock ?? 0, // ✅ map stock -> quantityInStock
-        units: formData.units,
-        sku: formData.sku,
-        minStock: formData.minStock ?? 0,
-        weight: parseFloat(formData.weight || "0"),
-        packageSize: {
-          length: parseFloat(formData.length || "0"),
-          breadth: parseFloat(formData.breadth || "0"),
-          width: parseFloat(formData.width || "0"),
-        },
-        material: formData.material,
-        discount: formData.discount,
-        discountPrice: formData.discountPrice,
-        minOrderQuantity: formData.minOrderQuantity ?? 0,
-        tieredPricingType: formData.tieredPricingType || "Fixed",
-        tieredPricing: tieredPrices.map((tier) => ({
-          quantity: tier.quantity,
-          price: tier.price,
-        })),
-        rating: 0,
-        numReviews: 0,
-        isFeatured: false,
-        isNewArrival: false,
-        isDealOfTheDay: false,
-        createdBy: "admin-user-id", // ✅ required
-        store: "your-store-id", // ✅ optional, but schema allows it
-      };
-
-      // Debug: Log what we're sending
-      console.log(
-        "Sending product data:",
-        JSON.stringify(productData, null, 2)
-      );
-
-      // Validate required fields before sending
-      const requiredFields = {
-        name: productData.name,
-        regularPrice: productData.regularPrice,
-        salesPrice: productData.salesPrice,
-        images: productData.images,
-      };
-
-      const missingFields = Object.entries(requiredFields)
-        .filter(
-          ([key, value]) =>
-            !value || (Array.isArray(value) && value.length === 0)
-        )
-        .map(([key]) => key);
-
-      if (missingFields.length > 0) {
-        console.error("Missing required fields:", missingFields);
-        alert(`Missing required fields: ${missingFields.join(", ")}`);
-        return;
-      }
-
-      await dispatch(addProduct(productData)).unwrap();
-      alert("Product added successfully!");
-      navigate("/admin/products");
-    } catch (error: any) {
-      console.error("Error adding product:", error);
-
-      // Better error handling
-      const errorMessage =
-        error?.message ||
-        error?.response?.data?.message ||
-        error?.toString() ||
-        "Unknown error";
-      alert(`Failed to add product: ${errorMessage}`);
+    
+    // Check if images are present
+    const hasImages = entries.some(([key]) => key === 'images');
+    if (!hasImages) {
+      console.error('NO IMAGES FOUND IN FORM DATA');
+      alert('At least one image is required');
+      return;
     }
-    console.log("Form data before submit:", {
-      images: formData.images,
-      imageCount: formData.images.length,
-    });
-  };
+    
+    console.log('Total FormData entries:', entries.length);
+    console.log('===============================');
+
+    // Make the API call
+    const result = await dispatch(addProduct(formDataToSend)).unwrap();
+    console.log('Product created successfully:', result);
+    alert("Product added successfully!");
+    navigate("/admin/products");
+    
+  } catch (error: any) {
+    console.error("=== API ERROR DEBUG ===");
+    console.error("Full error object:", error);
+    
+    if (error?.response) {
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", error.response.data);
+      console.error("Response headers:", error.response.headers);
+    }
+    
+    if (error?.request) {
+      console.error("Request made but no response:", error.request);
+    }
+    
+    console.error("=====================");
+    
+    const errorMessage =
+      error?.message ||
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.toString() ||
+      "Unknown error";
+      
+    alert(`Failed to add product: ${errorMessage}`);
+  }
+};
 
   const handleDiscard = () => {
     const isConfirmed = window.confirm(
@@ -387,57 +540,134 @@ const AddProduct: React.FC = () => {
                 Product Images
               </h2>
               <div className="flex items-center gap-4 border border-[#D9D9D9] rounded-[12px] w-full p-4">
+                {/* First large image slot */}
                 <div
                   className={`w-full h-[198px] flex items-center justify-center rounded-[12px] transition-all duration-300 ${
-                    fileUploaded
+                    formData.imageFiles && formData.imageFiles.length > 0
                       ? "border border-primary"
                       : "border border-primary border-dashed"
                   }`}
                 >
-                  <FileUploader
-                    onUpload={handleImageUpload}
-                    onRemove={() => setFileUploaded(false)}
-                  />
+                  {formData.imageFiles && formData.imageFiles[0] ? (
+                    <div className="w-full h-full relative">
+                      <img
+                        src={URL.createObjectURL(formData.imageFiles[0])}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(0)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <FileUploader
+                      onUpload={handleImageUpload}
+                      onRemove={() => {}}
+                    />
+                  )}
                 </div>
+
+                {/* Second large image slot */}
                 <div
                   className={`w-full h-[198px] flex items-center justify-center rounded-[12px] transition-all duration-300 ${
-                    fileUploaded
+                    formData.imageFiles && formData.imageFiles.length > 1
                       ? "border border-primary"
                       : "border border-primary border-dashed"
                   }`}
                 >
-                  <FileUploader
-                    onUpload={handleImageUpload}
-                    onRemove={() => setFileUploaded(false)}
-                  />
+                  {formData.imageFiles && formData.imageFiles[1] ? (
+                    <div className="w-full h-full relative">
+                      <img
+                        src={URL.createObjectURL(formData.imageFiles[1])}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(1)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <FileUploader
+                      onUpload={handleImageUpload}
+                      onRemove={() => {}}
+                    />
+                  )}
                 </div>
+
+                {/* Small image slots */}
                 <div className="flex justify-between items-center flex-col gap-4">
                   <div
                     className={`w-[161px] h-[87px] flex items-center justify-center rounded-[12px] ${
-                      fileUploaded
+                      formData.imageFiles && formData.imageFiles.length > 2
                         ? "border border-primary"
                         : "border border-primary border-dashed"
                     }`}
                   >
-                    <FileUploader
-                      onUpload={handleImageUpload}
-                      onRemove={() => setFileUploaded(false)}
-                    />
+                    {formData.imageFiles && formData.imageFiles[2] ? (
+                      <div className="w-full h-full relative">
+                        <img
+                          src={URL.createObjectURL(formData.imageFiles[2])}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(2)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <FileUploader
+                        onUpload={handleImageUpload}
+                        onRemove={() => {}}
+                      />
+                    )}
                   </div>
+
                   <div
                     className={`w-[161px] h-[87px] border border-primary flex items-center justify-center rounded-[12px] ${
-                      fileUploaded
+                      formData.imageFiles && formData.imageFiles.length > 3
                         ? "border border-primary"
                         : "border border-primary border-dashed"
                     }`}
                   >
-                    <FileUploader
-                      onUpload={handleImageUpload}
-                      onRemove={() => setFileUploaded(false)}
-                    />
+                    {formData.imageFiles && formData.imageFiles[3] ? (
+                      <div className="w-full h-full relative">
+                        <img
+                          src={URL.createObjectURL(formData.imageFiles[3])}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(3)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <FileUploader
+                        onUpload={handleImageUpload}
+                        onRemove={() => {}}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
+              {errors.imageFiles && (
+                <p className="text-red-500 text-sm mt-2">{errors.imageFiles}</p>
+              )}
             </section>
             {/* Description */}
             <section className="mb-8">
@@ -857,7 +1087,7 @@ const AddProduct: React.FC = () => {
                 Wholesale Pricing
               </h2>
               <div className="border border-[#D9D9D9] w-full p-4 rounded-[12px]">
-                <div className="flex gap-6 items-center mb-6">
+                {/* <div className="flex gap-6 items-center mb-6">
                   <div className="flex flex-col w-full">
                     <label
                       htmlFor="wholesaleRegularPrice"
@@ -890,6 +1120,23 @@ const AddProduct: React.FC = () => {
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
                   </div>
+                </div> */}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="department"
+                    className="text-sm font-normal text-customBrown pb-2"
+                  >
+                    Department
+                  </label>
+                  <input
+                    type="text"
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Auto Parts, Electronics"
+                    className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
+                  />
                 </div>
                 <div className="flex gap-6 items-center mb-6">
                   <div className="flex flex-col w-full">

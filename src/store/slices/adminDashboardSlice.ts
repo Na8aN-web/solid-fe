@@ -49,6 +49,7 @@ export interface Product {
   minStock?: number;
 }
 
+// Product creation interface
 export interface CreateProductData {
   name: string;
   briefDescription: string;
@@ -87,10 +88,26 @@ export interface CreateProductData {
   isFeatured?: boolean;
   isNewArrival?: boolean;
   isDealOfTheDay?: boolean;
-  createdBy: string; 
+  createdBy: string;
   store?: string;
 }
 
+// Updated Category creation interface
+export interface CreateProductCategory {
+  name: string;
+  images: string;
+  isActive?: boolean;
+}
+
+// Category interface
+export interface Category {
+  _id: string;
+  name: string;
+  images: string; // Single image as string
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // API Response Types (matching Swagger)
 interface UsersCountResponse {
@@ -105,11 +122,20 @@ interface ProductsResponse {
   products: Product[];
 }
 
+interface CategoriesResponse {
+  categories: Category[];
+}
+
+interface CategoryCreateResponse {
+  category: Category;
+}
+
 export interface AdminDashboardState {
   metrics: DashboardMetrics | null;
   recentOrders: Order[];
   lowStockProducts: LowStockProduct[];
   products: Product[];
+  categories: Category[];
   loading: {
     metrics: boolean;
     orders: boolean;
@@ -117,6 +143,8 @@ export interface AdminDashboardState {
     products: boolean;
     deleteProduct: boolean;
     addProduct: boolean;
+    addProductCategory: boolean;
+    categories: boolean;
   };
   error: {
     metrics: string | null;
@@ -125,6 +153,8 @@ export interface AdminDashboardState {
     products: string | null;
     deleteProduct: string | null;
     addProduct: string | null;
+    addProductCategory: string | null;
+    categories: string | null;
   };
 }
 
@@ -133,6 +163,7 @@ const initialState: AdminDashboardState = {
   recentOrders: [],
   lowStockProducts: [],
   products: [],
+  categories: [], 
   loading: {
     metrics: false,
     orders: false,
@@ -140,6 +171,8 @@ const initialState: AdminDashboardState = {
     products: false,
     deleteProduct: false,
     addProduct: false,
+    addProductCategory: false,
+    categories: false,
   },
   error: {
     metrics: null,
@@ -148,6 +181,8 @@ const initialState: AdminDashboardState = {
     products: null,
     deleteProduct: null,
     addProduct: null,
+    addProductCategory: null,
+    categories: null,
   },
 };
 
@@ -336,6 +371,32 @@ export const fetchAllProducts = createAsyncThunk(
   }
 );
 
+// fetch categories thunk
+export const fetchAllCategories = createAsyncThunk(
+  "adminDashboard/categories",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response =
+        await axiosInstance.get<CategoriesResponse>("/productscategory");
+      const categories = response.data.categories || response.data || [];
+
+      if (!Array.isArray(categories)) {
+        throw new Error("Invalid categories data received");
+      }
+
+      return categories as Category[];
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+      if (error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error);
+      }
+      return rejectWithValue("Failed to fetch categories. Please try again.");
+    }
+  }
+);
+
 export const deleteProduct = createAsyncThunk(
   "adminDashboard/deleteProduct",
   async (productId: string, { rejectWithValue }) => {
@@ -356,18 +417,49 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
+// export const addProduct = createAsyncThunk(
+//   "adminDashboard/addProduct",
+//   async (productData: CreateProductData, { rejectWithValue }) => {
+//     try {
+//       // Make POST request to create product
+//       const response = await axiosInstance.post<{ product: Product }>(
+//         "/products",
+//         productData
+//       );
+
+//       return response.data.product; // Return the created product
+//     } catch (error: any) {
+//       if (error.response?.data?.message) {
+//         return rejectWithValue(error.response.data.message);
+//       }
+//       if (error.response?.data?.error) {
+//         return rejectWithValue(error.response.data.error);
+//       }
+//       return rejectWithValue("Failed to add product. Please try again.");
+//     }
+//   }
+// );
+
+// Update your addProduct thunk to handle FormData
 export const addProduct = createAsyncThunk(
   "adminDashboard/addProduct",
-  async (productData: CreateProductData, { rejectWithValue }) => {
+  async (productData: FormData, { rejectWithValue }) => {
     try {
-      // Make POST request to create product
+      // Make POST request with FormData
       const response = await axiosInstance.post<{ product: Product }>(
         "/products",
-        productData
+        productData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       );
 
       return response.data.product; // Return the created product
     } catch (error: any) {
+      console.error('Add product error:', error.response?.data || error.message);
+      
       if (error.response?.data?.message) {
         return rejectWithValue(error.response.data.message);
       }
@@ -375,6 +467,88 @@ export const addProduct = createAsyncThunk(
         return rejectWithValue(error.response.data.error);
       }
       return rejectWithValue("Failed to add product. Please try again.");
+    }
+  }
+);
+
+// Alternative: If you want to keep the CreateProductData interface but handle files separately
+// You could create a new interface that combines both:
+
+export interface CreateProductWithFiles {
+  productData: Omit<CreateProductData, 'images'>; // Remove images from original interface
+  imageFiles: File[];
+}
+
+// And then create a separate thunk:
+export const addProductWithFiles = createAsyncThunk(
+  "adminDashboard/addProductWithFiles",
+  async ({ productData, imageFiles }: CreateProductWithFiles, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      
+      // Add all product data fields to FormData
+      Object.entries(productData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle nested objects like packageSize
+            formData.append(key, JSON.stringify(value));
+          } else if (Array.isArray(value)) {
+            // Handle arrays like tieredPricing
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+      
+      // Add image files
+      imageFiles.forEach((file, index) => {
+        formData.append('images', file);
+      });
+
+      const response = await axiosInstance.post<{ product: Product }>(
+        "/products",
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      return response.data.product;
+    } catch (error: any) {
+      console.error('Add product with files error:', error.response?.data || error.message);
+      
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+      if (error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error);
+      }
+      return rejectWithValue("Failed to add product. Please try again.");
+    }
+  }
+);
+export const addProductCategory = createAsyncThunk(
+  "adminDashboard/addProductCategory",
+  async (categoryData: CreateProductCategory, { rejectWithValue }) => {
+    try {
+      // Make POST request to create category
+      const response = await axiosInstance.post<CategoryCreateResponse>(
+        "/productscategory",
+        categoryData
+      );
+
+      return response.data.category; // Return the created category
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+      if (error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error);
+      }
+      return rejectWithValue("Failed to add category. Please try again.");
     }
   }
 );
@@ -391,6 +565,8 @@ const adminDashboardSlice = createSlice({
         products: null,
         deleteProduct: null,
         addProduct: null,
+        addProductCategory: null,
+        categories: null,
       };
     },
     refreshDashboard: (state) => {
@@ -402,6 +578,8 @@ const adminDashboardSlice = createSlice({
         products: true,
         deleteProduct: true,
         addProduct: true,
+        addProductCategory: true,
+        categories: true,
       };
     },
     // Add a reducer to update individual metrics if needed
@@ -470,7 +648,21 @@ const adminDashboardSlice = createSlice({
       state.loading.products = false;
       state.error.products = action.payload as string;
     });
+    // Fetch all categories
+    builder.addCase(fetchAllCategories.pending, (state) => {
+      state.loading.categories = true;
+      state.error.categories = null;
+    });
+    builder.addCase(fetchAllCategories.fulfilled, (state, action) => {
+      state.loading.categories = false;
+      state.categories = action.payload;
+    });
+    builder.addCase(fetchAllCategories.rejected, (state, action) => {
+      state.loading.categories = false;
+      state.error.categories = action.payload as string;
+    });
 
+    // Delete Product
     builder.addCase(deleteProduct.pending, (state) => {
       state.loading.deleteProduct = true;
       state.error.deleteProduct = null;
@@ -499,6 +691,20 @@ const adminDashboardSlice = createSlice({
     builder.addCase(addProduct.rejected, (state, action) => {
       state.loading.addProduct = false;
       state.error.addProduct = action.payload as string;
+    });
+    // Add product Category
+    builder.addCase(addProductCategory.pending, (state) => {
+      state.loading.addProductCategory = true;
+      state.error.addProductCategory = null;
+    });
+    builder.addCase(addProductCategory.fulfilled, (state, action) => {
+      state.loading.addProductCategory = false;
+      // Add the new category to the categories array, not products
+      state.categories.push(action.payload);
+    });
+    builder.addCase(addProductCategory.rejected, (state, action) => {
+      state.loading.addProductCategory = false;
+      state.error.addProductCategory = action.payload as string;
     });
   },
 });
