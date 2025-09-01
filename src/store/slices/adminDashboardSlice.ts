@@ -92,19 +92,41 @@ export interface CreateProductData {
   store?: string;
 }
 
-// Updated Category creation interface
+// Category creation interface
 export interface CreateProductCategory {
   name: string;
-  images: string;
-  isActive?: boolean;
 }
 
 // Category interface
-export interface Category {
+export interface ProductCategory {
   _id: string;
   name: string;
-  images: string; // Single image as string
-  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Brand creation interface
+export interface CreateProductBrand {
+  name: string;
+}
+
+// Brand interface
+export interface ProductBrand {
+  _id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Vehicle creation interface
+export interface CreateProductVehicleType {
+  name: string;
+}
+
+// Vehicle interface
+export interface ProductVehicleType {
+  _id: string;
+  name: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -123,11 +145,22 @@ interface ProductsResponse {
 }
 
 interface CategoriesResponse {
-  categories: Category[];
+  categories: ProductCategory[];
 }
-
 interface CategoryCreateResponse {
-  category: Category;
+  category: ProductCategory;
+}
+interface BrandsResponse {
+  brands: ProductBrand[];
+}
+interface BrandCreateResponse {
+  brand: ProductBrand;
+}
+interface VehiclesResponse {
+  vehicles: ProductVehicleType[];
+}
+interface VehicleCreateResponse {
+  vehicle: ProductVehicleType;
 }
 
 export interface AdminDashboardState {
@@ -135,7 +168,9 @@ export interface AdminDashboardState {
   recentOrders: Order[];
   lowStockProducts: LowStockProduct[];
   products: Product[];
-  categories: Category[];
+  categories: ProductCategory[];
+  brands: ProductBrand[];
+  vehicles: ProductVehicleType[];
   loading: {
     metrics: boolean;
     orders: boolean;
@@ -144,7 +179,14 @@ export interface AdminDashboardState {
     deleteProduct: boolean;
     addProduct: boolean;
     addProductCategory: boolean;
+    updateProductCategory: boolean; 
     categories: boolean;
+    addProductBrand: boolean;
+    updateProductBrand: boolean; 
+    brands: boolean;
+    addProductVehicleType: boolean;
+    updateProductVehicleType: boolean; 
+    vehicles: boolean;
   };
   error: {
     metrics: string | null;
@@ -154,7 +196,14 @@ export interface AdminDashboardState {
     deleteProduct: string | null;
     addProduct: string | null;
     addProductCategory: string | null;
+    updateProductCategory: string | null;
     categories: string | null;
+    addProductBrand: string | null;
+    updateProductBrand: string | null; 
+    brands: string | null;
+    addProductVehicleType: string | null;
+    updateProductVehicleType: string | null;
+    vehicles: string | null;
   };
 }
 
@@ -163,7 +212,9 @@ const initialState: AdminDashboardState = {
   recentOrders: [],
   lowStockProducts: [],
   products: [],
-  categories: [], 
+  categories: [],
+  brands: [],
+  vehicles: [],
   loading: {
     metrics: false,
     orders: false,
@@ -172,7 +223,14 @@ const initialState: AdminDashboardState = {
     deleteProduct: false,
     addProduct: false,
     addProductCategory: false,
+    updateProductCategory: false,
     categories: false,
+    addProductBrand: false,
+    updateProductBrand: false,
+    brands: false,
+    addProductVehicleType: false,
+    updateProductVehicleType: false,
+    vehicles: false,
   },
   error: {
     metrics: null,
@@ -183,6 +241,13 @@ const initialState: AdminDashboardState = {
     addProduct: null,
     addProductCategory: null,
     categories: null,
+    addProductBrand: null,
+    updateProductBrand: null,
+    brands: null,
+    addProductVehicleType: null,
+    updateProductCategory: null,
+    updateProductVehicleType: null,
+    vehicles: null,
   },
 };
 
@@ -376,15 +441,92 @@ export const fetchAllCategories = createAsyncThunk(
   "adminDashboard/categories",
   async (_, { rejectWithValue }) => {
     try {
-      const response =
-        await axiosInstance.get<CategoriesResponse>("/productscategory");
-      const categories = response.data.categories || response.data || [];
+      const res = await axiosInstance.get<
+        CategoriesResponse | ProductCategory[]
+      >("/categories");
+
+      const categories: ProductCategory[] = Array.isArray(res.data)
+        ? res.data
+        : res.data.categories;
 
       if (!Array.isArray(categories)) {
         throw new Error("Invalid categories data received");
       }
+      return categories;
+    } catch (error: any) {
+      if (error.response?.data?.message)
+        return rejectWithValue(error.response.data.message);
+      if (error.response?.data?.error)
+        return rejectWithValue(error.response.data.error);
+      return rejectWithValue("Failed to fetch categories. Please try again.");
+    }
+  }
+);
 
-      return categories as Category[];
+// fetch brands thunk
+export const fetchAllBrands = createAsyncThunk(
+  "adminDashboard/brands",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get<BrandsResponse | ProductBrand[]>(
+        "/brands"
+      );
+
+      const brands: ProductBrand[] = Array.isArray(res.data)
+        ? res.data
+        : res.data.brands;
+
+      if (!Array.isArray(brands)) {
+        throw new Error("Invalid brands data received");
+      }
+      return brands;
+    } catch (error: any) {
+      if (error.response?.data?.message)
+        return rejectWithValue(error.response.data.message);
+      if (error.response?.data?.error)
+        return rejectWithValue(error.response.data.error);
+      return rejectWithValue("Failed to fetch categories. Please try again.");
+    }
+  }
+);
+
+export const fetchAllVehiclesType = createAsyncThunk(
+  "adminDashboard/vehicle-types",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get<
+        VehiclesResponse | ProductVehicleType[]
+      >("/vehicle-types");
+
+      const vehicles: ProductVehicleType[] = Array.isArray(res.data)
+        ? res.data
+        : res.data.vehicles;
+
+      if (!Array.isArray(vehicles)) {
+        throw new Error("Invalid vehicles data received");
+      }
+      return vehicles;
+    } catch (error: any) {
+      if (error.response?.data?.message)
+        return rejectWithValue(error.response.data.message);
+      if (error.response?.data?.error)
+        return rejectWithValue(error.response.data.error);
+      return rejectWithValue("Failed to fetch vehicles. Please try again.");
+    }
+  }
+);
+
+export const addProductCategory = createAsyncThunk(
+  "adminDashboard/addProductCategory",
+  async (categoryData: CreateProductCategory, { rejectWithValue }) => {
+    try {
+      // Make POST request to create category
+      const response = await axiosInstance.post<CategoryCreateResponse>(
+        "/categories",
+        categoryData
+      );
+
+      return response.data.category; // Return the created category
     } catch (error: any) {
       if (error.response?.data?.message) {
         return rejectWithValue(error.response.data.message);
@@ -392,10 +534,196 @@ export const fetchAllCategories = createAsyncThunk(
       if (error.response?.data?.error) {
         return rejectWithValue(error.response.data.error);
       }
-      return rejectWithValue("Failed to fetch categories. Please try again.");
+      return rejectWithValue("Failed to add category. Please try again.");
     }
   }
 );
+
+export const addProductBrand = createAsyncThunk(
+  "adminDashboard/addProductBrand",
+  async (brandData: CreateProductBrand, { rejectWithValue }) => {
+    try {
+      // Make POST request to create category
+      const response = await axiosInstance.post<BrandCreateResponse>(
+        "/brands",
+        brandData
+      );
+
+      return response.data.brand; // Return the created brand
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+      if (error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error);
+      }
+      return rejectWithValue("Failed to add brand. Please try again.");
+    }
+  }
+);
+
+export const addProductVehicleType = createAsyncThunk(
+  "adminDashboard/addProductVehicleType",
+  async (vehicleData: CreateProductVehicleType, { rejectWithValue }) => {
+    try {
+      // Make POST request to create category
+      const response = await axiosInstance.post<VehicleCreateResponse>(
+        "/vehicle-types",
+        vehicleData
+      );
+
+      return response.data.vehicle;
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+      if (error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error);
+      }
+      return rejectWithValue("Failed to add vehicle. Please try again.");
+    }
+  }
+);
+
+// Helper: unwrap either { category: {...} } or plain {...}
+function extractCategory(data: any): ProductCategory | null {
+  const c = data?.category ?? data?.data?.category ?? data?.data ?? data;
+  return c && typeof c._id === "string" && typeof c.name === "string"
+    ? c
+    : null;
+}
+
+// update product category
+export interface UpdateProductCategory {
+  name?: string;
+}
+// UPDATE category
+export const updateProductCategory = createAsyncThunk<
+  ProductCategory,
+  { id: string; data: UpdateProductCategory },
+  { rejectValue: string }
+>(
+  "adminDashboard/updateProductCategory",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.put(`/categories/${id}`, data);
+      const category = res.data;
+      if (!category) return rejectWithValue("Invalid category payload");
+      return category;
+    } catch (err: any) {
+      if (err.response?.data?.message)
+        return rejectWithValue(err.response.data.message);
+      if (err.response?.data?.error)
+        return rejectWithValue(err.response.data.error);
+      return rejectWithValue("Failed to update category.");
+    }
+  }
+);
+
+export const deleteProductCategory = createAsyncThunk<
+  string, // we return the deleted id
+  string, // id
+  { rejectValue: string }
+>("adminDashboard/deleteProductCategory", async (id, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/categories/${id}`);
+    return id;
+  } catch (err: any) {
+    if (err.response?.data?.message)
+      return rejectWithValue(err.response.data.message);
+    if (err.response?.data?.error)
+      return rejectWithValue(err.response.data.error);
+    return rejectWithValue("Failed to delete category.");
+  }
+});
+
+// update product brand
+export interface UpdateProductBrand {
+  name?: string;
+}
+// UPDATE brand
+export const updateProductBrand = createAsyncThunk<
+  ProductBrand,
+  { id: string; data: UpdateProductBrand },
+  { rejectValue: string }
+>(
+  "adminDashboard/updateProductBrand",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.put(`/brands/${id}`, data);
+      const brand = res.data;
+      if (!brand) return rejectWithValue("Invalid brand payload");
+      return brand;
+    } catch (err: any) {
+      if (err.response?.data?.message)
+        return rejectWithValue(err.response.data.message);
+      if (err.response?.data?.error)
+        return rejectWithValue(err.response.data.error);
+      return rejectWithValue("Failed to update brand.");
+    }
+  }
+);
+
+export const deleteProductBrand = createAsyncThunk<
+  string, // we return the deleted id
+  string, // id
+  { rejectValue: string }
+>("adminDashboard/deleteProductBrand", async (id, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/brands/${id}`);
+    return id;
+  } catch (err: any) {
+    if (err.response?.data?.message)
+      return rejectWithValue(err.response.data.message);
+    if (err.response?.data?.error)
+      return rejectWithValue(err.response.data.error);
+    return rejectWithValue("Failed to delete brand.");
+  }
+});
+
+// update product brand
+export interface UpdateProductVehicleType {
+  name?: string;
+}
+// UPDATE vehicle type
+export const updateProductVehicleType = createAsyncThunk<
+  ProductVehicleType,
+  { id: string; data: UpdateProductVehicleType },
+  { rejectValue: string }
+>(
+  "adminDashboard/updateProductVehicleType",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.put(`/vehicle-types/${id}`, data);
+      const vehicle = res.data;
+      if (!vehicle) return rejectWithValue("Invalid vehicle-type payload");
+      return vehicle;
+    } catch (err: any) {
+      if (err.response?.data?.message)
+        return rejectWithValue(err.response.data.message);
+      if (err.response?.data?.error)
+        return rejectWithValue(err.response.data.error);
+      return rejectWithValue("Failed to update vehicle-type.");
+    }
+  }
+);
+
+export const deleteProductVehicleType = createAsyncThunk<
+  string, // we return the deleted id
+  string, // id
+  { rejectValue: string }
+>("adminDashboard/deleteProductVehicleType", async (id, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/vehicle-types/${id}`);
+    return id;
+  } catch (err: any) {
+    if (err.response?.data?.message)
+      return rejectWithValue(err.response.data.message);
+    if (err.response?.data?.error)
+      return rejectWithValue(err.response.data.error);
+    return rejectWithValue("Failed to delete vehicle-type.");
+  }
+});
 
 export const deleteProduct = createAsyncThunk(
   "adminDashboard/deleteProduct",
@@ -417,29 +745,6 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
-// export const addProduct = createAsyncThunk(
-//   "adminDashboard/addProduct",
-//   async (productData: CreateProductData, { rejectWithValue }) => {
-//     try {
-//       // Make POST request to create product
-//       const response = await axiosInstance.post<{ product: Product }>(
-//         "/products",
-//         productData
-//       );
-
-//       return response.data.product; // Return the created product
-//     } catch (error: any) {
-//       if (error.response?.data?.message) {
-//         return rejectWithValue(error.response.data.message);
-//       }
-//       if (error.response?.data?.error) {
-//         return rejectWithValue(error.response.data.error);
-//       }
-//       return rejectWithValue("Failed to add product. Please try again.");
-//     }
-//   }
-// );
-
 // Update your addProduct thunk to handle FormData
 export const addProduct = createAsyncThunk(
   "adminDashboard/addProduct",
@@ -451,15 +756,18 @@ export const addProduct = createAsyncThunk(
         productData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       return response.data.product; // Return the created product
     } catch (error: any) {
-      console.error('Add product error:', error.response?.data || error.message);
-      
+      console.error(
+        "Add product error:",
+        error.response?.data || error.message
+      );
+
       if (error.response?.data?.message) {
         return rejectWithValue(error.response.data.message);
       }
@@ -471,25 +779,25 @@ export const addProduct = createAsyncThunk(
   }
 );
 
-// Alternative: If you want to keep the CreateProductData interface but handle files separately
-// You could create a new interface that combines both:
-
 export interface CreateProductWithFiles {
-  productData: Omit<CreateProductData, 'images'>; // Remove images from original interface
+  productData: Omit<CreateProductData, "images">;
   imageFiles: File[];
 }
 
 // And then create a separate thunk:
 export const addProductWithFiles = createAsyncThunk(
   "adminDashboard/addProductWithFiles",
-  async ({ productData, imageFiles }: CreateProductWithFiles, { rejectWithValue }) => {
+  async (
+    { productData, imageFiles }: CreateProductWithFiles,
+    { rejectWithValue }
+  ) => {
     try {
       const formData = new FormData();
-      
+
       // Add all product data fields to FormData
       Object.entries(productData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          if (typeof value === 'object' && !Array.isArray(value)) {
+          if (typeof value === "object" && !Array.isArray(value)) {
             // Handle nested objects like packageSize
             formData.append(key, JSON.stringify(value));
           } else if (Array.isArray(value)) {
@@ -500,10 +808,10 @@ export const addProductWithFiles = createAsyncThunk(
           }
         }
       });
-      
+
       // Add image files
       imageFiles.forEach((file, index) => {
-        formData.append('images', file);
+        formData.append("images", file);
       });
 
       const response = await axiosInstance.post<{ product: Product }>(
@@ -511,15 +819,18 @@ export const addProductWithFiles = createAsyncThunk(
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       return response.data.product;
     } catch (error: any) {
-      console.error('Add product with files error:', error.response?.data || error.message);
-      
+      console.error(
+        "Add product with files error:",
+        error.response?.data || error.message
+      );
+
       if (error.response?.data?.message) {
         return rejectWithValue(error.response.data.message);
       }
@@ -527,28 +838,6 @@ export const addProductWithFiles = createAsyncThunk(
         return rejectWithValue(error.response.data.error);
       }
       return rejectWithValue("Failed to add product. Please try again.");
-    }
-  }
-);
-export const addProductCategory = createAsyncThunk(
-  "adminDashboard/addProductCategory",
-  async (categoryData: CreateProductCategory, { rejectWithValue }) => {
-    try {
-      // Make POST request to create category
-      const response = await axiosInstance.post<CategoryCreateResponse>(
-        "/productscategory",
-        categoryData
-      );
-
-      return response.data.category; // Return the created category
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        return rejectWithValue(error.response.data.message);
-      }
-      if (error.response?.data?.error) {
-        return rejectWithValue(error.response.data.error);
-      }
-      return rejectWithValue("Failed to add category. Please try again.");
     }
   }
 );
@@ -566,7 +855,14 @@ const adminDashboardSlice = createSlice({
         deleteProduct: null,
         addProduct: null,
         addProductCategory: null,
+        updateProductCategory: null,
         categories: null,
+        addProductBrand: null,
+        updateProductBrand: null,
+        brands: null,
+        addProductVehicleType: null,
+        updateProductVehicleType: null,
+        vehicles: null,
       };
     },
     refreshDashboard: (state) => {
@@ -579,7 +875,14 @@ const adminDashboardSlice = createSlice({
         deleteProduct: true,
         addProduct: true,
         addProductCategory: true,
+        updateProductCategory: true,
         categories: true,
+        addProductBrand: true,
+        updateProductBrand: true,
+        brands: true,
+        addProductVehicleType: true,
+        updateProductVehicleType: true,
+        vehicles: true,
       };
     },
     // Add a reducer to update individual metrics if needed
@@ -699,13 +1002,167 @@ const adminDashboardSlice = createSlice({
     });
     builder.addCase(addProductCategory.fulfilled, (state, action) => {
       state.loading.addProductCategory = false;
-      // Add the new category to the categories array, not products
       state.categories.push(action.payload);
     });
     builder.addCase(addProductCategory.rejected, (state, action) => {
       state.loading.addProductCategory = false;
       state.error.addProductCategory = action.payload as string;
     });
+    // Add product Brand
+    builder.addCase(addProductBrand.pending, (state) => {
+      state.loading.addProductBrand = true;
+      state.error.addProductBrand = null;
+    });
+    builder.addCase(addProductBrand.fulfilled, (state, action) => {
+      state.loading.addProductBrand = false;
+      state.brands.push(action.payload);
+    });
+    builder.addCase(addProductBrand.rejected, (state, action) => {
+      state.loading.addProductBrand = false;
+      state.error.addProductBrand = action.payload as string;
+    });
+    // Add product Vehicle Type
+    builder.addCase(addProductVehicleType.pending, (state) => {
+      state.loading.addProductVehicleType = true;
+      state.error.addProductVehicleType = null;
+    });
+    builder.addCase(addProductVehicleType.fulfilled, (state, action) => {
+      state.loading.addProductVehicleType = false;
+      state.vehicles.push(action.payload);
+    });
+    builder.addCase(addProductVehicleType.rejected, (state, action) => {
+      state.loading.addProductVehicleType = false;
+      state.error.addProductVehicleType = action.payload as string;
+    });
+    builder.addCase(fetchAllBrands.pending, (state) => {
+      state.loading.brands = true;
+      state.error.brands = null;
+    });
+    builder.addCase(fetchAllBrands.fulfilled, (state, action) => {
+      state.loading.brands = false;
+      state.brands = action.payload;
+    });
+    builder.addCase(fetchAllBrands.rejected, (state, action) => {
+      state.loading.brands = false;
+      state.error.brands = action.payload as string;
+    });
+
+    builder.addCase(fetchAllVehiclesType.pending, (state) => {
+      state.loading.vehicles = true;
+      state.error.vehicles = null;
+    });
+    builder.addCase(fetchAllVehiclesType.fulfilled, (state, action) => {
+      state.loading.vehicles = false;
+      state.vehicles = action.payload;
+    });
+    builder.addCase(fetchAllVehiclesType.rejected, (state, action) => {
+      state.loading.vehicles = false;
+      state.error.vehicles = action.payload as string;
+    });
+    // UPDATE CATEGORY
+    builder
+    .addCase(updateProductCategory.pending, (state) => {
+      state.loading.updateProductCategory = true; // Use specific key
+      state.error.updateProductCategory = null;
+    })
+    .addCase(updateProductCategory.fulfilled, (state, action) => {
+      state.loading.updateProductCategory = false;
+      const updated = action.payload;
+      const idx = state.categories.findIndex((c) => c._id === updated._id);
+      if (idx !== -1) state.categories[idx] = updated;
+    })
+    .addCase(updateProductCategory.rejected, (state, action) => {
+      state.loading.updateProductCategory = false;
+      state.error.updateProductCategory =
+        (action.payload as string) ?? "Failed to update category.";
+    });
+
+    // DELETE CATEGORY
+    builder
+      .addCase(deleteProductCategory.pending, (state) => {
+        state.loading.categories = true; // brief spinner on the list
+        state.error.categories = null;
+      })
+      .addCase(deleteProductCategory.fulfilled, (state, action) => {
+        state.loading.categories = false;
+        const id = action.payload;
+        state.categories = state.categories.filter((c) => c._id !== id);
+      })
+      .addCase(deleteProductCategory.rejected, (state, action) => {
+        state.loading.categories = false;
+        state.error.categories =
+          (action.payload as string) ?? "Failed to delete category.";
+      });
+
+       // UPDATE BRAND
+    builder
+    .addCase(updateProductBrand.pending, (state) => {
+      state.loading.updateProductBrand = true;
+      state.error.updateProductBrand = null;
+    })
+    .addCase(updateProductBrand.fulfilled, (state, action) => {
+      state.loading.updateProductBrand = false;
+      const updated = action.payload;
+      const idx = state.brands.findIndex((b) => b._id === updated._id);
+      if (idx !== -1) state.brands[idx] = updated;
+    })
+    .addCase(updateProductBrand.rejected, (state, action) => {
+      state.loading.updateProductBrand = false;
+      state.error.updateProductBrand =
+        (action.payload as string) ?? "Failed to update brand.";
+    });
+
+    // DELETE BRAND
+    builder
+      .addCase(deleteProductBrand.pending, (state) => {
+        state.loading.brands = true;
+        state.error.brands = null;
+      })
+      .addCase(deleteProductBrand.fulfilled, (state, action) => {
+        state.loading.brands = false;
+        const id = action.payload;
+        state.brands = state.brands.filter((b) => b._id !== id);
+      })
+      .addCase(deleteProductBrand.rejected, (state, action) => {
+        state.loading.brands = false;
+        state.error.brands =
+          (action.payload as string) ?? "Failed to delete brand.";
+      });
+
+       // UPDATE VEHICLE-TYPE
+    builder
+    .addCase(updateProductVehicleType.pending, (state) => {
+      state.loading.updateProductVehicleType = true;
+      state.error.updateProductVehicleType = null;
+    })
+    .addCase(updateProductVehicleType.fulfilled, (state, action) => {
+      state.loading.updateProductVehicleType = false;
+      const updated = action.payload;
+      const idx = state.vehicles.findIndex((v) => v._id === updated._id);
+      if (idx !== -1) state.vehicles[idx] = updated;
+    })
+    .addCase(updateProductVehicleType.rejected, (state, action) => {
+      state.loading.updateProductVehicleType = false;
+      state.error.updateProductVehicleType =
+        (action.payload as string) ?? "Failed to update vehicle-type.";
+    });
+
+    // DELETE VEHICLE-TYPE
+    builder
+      .addCase(deleteProductVehicleType.pending, (state) => {
+        state.loading.vehicles = true;
+        state.error.vehicles = null;
+      })
+      .addCase(deleteProductVehicleType.fulfilled, (state, action) => {
+        state.loading.vehicles = false;
+        const id = action.payload;
+        state.vehicles = state.vehicles.filter((v) => v._id !== id);
+      })
+      .addCase(deleteProductVehicleType.rejected, (state, action) => {
+        state.loading.vehicles = false;
+        state.error.vehicles =
+          (action.payload as string) ?? "Failed to delete vehicle-type.";
+      });
   },
 });
 
