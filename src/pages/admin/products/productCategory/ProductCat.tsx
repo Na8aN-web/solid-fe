@@ -1,73 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Plus, ArrowLeft, ArrowUpDown } from "lucide-react";
-import ProductIcon from "../../../assets/productIcon.svg";
 import carTyre from "../../../../assets/tyres.svg";
 import edit from "../../../../assets/edit.svg";
 import deLete from "../../../../assets/delete.svg";
 import AdminLayout from "../../components/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import AddNewProductCategory from "../components/AddNewProductCategory";
-
-interface Product {
-  id: string;
-  product: string;
-  image: string;
-  createdDate: string;
-}
-
-const products: Product[] = [
-  {
-    id: "1",
-    product: "Michellene Tyre",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-  {
-    id: "2",
-    product: "Michellene Tyre",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-  {
-    id: "3",
-    product: "Michellene Tyre",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-  {
-    id: "4",
-    product: "Michellene Tyre",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-];
-
-const productsBrand: Product[] = [
-  {
-    id: "1",
-    product: "Michellene brand",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-  {
-    id: "2",
-    product: "Michellene brand",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-  {
-    id: "3",
-    product: "Michellene brand",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-  {
-    id: "4",
-    product: "Michellene Tyre",
-    image: carTyre,
-    createdDate: "25th July, 2024",
-  },
-];
+import AddNewProductBrand from "../components/AddNewProductBrand";
+import AddNewVehicleType from "../components/AddNewVehicleType";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import {
+  fetchAllCategories,
+  fetchAllBrands,
+  fetchAllVehiclesType,
+  ProductCategory,
+  deleteProductCategory,
+  ProductBrand,
+  ProductVehicleType,
+  deleteProductBrand,
+  deleteProductVehicleType,
+} from "../../../../store/slices/adminDashboardSlice";
 
 const handleEdit = (id: string) => {
   console.log("Editing product with ID:", id);
@@ -79,6 +31,21 @@ const handleDelete = (id: string) => {
 
 // product categories table
 const Categories = () => {
+  const dispatch = useAppDispatch();
+  const { categories, loading, error } = useAppSelector(
+    (s) => s.adminDashboard
+  );
+  const [editCategory, setEditCategory] = useState<ProductCategory | null>(
+    null
+  );
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchAllCategories());
+  }, [dispatch]);
+
+  // if (loading.getCategories) return <p>Loading...</p>;
+  // if (error.getCategories) return <p>{error.getCategories}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -93,37 +60,31 @@ const Categories = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
+          {categories.map((cat) => (
             <tr
-              key={product.id}
+              key={cat._id}
               className="border-b text-[#5E5E5E] last:border-b-0"
             >
               <td className="p-4">
                 <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
               </td>
-              <td className="p-4 text-sm flex items-center justify-start gap-4">
-                <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center">
-                  <img
-                    src={product.image}
-                    alt={product.product}
-                    className="w-[26px]"
-                  />
-                </div>
-                {product.product}
+              <td className="p-4 text-sm">{cat.name}</td>
+              <td className="p-4 text-sm">
+                {cat.createdAt
+                  ? new Date(cat.createdAt).toLocaleDateString()
+                  : "—"}
               </td>
-              <td className="p-4 text-sm">{product.createdDate}</td>
 
               <td className="p-4">
                 <div className="flex items-center gap-6">
                   <button
-                    onClick={() => handleEdit(product.id)}
+                    onClick={() => setEditCategory(cat)}
                     className="w-[55px] h-[30px] bg-primary rounded-[6px] text-white flex items-center justify-center text-xs font-semibold gap-1"
                   >
-                    <img src={edit} alt="" />
-                    Edit
+                    <img src={edit} alt="" /> Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(product.id)}
+                    onClick={() => setDeleteId(cat._id)}
                     className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]"
                   >
                     <img src={deLete} alt="" />
@@ -134,11 +95,66 @@ const Categories = () => {
           ))}
         </tbody>
       </table>
+      {/* EDIT category modal (reuses Add modal) */}
+      {editCategory && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <AddNewProductCategory
+            onClose={() => setEditCategory(null)}
+            // AddNewProductCategory to accept an optional `category` prop
+            category={editCategory}
+          />
+        </div>
+      )}
+
+      {/* DELETE confirm */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[360px]">
+            <h3 className="text-lg font-semibold mb-2">Delete Category?</h3>
+            <p className="text-sm text-gray-600 mb-5">
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-3 h-9 rounded border"
+                onClick={() => setDeleteId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 h-9 rounded bg-red-600 text-white"
+                onClick={async () => {
+                  try {
+                    // import from slice:
+                    // import { deleteProductCategory } from "../../../../store/slices/adminDashboardSlice";
+                    await dispatch(deleteProductCategory(deleteId!)).unwrap();
+                    setDeleteId(null);
+                  } catch (e) {
+                    console.error("Delete failed:", e);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 // brands table
 const Brands = () => {
+  const dispatch = useAppDispatch();
+  const { brands, loading, error } = useAppSelector((s) => s.adminDashboard);
+
+  const [editBrand, setEditBrand] = useState<ProductBrand | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchAllBrands());
+  }, [dispatch]);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -153,37 +169,31 @@ const Brands = () => {
           </tr>
         </thead>
         <tbody>
-          {productsBrand.map((product) => (
+          {brands.map((brand) => (
             <tr
-              key={product.id}
+              key={brand._id}
               className="border-b text-[#5E5E5E] last:border-b-0"
             >
               <td className="p-4">
                 <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
               </td>
-              <td className="p-4 text-sm flex items-center justify-start gap-4">
-                <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center">
-                  <img
-                    src={product.image}
-                    alt={product.product}
-                    className="w-[26px]"
-                  />
-                </div>
-                {product.product}
+              <td className="p-4 text-sm">{brand.name}</td>
+              <td className="p-4 text-sm">
+                {brand.createdAt
+                  ? new Date(brand.createdAt).toLocaleDateString()
+                  : "—"}
               </td>
-              <td className="p-4 text-sm">{product.createdDate}</td>
 
               <td className="p-4">
                 <div className="flex items-center gap-6">
                   <button
-                    onClick={() => handleEdit(product.id)}
+                    onClick={() => setEditBrand(brand)}
                     className="w-[55px] h-[30px] bg-primary rounded-[6px] text-white flex items-center justify-center text-xs font-semibold gap-1"
                   >
-                    <img src={edit} alt="" />
-                    Edit
+                    <img src={edit} alt="" /> Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(product.id)}
+                    onClick={() => setDeleteId(brand._id)}
                     className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]"
                   >
                     <img src={deLete} alt="" />
@@ -194,11 +204,67 @@ const Brands = () => {
           ))}
         </tbody>
       </table>
+      {/* EDIT brand modal (reuses Add modal) */}
+      {editBrand && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <AddNewProductBrand
+            onClose={() => setEditBrand(null)}
+            // AddNewProductCategory to accept an optional `category` prop
+            brand={editBrand}
+          />
+        </div>
+      )}
+
+      {/* DELETE confirm */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[360px]">
+            <h3 className="text-lg font-semibold mb-2">Delete Brand?</h3>
+            <p className="text-sm text-gray-600 mb-5">
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-3 h-9 rounded border"
+                onClick={() => setDeleteId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 h-9 rounded bg-red-600 text-white"
+                onClick={async () => {
+                  try {
+                    await dispatch(deleteProductBrand(deleteId!)).unwrap();
+                    setDeleteId(null);
+                  } catch (e) {
+                    console.error("Delete failed:", e);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 // vehicles table
 const Vehicles = () => {
+  const dispatch = useAppDispatch();
+  const { vehicles, loading, error } = useAppSelector((s) => s.adminDashboard);
+
+  const [editVehicle, setEditVehicle] = useState<ProductVehicleType | null>(
+    null
+  );
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchAllVehiclesType());
+  }, [dispatch]);
+
+  // const list = Array.isArray(vehicles) ? vehicles.filter(Boolean) : [];
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -213,37 +279,32 @@ const Vehicles = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
+          {vehicles.map((vehicle) => (
             <tr
-              key={product.id}
+              key={vehicle._id}
               className="border-b text-[#5E5E5E] last:border-b-0"
             >
               <td className="p-4">
                 <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
               </td>
-              <td className="p-4 text-sm flex items-center justify-start gap-4">
-                <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center">
-                  <img
-                    src={product.image}
-                    alt={product.product}
-                    className="w-[26px]"
-                  />
-                </div>
-                {product.product}
+              <td className="p-4 text-sm">{vehicle.name}</td>
+              <td className="p-4 text-sm">
+                {vehicle.createdAt
+                  ? new Date(vehicle.createdAt).toLocaleDateString()
+                  : "—"}
               </td>
-              <td className="p-4 text-sm">{product.createdDate}</td>
 
               <td className="p-4">
                 <div className="flex items-center gap-6">
                   <button
-                    onClick={() => handleEdit(product.id)}
+                    onClick={() => setEditVehicle(vehicle)}
                     className="w-[55px] h-[30px] bg-primary rounded-[6px] text-white flex items-center justify-center text-xs font-semibold gap-1"
                   >
                     <img src={edit} alt="" />
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(product.id)}
+                    onClick={() => setDeleteId(vehicle._id)}
                     className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]"
                   >
                     <img src={deLete} alt="" />
@@ -252,42 +313,101 @@ const Vehicles = () => {
               </td>
             </tr>
           ))}
+          {vehicles.length === 0 && (
+            <tr>
+              <td className="p-4 text-sm text-gray-500" colSpan={4}>
+                No vehicles yet.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
+         {/* EDIT vehicle modal (reuses Add modal) */}
+         {editVehicle && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <AddNewVehicleType
+            onClose={() => setEditVehicle(null)}
+            // AddNewProductCategory to accept an optional `category` prop
+            vehicle={editVehicle}
+          />
+        </div>
+      )}
+
+      {/* DELETE confirm */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[360px]">
+            <h3 className="text-lg font-semibold mb-2">Delete Vehicle?</h3>
+            <p className="text-sm text-gray-600 mb-5">
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-3 h-9 rounded border"
+                onClick={() => setDeleteId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 h-9 rounded bg-red-600 text-white"
+                onClick={async () => {
+                  try {
+                    await dispatch(deleteProductVehicleType(deleteId!)).unwrap();
+                    setDeleteId(null);
+                  } catch (e) {
+                    console.error("Delete failed:", e);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
+type Tab = "categories" | "brands" | "vehicles";
+
 const ProductCat: React.FC = () => {
-    const [openMenu, setOpenMenu] = useState(false);
+  const [openModalFor, setOpenModalFor] = useState<Tab | null>(null);
   const navigate = useNavigate();
-  const filters: Array<{
-    label: string;
-    value: "categories" | "brands" | "vehicles";
-  }> = [
+  const filters: Array<{ label: string; value: Tab }> = [
     { label: "Product Categories", value: "categories" },
     { label: "Brands", value: "brands" },
     { label: "Vehicles", value: "vehicles" },
   ];
-  const [activeTab, setActiveTab] = useState<
-    "categories" | "brands" | "vehicles"
-  >("categories");
 
-  function handleMenu() {
-    setOpenMenu(!openMenu);
-  }
+  const [activeTab, setActiveTab] = useState<Tab>("categories");
+
+  const addLabel =
+    activeTab === "categories"
+      ? "Add new Product Category"
+      : activeTab === "brands"
+        ? "Add new Brand"
+        : "Add new Vehicle Type";
+
+  const handleAddClick = () => setOpenModalFor(activeTab);
 
   return (
     <AdminLayout pageTitle="">
       <div className="p-10">
         <section className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-8">
-       <div className="flex gap-2 items-center text-xl font-semibold text-customBrown mb-8">
-               <button onClick={() => navigate("/admin/products")}>
-                 <ArrowLeft />
-               </button>
-               <h1>Product Category</h1>
-             </div>
+            <div className="flex gap-2 items-center text-xl font-semibold text-customBrown mb-8">
+              <button onClick={() => navigate("/admin/products")}>
+                <ArrowLeft />
+              </button>
+              <h1>
+                {activeTab === "categories"
+                  ? "Product Categories"
+                  : activeTab === "brands"
+                    ? "Brands"
+                    : "Vehicles"}
+              </h1>
+            </div>
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -298,13 +418,26 @@ const ProductCat: React.FC = () => {
             </div>
           </div>
           <div>
-            <button className="flex gap-2 justify-center items-center px-2 h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold" onClick={handleMenu}>
+            <button
+              className="flex gap-2 justify-center items-center px-2 h-[48px] bg-[#003366] rounded-[6px] text-white text-[14px] font-semibold"
+              onClick={handleAddClick}
+            >
               <Plus />
-              Add new Product Category
+              {addLabel}
             </button>
           </div>
         </section>
-          {openMenu && <AddNewProductCategory />}
+        {/* {openMenu && <AddNewProductCategory />} */}
+        {openModalFor === "categories" && (
+          <AddNewProductCategory onClose={() => setOpenModalFor(null)} />
+        )}
+        {openModalFor === "brands" && (
+          <AddNewProductBrand onClose={() => setOpenModalFor(null)} />
+        )}
+        {openModalFor === "vehicles" && (
+          <AddNewVehicleType onClose={() => setOpenModalFor(null)} />
+        )}
+
         <section className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
             {filters.map(({ label, value }) => (

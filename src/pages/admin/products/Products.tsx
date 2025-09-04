@@ -52,6 +52,8 @@ const Products: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchAllProducts());
+    console.log(products);
+    
   }, [dispatch]);
 
   return (

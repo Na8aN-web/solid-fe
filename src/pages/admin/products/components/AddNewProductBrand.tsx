@@ -2,20 +2,20 @@ import { FormEvent, useState, useEffect } from "react";
 import FormInput from "../../components/FormInput";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import {
-  addProductCategory,
-  CreateProductCategory,
-  fetchAllCategories,
-  ProductCategory,
-  updateProductCategory,
+  addProductBrand,
+  CreateProductBrand,
+  fetchAllBrands,
+  ProductBrand,
+  updateProductBrand,
 } from "../../../../store/slices/adminDashboardSlice";
 
-type ModalProps = { onClose: () => void; category?: ProductCategory };
+type ModalProps = { onClose: () => void; brand?: ProductBrand };
 
-const AddNewProductCategory = ({ onClose, category }: ModalProps) => {
+const AddNewProductBrand = ({ onClose, brand }: ModalProps) => {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.adminDashboard);
 
-  const isEdit = !!category;
+  const isEdit = !!brand;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -23,11 +23,10 @@ const AddNewProductCategory = ({ onClose, category }: ModalProps) => {
   });
 
   useEffect(() => {
-    if (isEdit && category) {
-      setFormData({ name: category.name });
+    if (isEdit && brand) {
+      setFormData({ name: brand.name });
     }
-  }, [isEdit, category]);
-
+  }, [isEdit, brand]);
 
   // Handle form input changes
   const handleInputChange = (
@@ -43,6 +42,8 @@ const AddNewProductCategory = ({ onClose, category }: ModalProps) => {
   // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validation
     const name = formData.name.trim();
     if (!name) {
       alert("Please enter a category name");
@@ -50,14 +51,14 @@ const AddNewProductCategory = ({ onClose, category }: ModalProps) => {
     }
 
     try {
-      if (isEdit && category) {
+      if (isEdit && brand) {
         await dispatch(
-          updateProductCategory({ id: category._id, data: { name } })
+          updateProductBrand({ id: brand._id, data: { name } })
         ).unwrap();
-        await dispatch(fetchAllCategories());
+        await dispatch(fetchAllBrands());
       } else {
-        const payload: CreateProductCategory = { name };
-        await dispatch(addProductCategory(payload)).unwrap();
+        const payload: CreateProductBrand = { name };
+        await dispatch(addProductBrand(payload)).unwrap();
       }
       onClose();
     } catch (err) {
@@ -69,17 +70,17 @@ const AddNewProductCategory = ({ onClose, category }: ModalProps) => {
   };
 
   const isLoading = isEdit
-    ? loading.updateProductCategory
-    : loading.addProductCategory;
+  ? loading.updateProductBrand
+  : loading.addProductBrand;
 
-  const currentError = isEdit
-    ? error.updateProductCategory
-    : error.addProductCategory;
+const currentError = isEdit
+  ? error.updateProductBrand
+  : error.addProductBrand;
 
   return (
     <section className="absolute right-5 w-[500px] bg-customLight border pt-14 px-7 pb-10 rounded-[16px]">
       <h2 className="text-[24px] font-semibold text-customBrown pb-4">
-        {isEdit ? "Edit Product Category" : "Add New Product Category"}
+        {isEdit ? "Edit Product Brand" : "Add New Product Brand"}
       </h2>
 
       {currentError && (
@@ -95,39 +96,30 @@ const AddNewProductCategory = ({ onClose, category }: ModalProps) => {
           name="name"
           value={formData.name}
           onChange={handleInputChange}
-          placeholder="Product Category Name"
+          placeholder="Product Brand Name"
           required
         />
 
-        <div className="flex justify-between gap-3 w-full">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-[58px] px-4 rounded-[16px] border"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`flex-1 h-[58px] rounded-[16px] font-semibold text-base text-customLight transition-colors w-full ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-primary hover:bg-primary/90"
-            }`}
-          >
-            {isEdit
-              ? isLoading
-                ? "Saving…"
-                : "Save Changes"
-              : isLoading
-                ? "Adding…"
-                : "Continue"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`flex-1 h-[58px] rounded-[16px] font-semibold text-base text-customLight transition-colors w-full ${
+            isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/90"
+          }`}
+        >
+          {isEdit
+            ? isLoading
+              ? "Saving…"
+              : "Save Changes"
+            : isLoading
+              ? "Adding…"
+              : "Continue"}
+        </button>
       </form>
     </section>
   );
 };
 
-export default AddNewProductCategory;
+export default AddNewProductBrand;

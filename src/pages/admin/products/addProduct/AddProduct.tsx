@@ -1,375 +1,458 @@
-import React, { useState } from "react";
+// src/pages/admin/products/addProduct/AddProduct.tsx
+import React, { useEffect, useMemo, useState } from "react";
 import FileUploader from "../components/FileUploader";
-import { Plus, ArrowLeft, Ban, CalendarCheck, CircleX } from "lucide-react";
+import { Plus, ArrowLeft, Ban, CalendarCheck } from "lucide-react";
 import circleX from "../../../../assets/circleX.svg";
 import AdminLayout from "../../components/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import {
   addProduct,
-  CreateProductData,
+  fetchAllBrands,
+  fetchAllCategories,
+  fetchAllVehiclesType,
 } from "../../../../store/slices/adminDashboardSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 
+// ---- Types ----
 interface ProductFormData {
+  // Basic product info
   name: string;
-  displayPrice: number;
-  regularPrice: number;
-  images: string[];
-  categoryName: string;
-  brandName: string;
-  // Additional fields for your comprehensive form
   briefDescription?: string;
   fullDescription?: string;
+  description?: string;
+
+  // Images (Files, because no separate media endpoint)
+  imageFiles: (File | null)[]; // 4 fixed slots
+
+  // IDs selected in UI
+  selectedCategoryId: string;
+  selectedBrandId: string;
+  selectedVehicleTypeId?: string;
+
+  // Additional product details
+  partNumber?: string;
+  department?: string;
+
+  // Physical properties (strings in form; coerced on submit)
   weight?: string;
   length?: string;
   breadth?: string;
   width?: string;
   material?: string;
-  productType?: string;
-  stockStatus?: string;
-  stock?: number;
+
+  // Inventory
+  stockStatus?: string; // "In Stock" etc.
+  stock?: number | string; // -> quantityInStock
   units?: string;
   sku?: string;
-  minStock?: number;
-  salesPrice?: number;
-  discount?: number;
-  discountPrice?: number;
-  // Wholesale fields
-  wholesaleRegularPrice?: number;
-  wholesaleSalesPrice?: number;
-  minOrderQuantity?: number;
-  tieredPricingType?: string;
+  minStock?: number | string;
+
+  // Pricing
+  regularPrice: number | string;
+  displayPrice: number | string; // -> salesPrice
+  discount?: number | string;
+  discountPrice?: number | string;
+
+  // Wholesale / bulk
+  minOrderQuantity?: number | string;
+  tieredPricingType?: "Fixed" | "Percentage";
+
+  // Flags in schema
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isDealOfTheDay?: boolean;
+
+  // Store name (string, not ObjectId)
+  storeName: string;
 }
 
 interface TieredPrice {
   id: string;
-  quantity: number;
-  price: number;
+  quantity: number | string;
+  price: number | string;
 }
 
+// ---- Helpers ----
+const getId = (x: { _id?: string; id?: string }) => x._id ?? x.id ?? "";
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_SIZE = 5 * 1024 * 1024;
+const validateFile = (f: File) => {
+  if (!ALLOWED_TYPES.includes(f.type)) return "Only JPG, PNG, WEBP allowed.";
+  if (f.size > MAX_SIZE) return "Max 5MB per image.";
+  return null;
+};
+const num = (v: unknown) => {
+  const n = typeof v === "string" ? v.trim() : v;
+  const x = Number(n);
+  return Number.isFinite(x) ? x : undefined;
+};
+
+// safer preview hook
+function useObjectURL(file: File | null) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) {
+      setUrl(null);
+      return;
+    }
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  return url;
+}
+
+function debugFormData(fd: FormData) {
+  const out: Record<string, any> = {};
+  fd.forEach((v, k) => {
+    const val =
+      v instanceof File
+        ? `{File name=${v.name} type=${v.type} size=${v.size}}`
+        : String(v);
+    if (k in out) {
+      if (Array.isArray(out[k])) out[k].push(val);
+      else out[k] = [out[k], val];
+    } else out[k] = val;
+  });
+  console.groupCollapsed("%cADD PRODUCT → FormData", "color:#0af");
+  Object.entries(out).forEach(([k, v]) => console.log(k, "→", v));
+  console.groupEnd();
+}
+
+// ---- Component ----
 const AddProduct: React.FC = () => {
   const navigate = useNavigate();
-  const [fileUploaded, setFileUploaded] = useState(false);
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.adminDashboard);
 
+  const { categories, brands, vehicles, loading } = useAppSelector(
+    (state) => state.adminDashboard
+  );
+
+  // auth (for createdBy) — adjust if your auth slice has a different shape
+  const authState: any = useAppSelector((s: any) => s.auth ?? {});
+  const createdById: string = authState?.user?._id ?? authState?._id ?? "";
+
+  // load lists if empty
+  useEffect(() => {
+    if (!categories.length) dispatch(fetchAllCategories());
+    if (!brands.length) dispatch(fetchAllBrands());
+    if (!vehicles.length) dispatch(fetchAllVehiclesType());
+  }, [dispatch, categories.length, brands.length, vehicles.length]);
+
+  // form state
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
-    displayPrice: 0,
-    regularPrice: 0,
-    images: [],
-    categoryName: "",
-    brandName: "",
     briefDescription: "",
     fullDescription: "",
+    description: "",
+
+    imageFiles: [null, null, null, null],
+
+    selectedCategoryId: "",
+    selectedBrandId: "",
+    selectedVehicleTypeId: "",
+
+    partNumber: "",
+    department: "",
+
     weight: "",
     length: "",
     breadth: "",
     width: "",
     material: "",
-    productType: "",
-    stockStatus: "",
-    stock: 0,
+
+    stockStatus: "In Stock",
+    stock: "",
     units: "",
     sku: "",
-    minStock: 10,
-    salesPrice: 0,
-    discount: 0,
-    discountPrice: 0,
-    wholesaleRegularPrice: 0,
-    wholesaleSalesPrice: 0,
-    minOrderQuantity: 1,
-    tieredPricingType: "",
+    minStock: "",
+
+    regularPrice: "",
+    displayPrice: "",
+    discount: "",
+    discountPrice: "",
+
+    minOrderQuantity: "",
+    tieredPricingType: "Fixed",
+
+    isFeatured: false,
+    isNewArrival: false,
+    isDealOfTheDay: false,
+
+    // store as plain text name
+    storeName: "",
   });
 
   const [tieredPrices, setTieredPrices] = useState<TieredPrice[]>([
-    { id: "1", quantity: 0, price: 0 },
+    { id: crypto.randomUUID(), quantity: "", price: "" },
   ]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imageUploading, setImageUploading] = useState<Record<number, boolean>>(
+    {}
+  );
+  const uploadingAny = useMemo(
+    () => Object.values(imageUploading).some(Boolean),
+    [imageUploading]
+  );
 
+  // generic input handler
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
-    const { name, value } = e.target;
-
-    // Convert numeric fields
-    const numericFields = [
-      "displayPrice",
-      "regularPrice",
-      "stock",
-      "minStock",
-      "salesPrice",
-      "discount",
-      "discountPrice",
-      "wholesaleRegularPrice",
-      "wholesaleSalesPrice",
-      "minOrderQuantity",
-    ];
-    const finalValue = numericFields.includes(name)
-      ? parseFloat(value) || 0
-      : value;
-
+    const { name, value, type, checked } = e.target as any;
     setFormData((prev) => ({
       ...prev,
-      [name]: finalValue,
+      [name]: type === "checkbox" ? checked : value,
     }));
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Image compression utility
-  const compressImage = (
-    file: File,
-    maxWidth: number = 800,
-    quality: number = 0.8
-  ): Promise<string> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
+  // tiered pricing helpers
+  const addTieredPrice = () =>
+    setTieredPrices((p) => [
+      ...p,
+      { id: crypto.randomUUID(), quantity: "", price: "" },
+    ]);
 
-      img.onload = () => {
-        // Calculate new dimensions
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-        canvas.width = img.width * ratio;
-        canvas.height = img.height * ratio;
-
-        // Draw and compress
-        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
-        resolve(compressedDataUrl);
-      };
-
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
-  // Convert base64 to smaller format
-  const optimizeBase64Image = (
-    base64: string,
-    maxSizeKB: number = 500
-  ): string => {
-    // If image is too large, reduce quality
-    let quality = 0.8;
-    let result = base64;
-
-    while (result.length > maxSizeKB * 1024 && quality > 0.1) {
-      const img = new Image();
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      img.src = base64;
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-
-      result = canvas.toDataURL("image/jpeg", quality);
-      quality -= 0.1;
-    }
-
-    return result;
-  };
-
-  // Updated handleImageUpload with compression
-  // Simple image handler
-  const handleImageUpload = (imageData: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, imageData],
-    }));
-    setFileUploaded(true);
-  };
-
-  const handleRemoveImage = (imageUrl: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((img) => img !== imageUrl),
-    }));
-
-    if (formData.images.length <= 1) {
-      setFileUploaded(false);
-    }
-  };
-
-  // const handleRemoveImage = (url: string) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     images: prev.images.filter((img) => img !== url),
-  //   }));
-  // };
-
-  // const handleImageUpload = (imageData: string) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     image: imageData,
-  //   }));
-  //   setFileUploaded(true);
-  // };
-
-  const addTieredPrice = () => {
-    const newId = (tieredPrices.length + 1).toString();
-    setTieredPrices([...tieredPrices, { id: newId, quantity: 0, price: 0 }]);
-  };
-
-  const removeTieredPrice = (id: string) => {
-    setTieredPrices(tieredPrices.filter((tier) => tier.id !== id));
-  };
+  const removeTieredPrice = (id: string) =>
+    setTieredPrices((p) => p.filter((t) => t.id !== id));
 
   const updateTieredPrice = (
     id: string,
-    field: "quantity" | "price",
-    value: number
-  ) => {
-    setTieredPrices(
-      tieredPrices.map((tier) =>
-        tier.id === id ? { ...tier, [field]: value } : tier
-      )
+    key: "quantity" | "price",
+    value: number | string
+  ) =>
+    setTieredPrices((p) =>
+      p.map((t) => (t.id === id ? { ...t, [key]: value } : t))
     );
-  };
 
+  // slot-aware file handlers
+  const uploadImageAt = async (slot: number, file: File) => {
+    const bad = validateFile(file);
+    if (bad) {
+      setErrors((e) => ({ ...e, imageFiles: bad }));
+      return;
+    }
+    setErrors((e) => ({ ...e, imageFiles: "" }));
+    setImageUploading((u) => ({ ...u, [slot]: true }));
+    try {
+      setFormData((prev) => {
+        const next = [...prev.imageFiles];
+        next[slot] = file;
+        return { ...prev, imageFiles: next };
+      });
+    } finally {
+      setImageUploading((u) => ({ ...u, [slot]: false }));
+    }
+  };
+  const removeImageAt = (slot: number) =>
+    setFormData((prev) => {
+      const next = [...prev.imageFiles];
+      next[slot] = null;
+      return { ...prev, imageFiles: next };
+    });
+
+  // validation
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const next: Record<string, string> = {};
+    if (!formData.name.trim()) next.name = "Product name is required";
+    if (!formData.selectedCategoryId) next.categoryId = "Select a category";
+    if (!formData.selectedBrandId) next.brandId = "Select a brand";
+    if (formData.regularPrice === "" || Number(formData.regularPrice) <= 0)
+      next.regularPrice = "Enter regular price";
+    if (formData.displayPrice === "" || Number(formData.displayPrice) <= 0)
+      next.displayPrice = "Enter display price";
+    if (!formData.imageFiles.some((f) => f))
+      next.imageFiles = "At least one image is required";
+    if (!formData.storeName?.trim()) next.storeName = "Store name is required";
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Product name is required";
-    }
-
-    // Fix validation field names
-    if (formData.displayPrice <= 0) {
-      newErrors.displayPrice = "Display price must be greater than 0";
-    }
-
-    if (formData.regularPrice <= 0) {
-      newErrors.regularPrice = "Regular price must be greater than 0";
-    }
-
-    if (!formData.categoryName.trim()) {
-      newErrors.categoryName = "Category is required";
-    }
-
-    if (!formData.brandName.trim()) {
-      newErrors.brandName = "Brand name is required";
-    }
-
-    if (!formData.images || formData.images.length === 0) {
-      newErrors.images = "At least one product image is required"; // Fixed field name
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
+  // submit as multipart/form-data (files + fields)
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      alert("Please fix the form errors before submitting");
+    if (uploadingAny) {
+      setErrors((e) => ({
+        ...e,
+        imageFiles: "Please wait for image slots to finish.",
+      }));
+      return;
+    }
+    if (!validateForm()) return;
+
+    if (!createdById) {
+      setErrors((e) => ({
+        ...e,
+        submit: "Missing createdBy (user id). Are you logged in?",
+      }));
       return;
     }
 
-    try {
-      // Debug: Log the current form data
-      console.log("Current form data:", formData);
+    // Build JSON-ish parts
+    const regular = num(formData.regularPrice) ?? 0;
+    const sales = num(formData.displayPrice) ?? regular;
+    const discPct = num(formData.discount);
+    const discPx =
+      num(formData.discountPrice) ??
+      (discPct != null ? Math.round(regular * (1 - discPct / 100)) : undefined);
 
-      const productData: CreateProductData = {
-        name: formData.name,
-        briefDescription: formData.briefDescription || "",
-        fullDescription: formData.fullDescription || "",
-        images: formData.images,
-        regularPrice: formData.regularPrice,
-        salesPrice: formData.displayPrice, // ✅ map displayPrice -> salesPrice
-        category: formData.categoryName, // ✅ map categoryName -> category
-        brand: formData.brandName, // ✅ map brandName -> brand
-        stockStatus: formData.stockStatus || "In Stock",
-        quantityInStock: formData.stock ?? 0, // ✅ map stock -> quantityInStock
-        units: formData.units,
-        sku: formData.sku,
-        minStock: formData.minStock ?? 0,
-        weight: parseFloat(formData.weight || "0"),
-        packageSize: {
-          length: parseFloat(formData.length || "0"),
-          breadth: parseFloat(formData.breadth || "0"),
-          width: parseFloat(formData.width || "0"),
-        },
-        material: formData.material,
-        discount: formData.discount,
-        discountPrice: formData.discountPrice,
-        minOrderQuantity: formData.minOrderQuantity ?? 0,
-        tieredPricingType: formData.tieredPricingType || "Fixed",
-        tieredPricing: tieredPrices.map((tier) => ({
-          quantity: tier.quantity,
-          price: tier.price,
-        })),
-        rating: 0,
-        numReviews: 0,
-        isFeatured: false,
-        isNewArrival: false,
-        isDealOfTheDay: false,
-        createdBy: "admin-user-id", // ✅ required
-        store: "your-store-id", // ✅ optional, but schema allows it
-      };
+    const packageSize = {
+      length: num(formData.length) ?? 0,
+      breadth: num(formData.breadth) ?? 0,
+      width: num(formData.width) ?? 0,
+    };
 
-      // Debug: Log what we're sending
-      console.log(
-        "Sending product data:",
-        JSON.stringify(productData, null, 2)
+    const tiered = tieredPrices
+      .map((t) => ({
+        quantity: num(t.quantity) ?? 0,
+        price: num(t.price) ?? 0,
+      }))
+      .filter((t) => t.quantity > 0 && t.price > 0);
+
+    const fd = new FormData();
+
+    // required & core fields
+    fd.append("name", formData.name.trim());
+    fd.append("category", formData.selectedCategoryId);
+    fd.append("brand", formData.selectedBrandId);
+    if (formData.selectedVehicleTypeId)
+      fd.append("vehicleType", formData.selectedVehicleTypeId);
+
+    // descriptions
+    const briefDesc = formData.briefDescription?.trim() || "";
+    const fullDesc = formData.fullDescription?.trim() || "";
+    const description =
+      formData.description?.trim() || fullDesc || briefDesc || formData.name;
+    fd.append("briefDescription", briefDesc);
+    fd.append("fullDescription", fullDesc);
+    fd.append("description", description);
+
+    // inventory
+    fd.append("quantityInStock", String(num(formData.stock) ?? 0));
+    fd.append("stockStatus", formData.stockStatus || "In Stock");
+
+    // identifiers / misc
+    if (formData.partNumber) fd.append("partNumber", formData.partNumber);
+    if (formData.department) fd.append("department", formData.department);
+    if (formData.units) fd.append("units", formData.units);
+    if (formData.sku) fd.append("sku", formData.sku);
+    if (formData.minStock !== "" && formData.minStock != null)
+      fd.append("minStock", String(num(formData.minStock) ?? 0));
+
+    // store as STRING + createdBy
+    fd.append("store", formData.storeName.trim());
+    fd.append("createdBy", createdById);
+
+    // physical props
+    if (formData.weight) fd.append("weight", String(num(formData.weight) ?? 0));
+    if (formData.material) fd.append("material", formData.material);
+
+    // nested package size (send both JSON and dotted just in case)
+    fd.append("packageSize", JSON.stringify(packageSize));
+    // fd.append("packageSize.length", String(packageSize.length));
+    // fd.append("packageSize.breadth", String(packageSize.breadth));
+    // fd.append("packageSize.width", String(packageSize.width));
+
+    // pricing
+    fd.append("regularPrice", String(regular));
+    fd.append("salesPrice", String(sales));
+    if (discPct != null) fd.append("discount", String(discPct));
+    if (discPx != null) fd.append("discountPrice", String(discPx));
+
+    if (formData.minOrderQuantity !== "" && formData.minOrderQuantity != null)
+      fd.append(
+        "minOrderQuantity",
+        String(num(formData.minOrderQuantity) ?? 1)
       );
+    fd.append("tieredPricingType", formData.tieredPricingType || "Fixed");
+    if (tiered.length) fd.append("tieredPricing", JSON.stringify(tiered));
 
-      // Validate required fields before sending
-      const requiredFields = {
-        name: productData.name,
-        regularPrice: productData.regularPrice,
-        salesPrice: productData.salesPrice,
-        images: productData.images,
-      };
+    fd.append("rating", "0"); // rating field (default 0)
+    fd.append("numReviews", "0"); // numReviews field (default 0)
 
-      const missingFields = Object.entries(requiredFields)
-        .filter(
-          ([key, value]) =>
-            !value || (Array.isArray(value) && value.length === 0)
-        )
-        .map(([key]) => key);
+    // flags
+    fd.append("isFeatured", String(!!formData.isFeatured));
+    fd.append("isNewArrival", String(!!formData.isNewArrival));
+    fd.append("isDealOfTheDay", String(!!formData.isDealOfTheDay));
 
-      if (missingFields.length > 0) {
-        console.error("Missing required fields:", missingFields);
-        alert(`Missing required fields: ${missingFields.join(", ")}`);
-        return;
-      }
+    // images (duplicate selection allowed)
+    const IMAGES_KEY = "images[]";
+    formData.imageFiles.forEach((f, i) => {
+      if (f) fd.append(IMAGES_KEY, f, f.name || `image_${i}.jpg`);
+    });
 
-      await dispatch(addProduct(productData)).unwrap();
-      alert("Product added successfully!");
+    // DEBUG: inspect payload
+    for (const [k, v] of (fd as any).entries()) console.log("FD:", k, v);
+    console.log("Derived:", {
+      createdById,
+      store: formData.storeName,
+      category: formData.selectedCategoryId,
+      brand: formData.selectedBrandId,
+    });
+    console.log("Numbers:", { regular, sales, discPct, discPx, packageSize });
+    debugFormData(fd);
+
+    try {
+      await dispatch(addProduct(fd)).unwrap();
       navigate("/admin/products");
     } catch (error: any) {
-      console.error("Error adding product:", error);
-
-      // Better error handling
-      const errorMessage =
+      const msg =
         error?.message ||
         error?.response?.data?.message ||
-        error?.toString() ||
-        "Unknown error";
-      alert(`Failed to add product: ${errorMessage}`);
+        error?.response?.data?.error ||
+        "Failed to add product.";
+      setErrors((e) => ({ ...e, submit: msg }));
     }
-    console.log("Form data before submit:", {
-      images: formData.images,
-      imageCount: formData.images.length,
-    });
   };
 
-  const handleDiscard = () => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to discard all changes?"
+  // ---- UI helpers: image slot component ----
+  const ImageSlot: React.FC<{
+    slot: number;
+    file: File | null;
+    big?: boolean;
+  }> = ({ slot, file, big }) => {
+    const preview = useObjectURL(file);
+    const base = big ? "w-full h-[198px]" : "w-[161px] h-[87px]";
+    const border = file
+      ? "border border-primary"
+      : "border border-primary border-dashed";
+    return (
+      <div
+        className={`relative ${base} flex items-center justify-center rounded-[12px] ${border}`}
+      >
+        {file && preview ? (
+          <div className="w-full h-full relative">
+            <img
+              src={preview}
+              alt={`Preview ${slot + 1}`}
+              className="w-full h-full object-cover rounded"
+            />
+            <button
+              type="button"
+              onClick={() => removeImageAt(slot)}
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <FileUploader
+            onUpload={(f: File) => uploadImageAt(slot, f)}
+            onRemove={() => removeImageAt(slot)}
+          />
+        )}
+        {!!imageUploading[slot] && (
+          <span className="absolute bottom-2 right-2 text-xs">Uploading…</span>
+        )}
+      </div>
     );
-    if (isConfirmed) {
-      navigate("/admin/products");
-    }
   };
 
+  // ---- Render ----
   return (
     <AdminLayout pageTitle="">
       <div className="p-6">
@@ -379,66 +462,28 @@ const AddProduct: React.FC = () => {
           </button>
           <h1>Add Product</h1>
         </div>
-        <section className="flex w-ful justify-between gap-4">
-          {/* Product Images */}
+
+        <section className="flex w-full justify-between gap-4">
+          {/* Left: images + descriptions + specs */}
           <div className="w-[55%]">
+            {/* Product Images */}
             <section className="mb-6">
               <h2 className="text-base font-semibold text-customBrown mb-[8px]">
                 Product Images
               </h2>
               <div className="flex items-center gap-4 border border-[#D9D9D9] rounded-[12px] w-full p-4">
-                <div
-                  className={`w-full h-[198px] flex items-center justify-center rounded-[12px] transition-all duration-300 ${
-                    fileUploaded
-                      ? "border border-primary"
-                      : "border border-primary border-dashed"
-                  }`}
-                >
-                  <FileUploader
-                    onUpload={handleImageUpload}
-                    onRemove={() => setFileUploaded(false)}
-                  />
-                </div>
-                <div
-                  className={`w-full h-[198px] flex items-center justify-center rounded-[12px] transition-all duration-300 ${
-                    fileUploaded
-                      ? "border border-primary"
-                      : "border border-primary border-dashed"
-                  }`}
-                >
-                  <FileUploader
-                    onUpload={handleImageUpload}
-                    onRemove={() => setFileUploaded(false)}
-                  />
-                </div>
+                <ImageSlot slot={0} file={formData.imageFiles[0]} big />
+                <ImageSlot slot={1} file={formData.imageFiles[1]} big />
                 <div className="flex justify-between items-center flex-col gap-4">
-                  <div
-                    className={`w-[161px] h-[87px] flex items-center justify-center rounded-[12px] ${
-                      fileUploaded
-                        ? "border border-primary"
-                        : "border border-primary border-dashed"
-                    }`}
-                  >
-                    <FileUploader
-                      onUpload={handleImageUpload}
-                      onRemove={() => setFileUploaded(false)}
-                    />
-                  </div>
-                  <div
-                    className={`w-[161px] h-[87px] border border-primary flex items-center justify-center rounded-[12px] ${
-                      fileUploaded
-                        ? "border border-primary"
-                        : "border border-primary border-dashed"
-                    }`}
-                  >
-                    <FileUploader
-                      onUpload={handleImageUpload}
-                      onRemove={() => setFileUploaded(false)}
-                    />
-                  </div>
+                  <ImageSlot slot={2} file={formData.imageFiles[2]} />
+                  <ImageSlot slot={3} file={formData.imageFiles[3]} />
                 </div>
               </div>
+              {errors.imageFiles && (
+                <p className="text-red-500 text-sm mt-2">{errors.imageFiles}</p>
+              )}
             </section>
+
             {/* Description */}
             <section className="mb-8">
               <h2 className="text-base font-semibold text-customBrown mb-[8px]">
@@ -464,6 +509,48 @@ const AddProduct: React.FC = () => {
                     <p className="text-red-500 text-sm mt-1">{errors.name}</p>
                   )}
                 </div>
+
+                <div className="flex flex-col mb-4">
+                  <label
+                    htmlFor="partNumber"
+                    className="text-sm font-normal text-customBrown pb-2"
+                  >
+                    Part Number
+                  </label>
+                  <input
+                    type="text"
+                    id="partNumber"
+                    name="partNumber"
+                    value={formData.partNumber}
+                    onChange={handleInputChange}
+                    className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-3 rounded-[8px]"
+                  />
+                </div>
+
+                {/* Store (Seller) Name */}
+                <div className="flex flex-col mb-4">
+                  <label
+                    htmlFor="storeName"
+                    className="text-sm font-normal text-customBrown pb-2"
+                  >
+                    Store (Seller) *
+                  </label>
+                  <input
+                    type="text"
+                    id="storeName"
+                    name="storeName"
+                    value={formData.storeName}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Motomart, Acme Parts Ltd"
+                    className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-3 rounded-[8px]"
+                  />
+                  {errors.storeName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.storeName}
+                    </p>
+                  )}
+                </div>
+
                 <div className="flex flex-col mb-6">
                   <label
                     htmlFor="briefDescription"
@@ -478,7 +565,7 @@ const AddProduct: React.FC = () => {
                     onChange={handleInputChange}
                     className="border w-full p-3 rounded-[8px] border-[#D9D9D9] focus:border-gray-600 focus:outline-none"
                     rows={3}
-                  ></textarea>
+                  />
                 </div>
                 <div className="flex flex-col mb-6">
                   <label
@@ -494,7 +581,7 @@ const AddProduct: React.FC = () => {
                     onChange={handleInputChange}
                     className="border w-full p-3 rounded-[8px] border-[#D9D9D9] focus:border-gray-600 focus:outline-none"
                     rows={6}
-                  ></textarea>
+                  />
                 </div>
               </div>
             </section>
@@ -521,7 +608,6 @@ const AddProduct: React.FC = () => {
                     className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                   />
                 </div>
-                {/* package size */}
                 <div>
                   <h3 className="text-sm font-semibold text-customBrown pb-4">
                     Package size
@@ -577,7 +663,6 @@ const AddProduct: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                {/* product material */}
                 <div className="flex flex-col">
                   <label
                     htmlFor="productMaterial"
@@ -597,79 +682,114 @@ const AddProduct: React.FC = () => {
               </div>
             </section>
 
-            {/* Category */}
+            {/* Category / Brand / Vehicle Type */}
             <section>
               <h2 className="text-base font-semibold text-customBrown mb-[8px]">
                 Category
               </h2>
               <div className="border border-[#D9D9D9] w-full p-4 rounded-[12px]">
-                <div>
-                  <div className="flex gap-6 items-center mb-6">
-                    <div className="flex flex-col w-full">
-                      <label
-                        htmlFor="productCategory"
-                        className="text-sm font-normal text-customBrown pb-2"
-                      >
-                        Product Category *
-                      </label>
-                      <input
-                        type="text"
-                        id="productCategory"
-                        name="categoryName"
-                        value={formData.categoryName}
-                        onChange={handleInputChange}
-                        className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                      />
-                      {errors.categoryName && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.categoryName}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col w-full">
-                      <label
-                        htmlFor="brandName"
-                        className="text-sm font-normal text-customBrown pb-2"
-                      >
-                        Brand Name *
-                      </label>
-                      <input
-                        type="text"
-                        id="brandName"
-                        name="brandName"
-                        value={formData.brandName}
-                        onChange={handleInputChange}
-                        className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                      />
-                      {errors.brandName && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.brandName}
-                        </p>
-                      )}
-                    </div>
+                <div className="flex gap-6 items-center mb-6">
+                  {/* Category */}
+                  <div className="flex flex-col w-full">
+                    <label
+                      htmlFor="productCategory"
+                      className="text-sm font-normal text-customBrown pb-2"
+                    >
+                      Product Category *
+                    </label>
+                    <select
+                      id="productCategory"
+                      name="selectedCategoryId"
+                      value={formData.selectedCategoryId}
+                      onChange={handleInputChange}
+                      className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
+                    >
+                      <option value="">Select category</option>
+                      {categories.map((c) => {
+                        const id = getId(c as any);
+                        return (
+                          <option key={id} value={id}>
+                            {c.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {errors.categoryId && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.categoryId}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Brand */}
+                  <div className="flex flex-col w-full">
+                    <label
+                      htmlFor="brand"
+                      className="text-sm font-normal text-customBrown pb-2"
+                    >
+                      Brand *
+                    </label>
+                    <select
+                      id="brand"
+                      name="selectedBrandId"
+                      value={formData.selectedBrandId}
+                      onChange={handleInputChange}
+                      className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
+                    >
+                      <option value="">Select brand</option>
+                      {brands.map((b) => {
+                        const id = getId(b as any);
+                        return (
+                          <option key={id} value={id}>
+                            {b.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {errors.brandId && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.brandId}
+                      </p>
+                    )}
                   </div>
                 </div>
+
+                {/* Vehicle Type */}
                 <div className="flex flex-col">
                   <label
-                    htmlFor="productType"
+                    htmlFor="vehicleType"
                     className="text-sm font-normal text-customBrown pb-2"
                   >
-                    Product Type
+                    Vehicle Type
                   </label>
-                  <input
-                    type="text"
-                    id="productType"
-                    name="productType"
-                    value={formData.productType}
+                  <select
+                    id="vehicleType"
+                    name="selectedVehicleTypeId"
+                    value={formData.selectedVehicleTypeId}
                     onChange={handleInputChange}
                     className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                  />
+                  >
+                    <option value="">Select vehicle type</option>
+                    {vehicles.map((v) => {
+                      const id = getId(v as any);
+                      return (
+                        <option key={id} value={id}>
+                          {v.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {errors.vehicleTypeId && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.vehicleTypeId}
+                    </p>
+                  )}
                 </div>
               </div>
             </section>
           </div>
 
-          {/* second */}
+          {/* Right: inventory + pricing + tiers + flags + actions */}
           <div className="w-[45%]">
             {/* Inventory */}
             <section className="mb-8">
@@ -705,7 +825,7 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="quantityInStock"
                       name="stock"
-                      value={formData.stock}
+                      value={formData.stock as any}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
@@ -756,7 +876,7 @@ const AddProduct: React.FC = () => {
                     type="number"
                     id="minStock"
                     name="minStock"
-                    value={formData.minStock}
+                    value={formData.minStock as any}
                     onChange={handleInputChange}
                     className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                   />
@@ -782,7 +902,7 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="regularPrice"
                       name="regularPrice"
-                      value={formData.regularPrice}
+                      value={formData.regularPrice as any}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
@@ -803,7 +923,7 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="salesPrice"
                       name="displayPrice"
-                      value={formData.displayPrice}
+                      value={formData.displayPrice as any}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
@@ -826,7 +946,7 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="discount"
                       name="discount"
-                      value={formData.discount}
+                      value={formData.discount as any}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
@@ -842,7 +962,7 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="discountPrice"
                       name="discountPrice"
-                      value={formData.discountPrice}
+                      value={formData.discountPrice as any}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
@@ -851,47 +971,30 @@ const AddProduct: React.FC = () => {
               </div>
             </section>
 
-            {/* Wholesale Pricing */}
+            {/* Wholesale Pricing / Department / Tiers */}
             <section className="mb-8">
               <h2 className="text-base font-semibold text-customBrown mb-[8px]">
                 Wholesale Pricing
               </h2>
               <div className="border border-[#D9D9D9] w-full p-4 rounded-[12px]">
-                <div className="flex gap-6 items-center mb-6">
-                  <div className="flex flex-col w-full">
-                    <label
-                      htmlFor="wholesaleRegularPrice"
-                      className="text-sm font-normal text-customBrown pb-2"
-                    >
-                      Regular Price (₦)
-                    </label>
-                    <input
-                      type="number"
-                      id="wholesaleRegularPrice"
-                      name="wholesaleRegularPrice"
-                      value={formData.wholesaleRegularPrice}
-                      onChange={handleInputChange}
-                      className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                    />
-                  </div>
-                  <div className="flex flex-col w-full">
-                    <label
-                      htmlFor="wholesaleSalesPrice"
-                      className="text-sm font-normal text-customBrown pb-2"
-                    >
-                      Sales Price (₦)
-                    </label>
-                    <input
-                      type="number"
-                      id="wholesaleSalesPrice"
-                      name="wholesaleSalesPrice"
-                      value={formData.wholesaleSalesPrice}
-                      onChange={handleInputChange}
-                      className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                    />
-                  </div>
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="department"
+                    className="text-sm font-normal text-customBrown pb-2"
+                  >
+                    Department
+                  </label>
+                  <input
+                    type="text"
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Auto Parts, Electronics"
+                    className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
+                  />
                 </div>
-                <div className="flex gap-6 items-center mb-6">
+                <div className="flex gap-6 items-center mb-6 mt-6">
                   <div className="flex flex-col w-full">
                     <label
                       htmlFor="minOrderQuantity"
@@ -903,7 +1006,7 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="minOrderQuantity"
                       name="minOrderQuantity"
-                      value={formData.minOrderQuantity}
+                      value={formData.minOrderQuantity as any}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
@@ -915,16 +1018,19 @@ const AddProduct: React.FC = () => {
                     >
                       Tiered Pricing Type
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="pricingType"
                       name="tieredPricingType"
                       value={formData.tieredPricingType}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                    />
+                    >
+                      <option value="Fixed">Fixed</option>
+                      <option value="Percentage">Percentage</option>
+                    </select>
                   </div>
                 </div>
+
                 <div>
                   <h3 className="text-sm font-semibold text-customBrown mb-[8px] pb-4">
                     Tiered Price
@@ -937,12 +1043,12 @@ const AddProduct: React.FC = () => {
                         </label>
                         <input
                           type="number"
-                          value={tier.quantity}
+                          value={tier.quantity as any}
                           onChange={(e) =>
                             updateTieredPrice(
                               tier.id,
                               "quantity",
-                              parseFloat(e.target.value) || 0
+                              e.target.value
                             )
                           }
                           className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
@@ -954,13 +1060,9 @@ const AddProduct: React.FC = () => {
                         </label>
                         <input
                           type="number"
-                          value={tier.price}
+                          value={tier.price as any}
                           onChange={(e) =>
-                            updateTieredPrice(
-                              tier.id,
-                              "price",
-                              parseFloat(e.target.value) || 0
-                            )
+                            updateTieredPrice(tier.id, "price", e.target.value)
                           }
                           className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                         />
@@ -988,11 +1090,50 @@ const AddProduct: React.FC = () => {
               </div>
             </section>
 
-            {/* Action buttons */}
+            {/* Flags */}
+            <section className="mb-6">
+              <h2 className="text-base font-semibold text-customBrown mb-[8px]">
+                Flags
+              </h2>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="isFeatured"
+                    checked={!!formData.isFeatured}
+                    onChange={handleInputChange}
+                  />
+                  Featured
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="isNewArrival"
+                    checked={!!formData.isNewArrival}
+                    onChange={handleInputChange}
+                  />
+                  New Arrival
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="isDealOfTheDay"
+                    checked={!!formData.isDealOfTheDay}
+                    onChange={handleInputChange}
+                  />
+                  Deal of the Day
+                </label>
+              </div>
+            </section>
+
+            {/* Actions */}
             <div className="flex items-center justify-between">
               <button
                 type="button"
-                onClick={handleDiscard}
+                onClick={() => {
+                  const ok = window.confirm("Discard all changes?");
+                  if (ok) navigate("/admin/products");
+                }}
                 className="w-[100px] border border-[#D9D9D9] flex gap-2 items-center py-3 px-2 rounded-[6px] hover:bg-red-50 text-sm font-semibold text-gray-600 hover:text-red-600"
               >
                 <Ban className="w-4" />
@@ -1009,14 +1150,25 @@ const AddProduct: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={loading.products}
+                  disabled={loading.addProduct || uploadingAny}
                   className="w-[130px] border border-primary bg-primary flex gap-2 items-center py-3 px-2 rounded-[6px] hover:bg-blue-700 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-4" />
-                  <span>{loading.products ? "Adding..." : "Add Product"}</span>
+                  <span>
+                    {loading.addProduct || uploadingAny
+                      ? "Saving…"
+                      : "Add Product"}
+                  </span>
                 </button>
               </div>
             </div>
+
+            {errors.submit && (
+              <p className="text-red-600 text-sm mt-4">{errors.submit}</p>
+            )}
+            {errors.storeName && (
+              <p className="text-red-600 text-sm">{errors.storeName}</p>
+            )}
           </div>
         </section>
       </div>
@@ -1025,3 +1177,7 @@ const AddProduct: React.FC = () => {
 };
 
 export default AddProduct;
+
+// FileUploader contract (already in your app):
+// onUpload(file: File) must be called with the picked file.
+// onRemove() can be called to clear a slot.
