@@ -14,6 +14,35 @@ export interface DashboardMetrics {
   ordersChange: number;
 }
 
+// USER
+export interface User {
+  _id: string;
+  firstName: string;
+  lastName: number;
+  phoneNumber: number;
+  email: number;
+  coompanyName: number;
+  role: string;
+}
+
+// Helpers to parse variable backend shapes safely
+function parseUsersList(data: any): User[] {
+  // Accept any of: {users: [...]}, {data:{users:[...]}}, or direct [...]
+  if (Array.isArray(data)) return data as User[];
+  if (Array.isArray(data?.users)) return data.users as User[];
+  if (Array.isArray(data?.data?.users)) return data.data.users as User[];
+  // If API returns a single user instead of a list by mistake, wrap it
+  if (data && typeof data === "object" && data._id) return [data as User];
+  throw new Error("Invalid users payload");
+}
+
+function parseSingleUser(data: any): User {
+  // Accept any of: {user:{...}}, direct {...}
+  if (data?.user && data.user._id) return data.user as User;
+  if (data && data._id) return data as User;
+  throw new Error("Invalid user payload");
+}
+
 export interface Order {
   id: string;
   product: string;
@@ -92,6 +121,44 @@ export interface CreateProductData {
   store?: string;
 }
 
+export interface BackendProduct {
+  _id: string;
+  store?: string;
+  name: string;
+  briefDescription?: string;
+  fullDescription?: string;
+  images: string[];
+  description?: string;
+  partNumber?: string;
+  category: string; // id
+  department?: string;
+  brand: string; // id
+  vehicleType?: string; // id
+  weight?: number;
+  packageSize?: { length: number; breadth: number; width: number };
+  material?: string;
+  stockStatus?: string;
+  quantityInStock?: number;
+  units?: string;
+  sku?: string;
+  minStock?: number;
+  regularPrice: number;
+  salesPrice: number;
+  discount?: number;
+  discountPrice?: number;
+  minOrderQuantity?: number;
+  tieredPricingType?: string;
+  tieredPricing?: { quantity: number; price: number }[];
+  rating?: number;
+  numReviews?: number;
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isDealOfTheDay?: boolean;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Category creation interface
 export interface CreateProductCategory {
   name: string;
@@ -165,6 +232,8 @@ interface VehicleCreateResponse {
 
 export interface AdminDashboardState {
   metrics: DashboardMetrics | null;
+  users: User[];
+  userDetails: User | null;
   recentOrders: Order[];
   lowStockProducts: LowStockProduct[];
   products: Product[];
@@ -173,23 +242,27 @@ export interface AdminDashboardState {
   vehicles: ProductVehicleType[];
   loading: {
     metrics: boolean;
+    users: boolean;
+    user: boolean;
     orders: boolean;
     lowStock: boolean;
     products: boolean;
     deleteProduct: boolean;
     addProduct: boolean;
     addProductCategory: boolean;
-    updateProductCategory: boolean; 
+    updateProductCategory: boolean;
     categories: boolean;
     addProductBrand: boolean;
-    updateProductBrand: boolean; 
+    updateProductBrand: boolean;
     brands: boolean;
     addProductVehicleType: boolean;
-    updateProductVehicleType: boolean; 
+    updateProductVehicleType: boolean;
     vehicles: boolean;
   };
   error: {
     metrics: string | null;
+    users: string | null;
+    user: string | null;
     orders: string | null;
     lowStock: string | null;
     products: string | null;
@@ -199,7 +272,7 @@ export interface AdminDashboardState {
     updateProductCategory: string | null;
     categories: string | null;
     addProductBrand: string | null;
-    updateProductBrand: string | null; 
+    updateProductBrand: string | null;
     brands: string | null;
     addProductVehicleType: string | null;
     updateProductVehicleType: string | null;
@@ -215,6 +288,8 @@ const initialState: AdminDashboardState = {
   categories: [],
   brands: [],
   vehicles: [],
+  users: [],
+  userDetails: null,
   loading: {
     metrics: false,
     orders: false,
@@ -231,6 +306,8 @@ const initialState: AdminDashboardState = {
     addProductVehicleType: false,
     updateProductVehicleType: false,
     vehicles: false,
+    users: false,
+    user: false,
   },
   error: {
     metrics: null,
@@ -248,6 +325,8 @@ const initialState: AdminDashboardState = {
     updateProductCategory: null,
     updateProductVehicleType: null,
     vehicles: null,
+    users: null,
+    user: null,
   },
 };
 
@@ -405,6 +484,46 @@ export const fetchLowStockProducts = createAsyncThunk(
     }
   }
 );
+
+// GET /users  ->  { users: User[] }
+export const fetchAllUsers = createAsyncThunk<
+  User[],
+  void,
+  { rejectValue: string }
+>("adminDashboard/fetchAllUsers", async (_: void, { rejectWithValue }) => {
+  try {
+    const res = await axiosInstance.get("/users");
+    const users = parseUsersList(res.data);
+    return users;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Failed to fetch users.";
+    return rejectWithValue(msg);
+  }
+});
+
+// GET /users/:id  ->  { user: User } (or just the user)
+export const fetchUserById = createAsyncThunk<
+  User,
+  string,
+  { rejectValue: string }
+>("adminDashboard/fetchUserById", async (id, { rejectWithValue }) => {
+  try {
+    const res = await axiosInstance.get(`/users/${id}`);
+    const user = parseSingleUser(res.data);
+    return user;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Failed to fetch user.";
+    return rejectWithValue(msg);
+  }
+});
 
 // All Product
 export const fetchAllProducts = createAsyncThunk(
@@ -712,18 +831,21 @@ export const deleteProductVehicleType = createAsyncThunk<
   string, // we return the deleted id
   string, // id
   { rejectValue: string }
->("adminDashboard/deleteProductVehicleType", async (id, { rejectWithValue }) => {
-  try {
-    await axiosInstance.delete(`/vehicle-types/${id}`);
-    return id;
-  } catch (err: any) {
-    if (err.response?.data?.message)
-      return rejectWithValue(err.response.data.message);
-    if (err.response?.data?.error)
-      return rejectWithValue(err.response.data.error);
-    return rejectWithValue("Failed to delete vehicle-type.");
+>(
+  "adminDashboard/deleteProductVehicleType",
+  async (id, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`/vehicle-types/${id}`);
+      return id;
+    } catch (err: any) {
+      if (err.response?.data?.message)
+        return rejectWithValue(err.response.data.message);
+      if (err.response?.data?.error)
+        return rejectWithValue(err.response.data.error);
+      return rejectWithValue("Failed to delete vehicle-type.");
+    }
   }
-});
+);
 
 export const deleteProduct = createAsyncThunk(
   "adminDashboard/deleteProduct",
@@ -751,17 +873,12 @@ export const addProduct = createAsyncThunk(
   async (productData: FormData, { rejectWithValue }) => {
     try {
       // Make POST request with FormData
-      const response = await axiosInstance.post<{ product: Product }>(
+      const response = await axiosInstance.post<{ product: BackendProduct }>(
         "/products",
         productData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
-
-      return response.data.product; // Return the created product
+      return response.data.product;
     } catch (error: any) {
       console.error(
         "Add product error:",
@@ -849,6 +966,8 @@ const adminDashboardSlice = createSlice({
     clearDashboardErrors: (state) => {
       state.error = {
         metrics: null,
+        users: null,
+        user: null,
         orders: null,
         lowStock: null,
         products: null,
@@ -869,6 +988,8 @@ const adminDashboardSlice = createSlice({
       // This can be used to trigger a full dashboard refresh
       state.loading = {
         metrics: true,
+        users: true,
+        user: true,
         orders: true,
         lowStock: true,
         products: true,
@@ -938,6 +1059,37 @@ const adminDashboardSlice = createSlice({
       state.error.lowStock = action.payload as string;
     });
 
+    // ---- fetchAllUsers ----
+    builder.addCase(fetchAllUsers.pending, (state) => {
+      state.loading.users = true;
+      state.error.users = null;
+    });
+    builder.addCase(fetchAllUsers.fulfilled, (state, action) => {
+      state.loading.users = false;
+      state.users = action.payload;
+    });
+    builder.addCase(fetchAllUsers.rejected, (state, action) => {
+      state.loading.users = false;
+      state.error.users =
+        (action.payload as string) ?? "Failed to fetch users.";
+    });
+
+    // ---- fetchUserById ----
+    builder.addCase(fetchUserById.pending, (state) => {
+      state.loading.user = true;
+      state.error.user = null;
+    });
+    builder.addCase(fetchUserById.fulfilled, (state, action) => {
+      state.loading.user = false;
+      state.userDetails = action.payload;
+      const idx = state.users.findIndex((u) => u._id === action.payload._id);
+      if (idx !== -1) state.users[idx] = action.payload;
+    });
+    builder.addCase(fetchUserById.rejected, (state, action) => {
+      state.loading.user = false;
+      state.error.user = (action.payload as string) ?? "Failed to fetch user.";
+    });
+
     //Fetch all products
     builder.addCase(fetchAllProducts.pending, (state) => {
       state.loading.products = true;
@@ -988,9 +1140,26 @@ const adminDashboardSlice = createSlice({
     });
     builder.addCase(addProduct.fulfilled, (state, action) => {
       state.loading.addProduct = false;
-      // Add the new product to the products array
-      state.products.push(action.payload);
+      const p = action.payload as unknown as BackendProduct;
+
+      const uiProduct: Product = {
+        _id: p._id,
+        name: p.name,
+        displayPrice: p.salesPrice, // map salesPrice -> displayPrice
+        regularPrice: p.regularPrice,
+        numReviews: p.numReviews ?? 0,
+        rating: p.rating ?? 0,
+        image: p.images?.[0] ?? "",
+        categoryName:
+          state.categories.find((c) => c._id === p.category)?.name ?? "",
+        brandName: state.brands.find((b) => b._id === p.brand)?.name ?? "",
+        stock: p.quantityInStock,
+        minStock: p.minStock,
+      };
+
+      state.products.unshift(uiProduct);
     });
+
     builder.addCase(addProduct.rejected, (state, action) => {
       state.loading.addProduct = false;
       state.error.addProduct = action.payload as string;
@@ -1061,21 +1230,21 @@ const adminDashboardSlice = createSlice({
     });
     // UPDATE CATEGORY
     builder
-    .addCase(updateProductCategory.pending, (state) => {
-      state.loading.updateProductCategory = true; // Use specific key
-      state.error.updateProductCategory = null;
-    })
-    .addCase(updateProductCategory.fulfilled, (state, action) => {
-      state.loading.updateProductCategory = false;
-      const updated = action.payload;
-      const idx = state.categories.findIndex((c) => c._id === updated._id);
-      if (idx !== -1) state.categories[idx] = updated;
-    })
-    .addCase(updateProductCategory.rejected, (state, action) => {
-      state.loading.updateProductCategory = false;
-      state.error.updateProductCategory =
-        (action.payload as string) ?? "Failed to update category.";
-    });
+      .addCase(updateProductCategory.pending, (state) => {
+        state.loading.updateProductCategory = true; // Use specific key
+        state.error.updateProductCategory = null;
+      })
+      .addCase(updateProductCategory.fulfilled, (state, action) => {
+        state.loading.updateProductCategory = false;
+        const updated = action.payload;
+        const idx = state.categories.findIndex((c) => c._id === updated._id);
+        if (idx !== -1) state.categories[idx] = updated;
+      })
+      .addCase(updateProductCategory.rejected, (state, action) => {
+        state.loading.updateProductCategory = false;
+        state.error.updateProductCategory =
+          (action.payload as string) ?? "Failed to update category.";
+      });
 
     // DELETE CATEGORY
     builder
@@ -1094,23 +1263,23 @@ const adminDashboardSlice = createSlice({
           (action.payload as string) ?? "Failed to delete category.";
       });
 
-       // UPDATE BRAND
+    // UPDATE BRAND
     builder
-    .addCase(updateProductBrand.pending, (state) => {
-      state.loading.updateProductBrand = true;
-      state.error.updateProductBrand = null;
-    })
-    .addCase(updateProductBrand.fulfilled, (state, action) => {
-      state.loading.updateProductBrand = false;
-      const updated = action.payload;
-      const idx = state.brands.findIndex((b) => b._id === updated._id);
-      if (idx !== -1) state.brands[idx] = updated;
-    })
-    .addCase(updateProductBrand.rejected, (state, action) => {
-      state.loading.updateProductBrand = false;
-      state.error.updateProductBrand =
-        (action.payload as string) ?? "Failed to update brand.";
-    });
+      .addCase(updateProductBrand.pending, (state) => {
+        state.loading.updateProductBrand = true;
+        state.error.updateProductBrand = null;
+      })
+      .addCase(updateProductBrand.fulfilled, (state, action) => {
+        state.loading.updateProductBrand = false;
+        const updated = action.payload;
+        const idx = state.brands.findIndex((b) => b._id === updated._id);
+        if (idx !== -1) state.brands[idx] = updated;
+      })
+      .addCase(updateProductBrand.rejected, (state, action) => {
+        state.loading.updateProductBrand = false;
+        state.error.updateProductBrand =
+          (action.payload as string) ?? "Failed to update brand.";
+      });
 
     // DELETE BRAND
     builder
@@ -1129,23 +1298,23 @@ const adminDashboardSlice = createSlice({
           (action.payload as string) ?? "Failed to delete brand.";
       });
 
-       // UPDATE VEHICLE-TYPE
+    // UPDATE VEHICLE-TYPE
     builder
-    .addCase(updateProductVehicleType.pending, (state) => {
-      state.loading.updateProductVehicleType = true;
-      state.error.updateProductVehicleType = null;
-    })
-    .addCase(updateProductVehicleType.fulfilled, (state, action) => {
-      state.loading.updateProductVehicleType = false;
-      const updated = action.payload;
-      const idx = state.vehicles.findIndex((v) => v._id === updated._id);
-      if (idx !== -1) state.vehicles[idx] = updated;
-    })
-    .addCase(updateProductVehicleType.rejected, (state, action) => {
-      state.loading.updateProductVehicleType = false;
-      state.error.updateProductVehicleType =
-        (action.payload as string) ?? "Failed to update vehicle-type.";
-    });
+      .addCase(updateProductVehicleType.pending, (state) => {
+        state.loading.updateProductVehicleType = true;
+        state.error.updateProductVehicleType = null;
+      })
+      .addCase(updateProductVehicleType.fulfilled, (state, action) => {
+        state.loading.updateProductVehicleType = false;
+        const updated = action.payload;
+        const idx = state.vehicles.findIndex((v) => v._id === updated._id);
+        if (idx !== -1) state.vehicles[idx] = updated;
+      })
+      .addCase(updateProductVehicleType.rejected, (state, action) => {
+        state.loading.updateProductVehicleType = false;
+        state.error.updateProductVehicleType =
+          (action.payload as string) ?? "Failed to update vehicle-type.";
+      });
 
     // DELETE VEHICLE-TYPE
     builder
