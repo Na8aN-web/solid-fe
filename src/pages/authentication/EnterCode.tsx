@@ -29,7 +29,14 @@ const EnterCode = () => {
     
     // Clear any previous errors
     dispatch(clearError());
-  }, [dispatch, navigate]);
+    
+    // Check if we have the otpToken from the previous step
+    if (!passwordReset.otpToken) {
+      // If no otpToken, redirect back to recovery page
+      navigate("/recover-password");
+      return;
+    }
+  }, [dispatch, navigate, passwordReset.otpToken]);
 
   useEffect(() => {
     // If OTP is verified, navigate to create new password page
@@ -100,7 +107,16 @@ const EnterCode = () => {
   }
 
   const handleSubmitOTP = (otpCode: string) => {
-    dispatch(verifyOTP(otpCode));
+    // Pass both OTP and otpToken to the verify function
+    if (passwordReset.otpToken) {
+      dispatch(verifyOTP({ 
+        otp: otpCode, 
+        otpToken: passwordReset.otpToken 
+      }));
+    } else {
+      console.error("No OTP token available");
+      navigate("/recover-password");
+    }
   };
 
   const handleResendCode = () => {

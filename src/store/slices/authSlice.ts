@@ -28,7 +28,8 @@ interface AuthState {
   passwordReset: {
     otpRequested: boolean;
     otpVerified: boolean;
-    onetimePassword: string | null;
+    otpToken: string | null; // Store the otpToken from request-otp
+    resetToken: string | null; // Store the resetToken from reset-password-otp
     resetSuccess: boolean;
   };
 }
@@ -62,7 +63,8 @@ const initialState: AuthState = {
   passwordReset: {
     otpRequested: false,
     otpVerified: false,
-    onetimePassword: null,
+    otpToken: localStorage.getItem("passwordResetOtpToken"), // Store otpToken from request-otp
+    resetToken: null, // Store resetToken from reset-password-otp
     resetSuccess: false,
   },
 };
@@ -158,12 +160,18 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Request OTP thunk
+// Request OTP thunk - Updated to store otpToken
 export const requestPasswordResetOTP = createAsyncThunk(
   "auth/requestOTP",
   async (email: string, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post("/auth/request-otp", { email });
+      
+      // Store the otpToken for later use
+      if (response.data.otpToken) {
+        localStorage.setItem("passwordResetOtpToken", response.data.otpToken);
+      }
+      
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -176,14 +184,17 @@ export const requestPasswordResetOTP = createAsyncThunk(
   }
 );
 
-// Verify OTP thunk
+// Verify OTP thunk - Updated to include otpToken and return resetToken
 export const verifyOTP = createAsyncThunk(
   "auth/verifyOTP",
-  async (otp: string, { rejectWithValue }) => {
+  async (
+    { otp, otpToken }: { otp: string; otpToken: string },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axiosInstance.post(
-        "/auth/verify-otp",
-        { otp },
+        "/auth/reset-password-otp",
+        { otp, otpToken }
       );
       return response.data;
     } catch (error: any) {
@@ -197,11 +208,11 @@ export const verifyOTP = createAsyncThunk(
   }
 );
 
-// Reset password thunk
+// Reset password thunk - Updated to use resetToken instead of onetime_password
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (
-    data: { onetime_password: string; new_password: string },
+    data: { resetToken: string; new_password: string },
     { rejectWithValue }
   ) => {
     try {
@@ -294,12 +305,21 @@ const authSlice = createSlice({
         isVerified: false,
         error: null,
         redirectToLogin: false,
-        otpToken: null, // NEW: Reset OTP token
+        otpToken: null,
+      };
+      // Reset password reset state
+      state.passwordReset = {
+        otpRequested: false,
+        otpVerified: false,
+        otpToken: null,
+        resetToken: null,
+        resetSuccess: false,
       };
       localStorage.removeItem("authToken");
       localStorage.removeItem('user');
       localStorage.removeItem("unverifiedUser");
       localStorage.removeItem("otpToken");
+      localStorage.removeItem("passwordResetOtpToken");
       sessionStorage.removeItem("selectedAccountType");
     },
     clearError: (state) => {
@@ -313,9 +333,12 @@ const authSlice = createSlice({
       state.passwordReset = {
         otpRequested: false,
         otpVerified: false,
-        onetimePassword: null,
+        otpToken: null,
+        resetToken: null,
         resetSuccess: false,
       };
+      // Clean up localStorage
+      localStorage.removeItem("passwordResetOtpToken");
     },
     resetEmailVerificationState: (state) => {
       state.emailVerification = {
@@ -324,7 +347,7 @@ const authSlice = createSlice({
         isVerified: false,
         error: null,
         redirectToLogin: false,
-        otpToken: null, // NEW: Reset OTP token
+        otpToken: null,
       };
     },
     // Add a new action to rehydrate user state (useful for app initialization)
@@ -332,6 +355,7 @@ const authSlice = createSlice({
       const token = localStorage.getItem("authToken");
       const user = getUserFromStorage();
       const selectedAccountType = sessionStorage.getItem("selectedAccountType");
+      const passwordResetOtpToken = localStorage.getItem("passwordResetOtpToken");
 
       if (token && user && user.verified) {
         state.token = token;
@@ -341,6 +365,10 @@ const authSlice = createSlice({
 
       if (selectedAccountType) {
         state.selectedAccountType = selectedAccountType;
+      }
+
+      if (passwordResetOtpToken) {
+        state.passwordReset.otpToken = passwordResetOtpToken;
       }
 
       // Check if there's an unverified user
@@ -387,14 +415,11 @@ const authSlice = createSlice({
       state.emailVerification.isVerified = true;
       state.user = action.payload.user;
       state.emailVerification.redirectToLogin = true;
-      state.emailVerification.otpToken = null; // NEW: Clear OTP token after successful verification
+      state.emailVerification.otpToken = null;
 
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.removeItem('unverifiedUser');
       localStorage.removeItem('otpToken'); 
-
-      // Note: Based on the API docs, the verification endpoint doesn't return a token
-      // The user will need to log in after verification
     });
     builder.addCase(verifyEmailOTP.rejected, (state, action) => {
       state.emailVerification.isLoading = false;
@@ -427,21 +452,22 @@ const authSlice = createSlice({
       state.error = action.payload as string;
     });
 
-    // Request OTP cases
+    // Request OTP cases - Updated to store otpToken
     builder.addCase(requestPasswordResetOTP.pending, (state) => {
       state.isLoading = true;
       state.error = null;
     });
-    builder.addCase(requestPasswordResetOTP.fulfilled, (state) => {
+    builder.addCase(requestPasswordResetOTP.fulfilled, (state, action) => {
       state.isLoading = false;
       state.passwordReset.otpRequested = true;
+      state.passwordReset.otpToken = action.payload.otpToken || null;
     });
     builder.addCase(requestPasswordResetOTP.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
     });
 
-    // Verify OTP cases
+    // Verify OTP cases - Updated to store resetToken
     builder.addCase(verifyOTP.pending, (state) => {
       state.isLoading = true;
       state.error = null;
@@ -449,7 +475,8 @@ const authSlice = createSlice({
     builder.addCase(verifyOTP.fulfilled, (state, action) => {
       state.isLoading = false;
       state.passwordReset.otpVerified = true;
-      state.passwordReset.onetimePassword = action.payload.onetime_password;
+      // Store resetToken instead of onetime_password
+      state.passwordReset.resetToken = action.payload.resetToken || action.payload.onetime_password;
     });
     builder.addCase(verifyOTP.rejected, (state, action) => {
       state.isLoading = false;
@@ -464,6 +491,10 @@ const authSlice = createSlice({
     builder.addCase(resetPassword.fulfilled, (state) => {
       state.isLoading = false;
       state.passwordReset.resetSuccess = true;
+      // Clear the reset tokens after successful password reset
+      state.passwordReset.otpToken = null;
+      state.passwordReset.resetToken = null;
+      localStorage.removeItem("passwordResetOtpToken");
     });
     builder.addCase(resetPassword.rejected, (state, action) => {
       state.isLoading = false;

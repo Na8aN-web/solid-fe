@@ -25,16 +25,16 @@ const CreateNewPassword = () => {
   
   const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
 
-  useEffect(() => {
-    // Clear any previous errors
-    dispatch(clearError());
+  // useEffect(() => {
+  //   // Clear any previous errors
+  //   dispatch(clearError());
     
-    // Check if we have the onetime_password in the state
-    if (!passwordReset.otpVerified || !passwordReset.onetimePassword) {
-      // If we don't have the onetime_password, redirect to recovery page
-      navigate("/recover-password");
-    }
-  }, [dispatch, navigate, passwordReset.otpVerified, passwordReset.onetimePassword]);
+  //   // Check if we have the resetToken in the state
+  //   if (!passwordReset.otpVerified || !passwordReset.resetToken) {
+  //     // If we don't have the resetToken, redirect to recovery page
+  //     navigate("/recover-password");
+  //   }
+  // }, [dispatch, navigate, passwordReset.otpVerified, passwordReset.resetToken]);
 
   useEffect(() => {
     // If password reset is successful, show success and redirect to login page
@@ -67,10 +67,10 @@ const CreateNewPassword = () => {
       return;
     }
 
-    // Submit the password reset request
-    if (passwordReset.onetimePassword) {
+    // Submit the password reset request using resetToken
+    if (passwordReset.resetToken) {
       dispatch(resetPassword({
-        onetime_password: passwordReset.onetimePassword,
+        resetToken: passwordReset.resetToken,
         new_password: formData.password
       }));
     }
