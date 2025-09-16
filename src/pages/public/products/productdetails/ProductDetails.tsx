@@ -40,6 +40,8 @@ const ProductDetails = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  console.log(product)
+
   if (!product) {
     return (
       <div>
@@ -156,8 +158,8 @@ const ProductDetails = () => {
             <strong>Weight:</strong> {weight} kg
           </li>
           <li>
-            <strong>Dimensions (L×B×W):</strong> {packageSize.length} ×
-            {packageSize.breadth} × {packageSize.width} cm
+            <strong>Dimensions (L×B×W):</strong> {packageSize?.length} ×
+            {packageSize?.breadth} × {packageSize?.width} cm
           </li>
           <li>
             <strong>Rating:</strong> {rating?.toFixed(1)} / 5 ({numReviews}{" "}
@@ -196,7 +198,7 @@ const ProductDetails = () => {
               <tr>
                 <th className="border py-3 px-2 text-left">Dimensions</th>
                 <td className="border py-3 px-2 text-left">
-                  {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`}
+                  {/* {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`} */}
                 </td>
               </tr>
               <tr>
@@ -209,7 +211,7 @@ const ProductDetails = () => {
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Product Type</th>
-                <td className="border py-3 px-2 text-left">{category.name}</td>
+                <td className="border py-3 px-2 text-left">{category?.name}</td>
               </tr>
             </tbody>
           </table>
@@ -263,11 +265,11 @@ const ProductDetails = () => {
             <tbody>
               <tr className="divide-x">
                 <td className="w-1/4 py-3 px-2 text-center">
-                  {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`}
+                  {`${packageSize?.length} cm x ${packageSize?.breadth} cm x ${packageSize?.width} cm`}
                 </td>
                 <td className="w-1/4 py-3 px-2 text-center">{weight} kg</td>
                 <td className="w-1/4 py-3 px-2 text-center">{material}</td>
-                <td className="w-1/4 py-3 px-2 text-center">{category.name}</td>
+                <td className="w-1/4 py-3 px-2 text-center">{category?.name}</td>
               </tr>
             </tbody>
           </table>

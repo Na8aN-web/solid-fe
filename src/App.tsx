@@ -79,14 +79,7 @@ function App() {
         <Route path="/create-new-password" element={<CreateNewPassword />} />
         <Route path="/enter-code" element={<EnterCode />} />
 
-        <Route
-          path="/product/:id"
-          element={
-            <PrivateRoute>
-              <ProductDetails />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/product/:id" element={<ProductDetails />} />
         <Route
           path="/cart"
           element={
@@ -127,12 +120,7 @@ function App() {
         </Route>
 
         <Route path="/help" element={<HelpCenter />} />
-        <Route
-          path="/help"
-          element={
-            <HelpCenter />
-          }
-        />
+        <Route path="/help" element={<HelpCenter />} />
 
         {/* Admin*/}
         <Route path="/admin/dashboard" element={<Dashboard />} />
