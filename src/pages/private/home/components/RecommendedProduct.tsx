@@ -11,7 +11,7 @@ const RecommendedProduct = () => {
           Customers Who Bought This Also Bought These
         </h2>
       </div>
-      <div className="flex flex-wrap justify-between gap-4 py-4">
+      <div className="flex justify-between gap-4 py-4">
         {dummyProducts.map((_, index) => (
           <ProductCard
           productId={`dummy-product-${index}`} 

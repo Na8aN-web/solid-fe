@@ -259,6 +259,24 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* <Route path="/home" element={<HomeGuest />} /> */}
+        <Route path="/products" element={<Product />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/store" element={<Store />} />
+
+        {/* Authentication */}
+        <Route path="/account-type" element={<AccountTypeSelection />} />
+        <Route path="/signup" element={<SignupScreen />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/recover-password" element={<RecoverPassword />} />
+        <Route path="/create-new-password" element={<CreateNewPassword />} />
+        <Route path="/enter-code" element={<EnterCode />} />
+
+        <Route path="/product/:id" element={<ProductDetails />} />
+
         <Route
           path="/change-address"
           element={
@@ -373,7 +391,10 @@ function App() {
             </AdminRoute>
           }
         />
-
+        
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/help" element={<HelpCenter />} />
+        
         {/* Admin-Only Routes - Restricted from SubDistributors */}
         <Route
           path="/admin/manufacturers"
