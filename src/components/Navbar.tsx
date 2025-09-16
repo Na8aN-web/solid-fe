@@ -1,6 +1,8 @@
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAppSelector } from "../../../../store/hooks";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../store/slices/authSlice";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -9,12 +11,44 @@ interface NavProps {
 
 const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const userRole = user?.role;
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
+  const dispatch = useAppDispatch();
+
+  const navigate = useNavigate();
 
   const getInitial = (name: string | undefined | null): string => {
     if (!name) {
       return "";
     }
     return name.charAt(0).toUpperCase();
+  };
+
+  const handleAdminNavigation = () => {
+    // Double-check authentication before navigating
+    if (!isAuthenticated || !user) {
+      // If not authenticated, redirect to login
+      navigate("/login");
+      return;
+    }
+
+    if (user.role !== "SubDistributor") {
+      // If not a subdistributor, show error or redirect
+      console.warn("Unauthorized access to admin section");
+      return;
+    }
+
+    // Navigate to admin dashboard
+    navigate("/admin/dashboard");
+
+    // Close the profile dropdown
+    setIsProfileOpen(false);
+  };
+
+  const handleLogOut = () => {
+    dispatch(logout());
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -28,6 +62,20 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       document.body.classList.remove("overflow-hidden");
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="relative bg-white">
@@ -43,7 +91,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                       src="/cancel.svg"
                       alt="close"
                       className="w-4 lg:hidden"
-                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      onClick={() => setIsMenuOpen(false)}
                     />
                   </Link>
                 ) : (
@@ -51,7 +99,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                     src="/hamburger.svg"
                     alt="open"
                     className="w-6 lg:hidden"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    onClick={() => setIsMenuOpen(true)}
                   />
                 )}
                 <Link to="/home">
@@ -115,28 +163,114 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
               </div>
               <Link to="/cart">
                 <div className="flex gap-1 items-center">
-                  <img src="cart.svg" alt="cart" className="w-6" />
+                  <img src="/cart.svg" alt="cart" className="w-6" />
                   <p className="text-sm">My Cart</p>
                 </div>
               </Link>
-              <div className="flex gap-1 items-center">
-                <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-[200px] flex items-center justify-center">
-                  <p className="text-base font-semibold text-customBrown">
-                    {getInitial(isAuthenticated && user?.firstName)}
-                  </p>
+              <div className="relative" ref={profileRef}>
+                <div
+                  className="flex gap-1 items-center cursor-pointer"
+                  onClick={() => setIsProfileOpen((prev) => !prev)}
+                >
+                  <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-full flex items-center justify-center">
+                    <p className="text-base font-semibold text-customBrown">
+                      {getInitial(isAuthenticated && user?.firstName)}
+                    </p>
+                  </div>
+                  <img
+                    src="/arrow-down.svg"
+                    alt="dropdown arrow"
+                    className="w-4"
+                  />
                 </div>
-                <img src="arrow-down.svg" alt="" className="w-4" />
+
+                {/* Dropdown menu */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-3 w-60 bg-white border rounded-lg shadow-lg z-20">
+                    <div className="px-4 py-4 ">
+                      <p className="text-[16px] text-center font-semibold">
+                        Hi, {user?.firstName || user?.name}
+                      </p>
+                    </div>
+                    <ul className="flex flex-col gap-6 p-6 text-sm">
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                        onClick={() => {
+                          navigate("/account-information/profile");
+                          setIsProfileOpen(false);
+                        }}
+                      >
+                        <img src="/profile.svg" className="w-4 h-4" />
+                        Profile
+                      </li>
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                        onClick={() => {
+                          navigate("/account-information/orders");
+                          setIsProfileOpen(false);
+                        }}
+                      >
+                        <img src="/orders.svg" className="w-4 h-4" />
+                        Orders
+                      </li>
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                        onClick={() => {
+                          navigate("/account-information/saved");
+                          setIsProfileOpen(false);
+                        }}
+                      >
+                        <img src="/favourite.svg" className="w-4 h-4" />
+                        Saved Items
+                      </li>
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                        onClick={() => {
+                          navigate("/account-information/track");
+                          setIsProfileOpen(false);
+                        }}
+                      >
+                        <img src="/track-orders.svg" className="w-4 h-4" />
+                        Track Order
+                      </li>
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                        onClick={() => {
+                          navigate("/account-information/messages");
+                          setIsProfileOpen(false);
+                        }}
+                      >
+                        <img src="/chat.svg" className="w-4 h-4" />
+                        Messages
+                      </li>
+                      {userRole === "SubDistributor" && (
+                        <li
+                          className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                          onClick={handleAdminNavigation}
+                        >
+                          <img src="/sellermode.png" alt="seller mode" />
+                        </li>
+                      )}
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-red-600 border-t pt-2 mt-2"
+                        onClick={handleLogOut}
+                      >
+                        <img src="/logout-icon.png" className="w-4 h-4" />
+                        Log out
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen
+          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
               ? "translate-y-0 opacity-100 visible"
               : "-translate-y-10 opacity-0 invisible"
-          }`}
+            }`}
         >
           <div className="py-5 px-5">
             <div className="flex gap-3 items-center">
@@ -156,7 +290,13 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
           {/* profile */}
           <div>
             <ul className="flex flex-col items-center gap-3 border-t border-b w-full py-4 px-4">
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              {/* <Link to="/account-information/profile"> */}
+              <li
+                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => {
+                  navigate("/account-information/profile");
+                }}
+              >
                 <div className="flex items-center gap-4">
                   <img src="/profile.svg" alt="person" className="w-5 h-5" />
                   <span className="text-sm font-normal text-shadeGray">
@@ -169,7 +309,13 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              {/* </Link> */}
+              <li
+                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => {
+                  navigate("/account-information/orders");
+                }}
+              >
                 <div className="flex items-center gap-4">
                   <img src="/orders.svg" alt="order" className="w-5 h-5" />
                   <span className="text-sm font-normal text-shadeGray">
@@ -182,7 +328,12 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <li
+                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => {
+                  navigate("/account-information/saved");
+                }}
+              >
                 <div className="flex items-center gap-4">
                   <img
                     src="/favourite.svg"
@@ -199,7 +350,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer" onClick={() => {
+                navigate("/account-information/track");
+              }}>
                 <div className="flex items-center gap-4">
                   <img
                     src="/track-orders.svg"
@@ -216,7 +369,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer" onClick={() => {
+                navigate("/account-information/messages");
+              }}>
                 <div className="flex items-center gap-4">
                   <img src="/chat.svg" alt="chat" className="w-5 h-5" />
                   <span className="text-sm font-normal text-shadeGray">

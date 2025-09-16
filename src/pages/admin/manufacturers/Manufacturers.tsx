@@ -1,0 +1,218 @@
+import React from "react";
+import { Search, ChevronDown, ArrowUpDown } from "lucide-react";
+import AdminLayout from "../components/AdminLayout";
+import FilterSection from "../components/FilterSection";
+
+interface Manufacturer {
+  id: string;
+  serialNumber: number;
+  company: string;
+  email: string;
+  contact: string;
+  status: "Approved" | "Rejected" | "Pending";
+  logo: string;
+}
+
+const Manufacturers: React.FC = () => {
+  const manufacturers: Manufacturer[] = [
+    {
+      id: "1",
+      serialNumber: 1,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Approved",
+      logo: "/api/placeholder/40/40",
+    },
+    {
+      id: "2",
+      serialNumber: 2,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Approved",
+      logo: "/api/placeholder/40/40",
+    },
+    {
+      id: "3",
+      serialNumber: 3,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Rejected",
+      logo: "/api/placeholder/40/40",
+    },
+    {
+      id: "4",
+      serialNumber: 4,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Pending",
+      logo: "/api/placeholder/40/40",
+    },
+    {
+      id: "5",
+      serialNumber: 5,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Rejected",
+      logo: "/api/placeholder/40/40",
+    },
+    {
+      id: "6",
+      serialNumber: 6,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Pending",
+      logo: "/api/placeholder/40/40",
+    },
+    {
+      id: "7",
+      serialNumber: 7,
+      company: "Solid Spare Parts",
+      email: "solidspareparts@gmail.com",
+      contact: "+2348097685599",
+      status: "Approved",
+      logo: "/api/placeholder/40/40",
+    },
+  ];
+
+  const filterOptions = [
+    {
+      label: "Status",
+      options: ["All Status", "Approved", "Rejected", "Pending"],
+    },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Approved":
+        return "bg-[#E8F5E8] text-[#4CAF50]";
+      case "Rejected":
+        return "bg-[#FFEBEE] text-[#D32F2F]";
+      case "Pending":
+        return "bg-[#FFF3E0] text-[#F57C00]";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  return (
+    <AdminLayout pageTitle="">
+      <div>
+        <section className="mb-6">
+          {/* Left: Title + Search */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8 w-full">
+            <h1 className="text-xl font-bold text-gray-900">Manufacturers</h1>
+            <div className="relative w-full sm:w-[290px]">
+              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search for manufacturers..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+            </div>
+          </div>
+        </section>
+        {/* filter section */}
+        <div>
+          <FilterSection filters={filterOptions} />
+        </div>
+
+        <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-sm bg-gray-50 text-gray-600 border-b">
+                <th className="p-4 font-medium">S/N</th>
+                <th className="p-4 font-medium">Company</th>
+                <th className="p-4 font-medium">Email</th>
+                <th className="p-4 font-medium">Contact</th>
+                <th className="p-4 font-medium">Status</th>
+                <th className="p-4 font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {manufacturers.map((manufacturer) => (
+                <tr
+                  key={manufacturer.id}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="p-4 text-sm text-gray-700">
+                    {manufacturer.serialNumber}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+                        <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                          </svg>
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">
+                        {manufacturer.company}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm text-gray-700">
+                    {manufacturer.email}
+                  </td>
+                  <td className="p-4 text-sm text-gray-700">
+                    {manufacturer.contact}
+                  </td>
+                  <td className="p-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(manufacturer.status)}`}
+                    >
+                      {manufacturer.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <button className="text-sm text-gray-700 hover:text-gray-900">
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+            &lt;
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center bg-[#003366] text-white rounded text-sm font-medium">
+            1
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+            2
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
+            &gt;
+          </button>
+        </div>
+        <div className="text-center mt-2 text-sm text-gray-600">
+          1-12 of 18 Products
+        </div>
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default Manufacturers;

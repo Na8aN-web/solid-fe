@@ -47,7 +47,7 @@ const Sidebar = () => {
 
             <div className="mb-12">
                 <h2 className="font-semibold text-[16px] my-6">Categories</h2>
-                {categories.map((category, index) => (
+                {categories?.map((category, index) => (
                     <div key={index} className="flex justify-start gap-2 my-4 items-center py-2">
                         <span>{category.name}</span>
                         <span className="bg-[#E7EAEA] text-[#5E5E5E] px-2 py-0.5 rounded-md text-[16px]">

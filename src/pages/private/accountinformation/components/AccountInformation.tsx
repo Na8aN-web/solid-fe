@@ -19,7 +19,9 @@ import SavedItems from "./saveditems/SavedItems";
 import TrackOrder from "./orders/TrackOrder";
 import Messages from "./messages/Messages";
 import Security from "./security/Security";
-
+import { useParams, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { setUser } from "../../../../store/slices/authSlice";
 
 // Define the type for sidebar items
 type SidebarItem = {
@@ -28,10 +30,18 @@ type SidebarItem = {
   label: string;
 };
 
-
 const AccountInformation = () => {
   // State for active sidebar item
-  const [activeItem, setActiveItem] = useState<string>("profile");
+  // const [activeItem, setActiveItem] = useState<string>("profile");
+  const { section } = useParams(); // Get section from URL
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Set activeItem based on URL param, default to 'profile'
+  const activeItem = section || "profile";
+
+  const isWholesaler = !user?.firstName && !user?.lastName && user?.name;
 
   const sidebarItems: SidebarItem[] = [
     { id: "profile", icon: <UserCircle size={20} />, label: "Profile" },
@@ -47,8 +57,51 @@ const AccountInformation = () => {
 
   // Handle sidebar item click
   const handleSidebarItemClick = (id: string) => {
-    setActiveItem(id);
+    // setActiveItem(id);
+    if (id === "logout") {
+      // Handle logout logic here
+      // For now, just stay on the same page
+      return;
+    }
+    // Navigate to the new section
+    navigate(`/account-information/${id}`);
   };
+
+    const getInitials = () => {
+    if (isWholesaler) {
+      return user?.name ? user.name.charAt(0).toUpperCase() : "W";
+    }
+    
+    const firstName = user?.firstName || "";
+    const lastName = user?.lastName || "";
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (isWholesaler) {
+      return user?.name || "Wholesaler";
+    }
+    return user?.firstName || "User";
+  };
+
+  // Get username/email for display
+  const getUsername = () => {
+    return user?.email || user?.emailAddress || "";
+  };
+  // Update activeItem when URL parameter changes
+  // useEffect(() => {
+  //   if (section && sidebarItems.find((item) => item.id === section)) {
+  //     setActiveItem(section);
+  //   }
+  // }, [section]);
+
+    // Redirect to profile if no section is specified
+    useEffect(() => {
+      if (!section) {
+        navigate("/account-information", { replace: true });
+      }
+    }, [section, navigate]);
 
   // Render the content based on active sidebar item
   const renderContent = () => {
@@ -64,17 +117,11 @@ const AccountInformation = () => {
       case "saved":
         return <SavedItems />;
       case "track":
-        return (
-        <TrackOrder />
-        );
+        return <TrackOrder />;
       case "messages":
-        return (
-         <Messages />
-        );
+        return <Messages />;
       case "security":
-        return (
-        <Security />
-        );
+        return <Security />;
       case "logout":
         return (
           <div className="p-6 bg-white rounded-lg border border-gray-200">
@@ -96,10 +143,10 @@ const AccountInformation = () => {
       <div className="flex items-center mb-6">
         {/* Show back button only on mobile when content is shown */}
         <div className="md:hidden">
-          {activeItem && (
+          {!activeItem && (
             <button
               className="mr-2 p-1 rounded-full hover:bg-gray-200"
-              onClick={() => setActiveItem("")} // Changed from null to 'profile'
+              onClick={() => navigate("/account-information")}
             >
               <ChevronLeft size={24} />
             </button>
@@ -111,7 +158,7 @@ const AccountInformation = () => {
       <div className="flex flex-col md:flex-row gap-6">
         {/* Sidebar - always shown on desktop, conditionally shown on mobile */}
         <div
-          className={`w-full md:w-1/3 lg:w-1/4 ${activeItem ? "hidden md:block" : "block"}`}
+          className={`w-full md:w-1/3 lg:w-1/4 ${!activeItem ? "hidden md:block" : "block"}`}
         >
           <div className="bg-white rounded-lg">
             <ul>
@@ -131,11 +178,11 @@ const AccountInformation = () => {
             {/* User Info at Bottom */}
             <div className="mt-6 flex items-center gap-3 p-4 border-t border-gray-100">
               <div className="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-lg font-semibold">
-                M
+                {getInitials()}
               </div>
               <div>
-                <div className="font-medium">Marvellous</div>
-                <div className="text-xs text-[#827E7E]">Marvellous</div>
+                <div className="font-medium">{getDisplayName()}</div>
+                <div className="text-xs text-[#827E7E]">{getUsername()}</div>
               </div>
             </div>
           </div>

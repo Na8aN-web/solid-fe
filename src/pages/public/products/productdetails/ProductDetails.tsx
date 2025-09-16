@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../../../private/home/components/Navbar";
-import BrandNav from "../../../private/home/components/BrandNav";
 import { Plus } from "lucide-react";
 import { Minus } from "lucide-react";
 import RecommendedProduct from "../../../private/home/components/RecommendedProduct";
@@ -14,7 +12,6 @@ import LoaderSpinner from "../../../../components/LoaderSpinner";
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "description" | "specs" | "reviews"
   >("description");
@@ -45,8 +42,6 @@ const ProductDetails = () => {
   if (!product) {
     return (
       <div>
-        <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-        <BrandNav isMenuOpen={isMenuOpen} />
         <div className="flex justify-center items-center h-[60vh]">
           <LoaderSpinner />
         </div>
@@ -416,8 +411,6 @@ const ProductDetails = () => {
 
   return (
     <div className="bg-[#F5F5F5] pb-10">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-      <BrandNav isMenuOpen={isMenuOpen} />
       {loading ? (
         <div className="flex justify-center items-center h-[400px]">
           <LoaderSpinner />

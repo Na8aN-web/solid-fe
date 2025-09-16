@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import Navbar from "../../private/home/components/Navbar";
 import { Plus, Minus, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ShoppingCart = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [quantityCount, setQuantityCount] = useState<number>(1);
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="bg-[#F5F5F5]">
         <div className="px-5 py-6 bg-white lg:bg-[#F5F5F5] w-full">
           <h2 className="text-xl font-semibold">Shopping Cart</h2>
@@ -219,10 +216,13 @@ const ShoppingCart = () => {
                 </td>
               </tr>
             </table>
-            <div className="flex items-center gap-2 py-8 lg:pt-12 lg:pb-0">
+            <Link
+              to="/products"
+              className="flex items-center gap-2 py-8 lg:pt-12 lg:pb-0"
+            >
               <img src="/arrowleft.svg" alt="" />
               <p className="text-sm text-primary">Continue Shopping</p>
-            </div>
+            </Link>
             <Link to="/checkout">
               <button className="bg-primary py-4 text-white text-sm rounded w-full lg:hidden">
                 Proceed to checkout

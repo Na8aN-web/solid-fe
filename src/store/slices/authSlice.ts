@@ -3,6 +3,8 @@ import axiosInstance from "../../services/api/axios";
 import {
   SignupData,
   AuthResponse,
+  LoginResponse,
+  EmailVerificationResponse,
   UserRole,
   accountTypeToUserRole,
 } from "../../services/auth/types";
@@ -15,26 +17,54 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   selectedAccountType: string | null;
+  emailVerification: {
+    isRequired: boolean;
+    isLoading: boolean;
+    isVerified: boolean;
+    error: string | null;
+    redirectToLogin: boolean;
+    otpToken: string | null;
+  };
   passwordReset: {
     otpRequested: boolean;
     otpVerified: boolean;
-    onetimePassword: string | null;
+    otpToken: string | null; // Store the otpToken from request-otp
+    resetToken: string | null; // Store the resetToken from reset-password-otp
     resetSuccess: boolean;
   };
 }
 
-// Initial state
+const getUserFromStorage = () => {
+  try {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
+    console.error('Error parsing user from localStorage:', error);
+    return null;
+  }
+};
+
+// Initial state with proper user loading
 const initialState: AuthState = {
-  user: null,
+  user: getUserFromStorage(),
   token: localStorage.getItem("authToken"),
-  isAuthenticated: !!localStorage.getItem("authToken"),
+  isAuthenticated: !!(localStorage.getItem("authToken") && getUserFromStorage()),
   isLoading: false,
   error: null,
   selectedAccountType: sessionStorage.getItem("selectedAccountType"),
+  emailVerification: {
+    isRequired: false,
+    isLoading: false,
+    isVerified: false,
+    error: null,
+    redirectToLogin: false,
+    otpToken: localStorage.getItem("otpToken")
+  },
   passwordReset: {
     otpRequested: false,
     otpVerified: false,
-    onetimePassword: null,
+    otpToken: localStorage.getItem("passwordResetOtpToken"), // Store otpToken from request-otp
+    resetToken: null, // Store resetToken from reset-password-otp
     resetSuccess: false,
   },
 };
@@ -49,9 +79,13 @@ export const registerUser = createAsyncThunk(
         signupData
       );
 
-      // If registration is successful, store the token
-      if (response.data.user && response.data.user.token) {
-        localStorage.setItem("authToken", response.data.user.token);
+      // Store the unverified user and OTP token for email verification
+      if (response.data.user) {
+        localStorage.setItem("unverifiedUser", JSON.stringify(response.data.user));
+      }
+
+      if (response.data.otpToken) {
+        localStorage.setItem("otpToken", response.data.otpToken);
       }
 
       return response.data;
@@ -68,7 +102,37 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Login thunk
+// Updated verifyEmailOTP thunk to include otpToken
+export const verifyEmailOTP = createAsyncThunk(
+  "auth/verifyEmailOTP",
+  async (
+    { otp, otpToken }: { otp: string; otpToken: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      console.log('Sending OTP verification request:', { otp, otpToken });
+
+      const response = await axiosInstance.post<EmailVerificationResponse>(
+        "/auth/verify-email-otp",
+        { otp, otpToken }
+      );
+
+      console.log('OTP verification response:', response.data);
+      return response.data;
+
+    } catch (error: any) {
+      console.error('OTP verification error:', error.response?.data || error.message);
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "Email verification failed"
+        );
+      }
+      return rejectWithValue("Network error. Please try again.");
+    }
+  }
+);
+
+// Login thunk - updated to handle new response structure
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (
@@ -76,11 +140,10 @@ export const loginUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await axiosInstance.post<{
-        message: string;
-        user: any;
-        token: string;
-      }>("/auth/login", credentials);
+      const response = await axiosInstance.post<LoginResponse>(
+        "/auth/login",
+        credentials
+      );
 
       if (response.data.token) {
         localStorage.setItem("authToken", response.data.token);
@@ -97,12 +160,18 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Request OTP thunk
+// Request OTP thunk - Updated to store otpToken
 export const requestPasswordResetOTP = createAsyncThunk(
   "auth/requestOTP",
   async (email: string, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post("/auth/request-otp", { email });
+      
+      // Store the otpToken for later use
+      if (response.data.otpToken) {
+        localStorage.setItem("passwordResetOtpToken", response.data.otpToken);
+      }
+      
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -115,12 +184,18 @@ export const requestPasswordResetOTP = createAsyncThunk(
   }
 );
 
-// Verify OTP thunk
+// Verify OTP thunk - Updated to include otpToken and return resetToken
 export const verifyOTP = createAsyncThunk(
   "auth/verifyOTP",
-  async (otp: string, { rejectWithValue }) => {
+  async (
+    { otp, otpToken }: { otp: string; otpToken: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axiosInstance.post("/auth/verify-otp", { otp });
+      const response = await axiosInstance.post(
+        "/auth/reset-password-otp",
+        { otp, otpToken }
+      );
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -133,11 +208,11 @@ export const verifyOTP = createAsyncThunk(
   }
 );
 
-// Reset password thunk
+// Reset password thunk - Updated to use resetToken instead of onetime_password
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (
-    data: { onetime_password: string; new_password: string },
+    data: { resetToken: string; new_password: string },
     { rejectWithValue }
   ) => {
     try {
@@ -160,31 +235,36 @@ export const prepareSignupData = (
   userData: any
 ): SignupData => {
   // Map the account type to the appropriate role
-  const role =
-    accountTypeToUserRole[accountType as keyof typeof accountTypeToUserRole];
+  const role = accountTypeToUserRole[accountType as keyof typeof accountTypeToUserRole];
 
-  // Create the base signup data
-  const signupData: SignupData = {
-    email: userData.email,
-    phoneNumber: userData.phoneNumber,
-    password: userData.password,
-    role: role,
-    firstName: userData.firstName,
-    lastName: userData.lastName,
-  };
+  let signupData: SignupData;
 
-  // Add optional fields if they exist
-  if (userData.companyName) signupData.companyName = userData.companyName;
-
-  // Add business-specific fields based on role
-  if (role !== UserRole.Individual) {
-    if (userData.businessName) signupData.businessName = userData.businessName;
-    if (userData.businessAddress)
-      signupData.businessAddress = userData.businessAddress;
-    if (userData.businessRCNumber)
-      signupData.businessRCNumber = userData.businessRCNumber;
-    if (userData.businessWebsite)
-      signupData.businessWebsite = userData.businessWebsite;
+  if (accountType === 'sub-distributors') {
+    // For wholesaler accounts
+    signupData = {
+      email: userData.businessEmail || '',
+      phoneNumber: userData.businessPhoneNumber || '',
+      password: userData.password,
+      role: role,
+      // For wholesaler, the backend expects 'name' instead of firstName/lastName
+      name: userData.businessOwnerName || '',
+      // Business-specific fields
+      businessName: userData.businessName || '',
+      businessAddress: userData.businessAddress || '',
+      businessRCNumber: userData.businessRCNumber || '',
+      businessWebsite: userData.businessWebsite || '',
+    };
+  } else {
+    // For individual accounts (mechanics)
+    signupData = {
+      email: userData.email || '',
+      phoneNumber: userData.phoneNumber || '',
+      password: userData.password,
+      role: role,
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      companyName: userData.companyName || '',
+    };
   }
 
   return signupData;
@@ -197,6 +277,13 @@ const authSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<any>) => {
       state.user = action.payload;
+      // Also persist to localStorage
+      if (action.payload) {
+        localStorage.setItem('user', JSON.stringify(action.payload));
+      }
+    },
+    resetRedirectToLogin: (state) => {
+      state.emailVerification.redirectToLogin = false;
     },
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
@@ -210,20 +297,85 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      state.selectedAccountType = null;
+      // Reset email verification state
+      state.emailVerification = {
+        isRequired: false,
+        isLoading: false,
+        isVerified: false,
+        error: null,
+        redirectToLogin: false,
+        otpToken: null,
+      };
+      // Reset password reset state
+      state.passwordReset = {
+        otpRequested: false,
+        otpVerified: false,
+        otpToken: null,
+        resetToken: null,
+        resetSuccess: false,
+      };
       localStorage.removeItem("authToken");
-      sessionStorage.removeItem("selectedAccountType");
       localStorage.removeItem('user');
+      localStorage.removeItem("unverifiedUser");
+      localStorage.removeItem("otpToken");
+      localStorage.removeItem("passwordResetOtpToken");
+      sessionStorage.removeItem("selectedAccountType");
     },
     clearError: (state) => {
       state.error = null;
+      state.emailVerification.error = null;
+    },
+    clearEmailVerificationError: (state) => {
+      state.emailVerification.error = null;
     },
     resetPasswordState: (state) => {
       state.passwordReset = {
         otpRequested: false,
         otpVerified: false,
-        onetimePassword: null,
+        otpToken: null,
+        resetToken: null,
         resetSuccess: false,
       };
+      // Clean up localStorage
+      localStorage.removeItem("passwordResetOtpToken");
+    },
+    resetEmailVerificationState: (state) => {
+      state.emailVerification = {
+        isRequired: false,
+        isLoading: false,
+        isVerified: false,
+        error: null,
+        redirectToLogin: false,
+        otpToken: null,
+      };
+    },
+    // Add a new action to rehydrate user state (useful for app initialization)
+    rehydrateAuth: (state) => {
+      const token = localStorage.getItem("authToken");
+      const user = getUserFromStorage();
+      const selectedAccountType = sessionStorage.getItem("selectedAccountType");
+      const passwordResetOtpToken = localStorage.getItem("passwordResetOtpToken");
+
+      if (token && user && user.verified) {
+        state.token = token;
+        state.user = user;
+        state.isAuthenticated = true;
+      }
+
+      if (selectedAccountType) {
+        state.selectedAccountType = selectedAccountType;
+      }
+
+      if (passwordResetOtpToken) {
+        state.passwordReset.otpToken = passwordResetOtpToken;
+      }
+
+      // Check if there's an unverified user
+      const unverifiedUser = localStorage.getItem("unverifiedUser");
+      if (unverifiedUser && !user) {
+        state.emailVerification.isRequired = true;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -234,13 +386,45 @@ const authSlice = createSlice({
     });
     builder.addCase(registerUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.isAuthenticated = true;
+      // Don't set as authenticated yet - email verification required
       state.user = action.payload.user;
-      state.token = action.payload.user?.token || null;
+      state.emailVerification.isRequired = true;
+      state.emailVerification.otpToken = action.payload.otpToken || null;
+      // Clear selectedAccountType after successful registration
+      state.selectedAccountType = null;
+      sessionStorage.removeItem("selectedAccountType");
+
+      if (action.payload.otpToken) {
+        localStorage.setItem("otpToken", action.payload.otpToken);
+      }
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
+    });
+
+    // Email verification cases
+    builder.addCase(verifyEmailOTP.pending, (state) => {
+      state.emailVerification.isLoading = true;
+      state.emailVerification.error = null;
+      state.emailVerification.redirectToLogin = false;
+    });
+    builder.addCase(verifyEmailOTP.fulfilled, (state, action) => {
+      state.emailVerification.isLoading = false;
+      state.emailVerification.isRequired = false;
+      state.emailVerification.isVerified = true;
+      state.user = action.payload.user;
+      state.emailVerification.redirectToLogin = true;
+      state.emailVerification.otpToken = null;
+
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.removeItem('unverifiedUser');
+      localStorage.removeItem('otpToken'); 
+    });
+    builder.addCase(verifyEmailOTP.rejected, (state, action) => {
+      state.emailVerification.isLoading = false;
+      state.emailVerification.error = action.payload as string;
+      state.emailVerification.redirectToLogin = false;
     });
 
     // Login cases
@@ -250,31 +434,40 @@ const authSlice = createSlice({
     });
     builder.addCase(loginUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.isAuthenticated = true;
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
+
+      // Check if user is verified
+      if (action.payload.user.verified) {
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+      } else {
+        // User exists but not verified, require email verification
+        state.user = action.payload.user;
+        state.emailVerification.isRequired = true;
+        localStorage.setItem("unverifiedUser", JSON.stringify(action.payload.user));
+      }
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
     });
 
-    // Request OTP cases
+    // Request OTP cases - Updated to store otpToken
     builder.addCase(requestPasswordResetOTP.pending, (state) => {
       state.isLoading = true;
       state.error = null;
     });
-    builder.addCase(requestPasswordResetOTP.fulfilled, (state) => {
+    builder.addCase(requestPasswordResetOTP.fulfilled, (state, action) => {
       state.isLoading = false;
       state.passwordReset.otpRequested = true;
+      state.passwordReset.otpToken = action.payload.otpToken || null;
     });
     builder.addCase(requestPasswordResetOTP.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
     });
 
-    // Verify OTP cases
+    // Verify OTP cases - Updated to store resetToken
     builder.addCase(verifyOTP.pending, (state) => {
       state.isLoading = true;
       state.error = null;
@@ -282,7 +475,8 @@ const authSlice = createSlice({
     builder.addCase(verifyOTP.fulfilled, (state, action) => {
       state.isLoading = false;
       state.passwordReset.otpVerified = true;
-      state.passwordReset.onetimePassword = action.payload.onetime_password;
+      // Store resetToken instead of onetime_password
+      state.passwordReset.resetToken = action.payload.resetToken || action.payload.onetime_password;
     });
     builder.addCase(verifyOTP.rejected, (state, action) => {
       state.isLoading = false;
@@ -297,6 +491,10 @@ const authSlice = createSlice({
     builder.addCase(resetPassword.fulfilled, (state) => {
       state.isLoading = false;
       state.passwordReset.resetSuccess = true;
+      // Clear the reset tokens after successful password reset
+      state.passwordReset.otpToken = null;
+      state.passwordReset.resetToken = null;
+      localStorage.removeItem("passwordResetOtpToken");
     });
     builder.addCase(resetPassword.rejected, (state, action) => {
       state.isLoading = false;
@@ -312,7 +510,11 @@ export const {
   setAccountType,
   logout,
   clearError,
-  resetPasswordState
+  clearEmailVerificationError,
+  resetPasswordState,
+  resetEmailVerificationState,
+  rehydrateAuth,
+  resetRedirectToLogin
 } = authSlice.actions;
 
 // Export reducer

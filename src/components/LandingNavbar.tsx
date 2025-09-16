@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Logo from '../../../../assets/logo.png';
-import Cart from '../../../../assets/cart.png';
-import openMenuIcon from '../../../../assets/menu.png';
-import closeMenuIcon from '../../../../assets/cancel.png';
+import Logo from '../assets/logo.png';
+import Cart from '../assets/cart.png';
+import openMenuIcon from '../assets/menu.png';
+import closeMenuIcon from '../assets/cancel.png';
 
 interface NavItem {
     label: string;

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Navbar from "../private/home/components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { resetPassword, clearError, resetPasswordState } from "../../store/slices/authSlice";
@@ -8,7 +7,6 @@ import { RootState, AppDispatch } from "../../store";
 const CreateNewPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [formData, setFormData] = useState({
     password: "",
@@ -27,16 +25,16 @@ const CreateNewPassword = () => {
   
   const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
 
-  useEffect(() => {
-    // Clear any previous errors
-    dispatch(clearError());
+  // useEffect(() => {
+  //   // Clear any previous errors
+  //   dispatch(clearError());
     
-    // Check if we have the onetime_password in the state
-    if (!passwordReset.otpVerified || !passwordReset.onetimePassword) {
-      // If we don't have the onetime_password, redirect to recovery page
-      navigate("/recover-password");
-    }
-  }, [dispatch, navigate, passwordReset.otpVerified, passwordReset.onetimePassword]);
+  //   // Check if we have the resetToken in the state
+  //   if (!passwordReset.otpVerified || !passwordReset.resetToken) {
+  //     // If we don't have the resetToken, redirect to recovery page
+  //     navigate("/recover-password");
+  //   }
+  // }, [dispatch, navigate, passwordReset.otpVerified, passwordReset.resetToken]);
 
   useEffect(() => {
     // If password reset is successful, show success and redirect to login page
@@ -69,10 +67,10 @@ const CreateNewPassword = () => {
       return;
     }
 
-    // Submit the password reset request
-    if (passwordReset.onetimePassword) {
+    // Submit the password reset request using resetToken
+    if (passwordReset.resetToken) {
       dispatch(resetPassword({
-        onetime_password: passwordReset.onetimePassword,
+        resetToken: passwordReset.resetToken,
         new_password: formData.password
       }));
     }
@@ -98,7 +96,6 @@ const CreateNewPassword = () => {
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-2">

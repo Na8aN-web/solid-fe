@@ -8,8 +8,6 @@ import { setAccountType } from '../../store/slices/authSlice';
 enum AccountType {
   MechanicsIndividuals = 'mechanics',
   SubDistributors = 'sub-distributors',
-  Importers = 'importers',
-  Manufacturers = 'manufacturers'
 }
 
 const AccountTypeSelection: React.FC = () => {
@@ -22,23 +20,15 @@ const AccountTypeSelection: React.FC = () => {
     {
       type: AccountType.MechanicsIndividuals,
       label: 'Mechanics/Individuals',
-      description: 'For mechanics and vehicle owners looking for reliable spare parts at great prices'
+      description: 'For mechanics and vehicle owners looking for reliable spare parts at great prices',
+      role: 'Individual'
     },
     {
       type: AccountType.SubDistributors,
       label: 'Sub-distributors/Bulk buyers',
-      description: 'Designed for businesses or sub-distributors reselling in various cities. Get wholesale pricing, and connect with distributors.'
+      description: 'Designed for businesses or sub-distributors reselling in various cities. Get wholesale pricing, and connect with distributors.',
+      role: 'Wholesaler'
     },
-    {
-      type: AccountType.Importers,
-      label: 'Importers',
-      description: 'Designed for importers ordering abroad. Connect with manufacturers and get manufacturers pricing.'
-    },
-    {
-      type: AccountType.Manufacturers,
-      label: 'Manufacturers',
-      description: 'Register as a manufacturer to sell directly to importers and distributors. Showcase your product, and grow your network.'
-    }
   ];
 
   const handleAccountTypeSelect = (type: AccountType) => {
@@ -57,7 +47,7 @@ const AccountTypeSelection: React.FC = () => {
 
   return (
     <>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+
       <div className="flex items-center justify-center bg-white font-roboto p-0 md:p-6">
         <div className="w-full max-w-[600px] bg-white md:border border-[#D9D9D9] rounded-lg shadow-md p-[20px] md:p-[60px]">
           <h2 className="text-[24px] font-normal text-center mb-4 text-[#1D192B]">Create an Account</h2>
@@ -88,9 +78,14 @@ const AccountTypeSelection: React.FC = () => {
                   >
                     {selectedType === accountType.type && <span className="text-xs">✓</span>}
                   </div>
-                  <h3 className={`font-semibold ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#5E5E5E]'}`}>
-                    {accountType.label}
-                  </h3>
+                  <div className="flex-1">
+                    <h3 className={`font-semibold ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#5E5E5E]'}`}>
+                      {accountType.label}
+                    </h3>
+                    <span className={`text-xs ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#827E7E]'}`}>
+                      Role: {accountType.role}
+                    </span>
+                  </div>
                 </div>
                 <p className={`text-sm mt-2 pl-8 ${selectedType === accountType.type ? 'text-[#003366]' : 'text-[#5E5E5E]'}`}>
                   {accountType.description}

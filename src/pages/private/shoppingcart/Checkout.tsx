@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import Navbar from "../home/components/Navbar";
 import { Link } from "react-router-dom";
 
 const Checkout: React.FC = () => {
   const [selectedType, setSelectedType] = useState<DeliveryType | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   enum DeliveryType {
     FastDelivery = "fast-delivery",
@@ -104,15 +102,17 @@ const Checkout: React.FC = () => {
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="p-5 sm:px-8 lg:px-10 lg:bg-[#F5F5F5]">
         <h2 className="text-xl text-customBrown font-semibold lg:hidden">
           Checkout
         </h2>
-        <div className="hidden lg:flex items-center gap-2 pb-6 pt-2">
+        <Link
+          to="/cart"
+          className="hidden lg:flex items-center gap-2 pb-6 pt-2"
+        >
           <img src="/arrowleft.svg" alt="" />
           <p className="text-sm text-primary font-semibold">Back to cart</p>
-        </div>
+        </Link>
         <section className="lg:flex lg:gap-5 lg:pb-12">
           {/* Payment details and review Desktop*/}
           <section className="bg-white w-full lg:w-2/3 lg:px-10 self-start lg:pb-8 lg:rounded-lg lg:border lg:border-[#D9D9D9]">

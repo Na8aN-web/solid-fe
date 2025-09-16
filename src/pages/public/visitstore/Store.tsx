@@ -1,7 +1,5 @@
 import { useState } from "react";
 import ProductPageLayout from "../products/ProductPageLayout";
-import Navbar from "../home/components/LandingNavbar";
-import BrandNav from "../../private/home/components/BrandNav";
 import { MapPin, Search } from "lucide-react";
 import { FaStar } from "react-icons/fa";
 
@@ -12,10 +10,6 @@ const Store = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <div>
-      <Navbar />
-      <div className="">
-        <BrandNav isMenuOpen={isMenuOpen} />
-      </div>
       <section className="flex flex-col gap-6 lg:flex-row p-4 lg:gap-16 lg:px-16 bg-white lg:py-6">
         <div className="space-y-4 w-full">
           <div className="bg-primary w-full p-5 rounded-xl space-y-1">

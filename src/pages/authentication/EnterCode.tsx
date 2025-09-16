@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import Navbar from "../private/home/components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { verifyOTP, requestPasswordResetOTP, clearError } from "../../store/slices/authSlice";
@@ -9,7 +8,6 @@ const EnterCode = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [bgColor, setBgColor] = useState<string>("bg-[#F3F3F3]");
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
@@ -31,7 +29,14 @@ const EnterCode = () => {
     
     // Clear any previous errors
     dispatch(clearError());
-  }, [dispatch, navigate]);
+    
+    // Check if we have the otpToken from the previous step
+    if (!passwordReset.otpToken) {
+      // If no otpToken, redirect back to recovery page
+      navigate("/recover-password");
+      return;
+    }
+  }, [dispatch, navigate, passwordReset.otpToken]);
 
   useEffect(() => {
     // If OTP is verified, navigate to create new password page
@@ -102,7 +107,16 @@ const EnterCode = () => {
   }
 
   const handleSubmitOTP = (otpCode: string) => {
-    dispatch(verifyOTP(otpCode));
+    // Pass both OTP and otpToken to the verify function
+    if (passwordReset.otpToken) {
+      dispatch(verifyOTP({ 
+        otp: otpCode, 
+        otpToken: passwordReset.otpToken 
+      }));
+    } else {
+      console.error("No OTP token available");
+      navigate("/recover-password");
+    }
   };
 
   const handleResendCode = () => {
@@ -119,7 +133,6 @@ const EnterCode = () => {
 
   return (
     <div>
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <section className="sm:flex sm:justify-center sm:items-center min-h-screen">
         <div className="p-5 sm:p-14 sm:border sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-4">

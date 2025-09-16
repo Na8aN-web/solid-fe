@@ -7,6 +7,8 @@ import categoriesReducer from './slices/categoriesSlice'
 import vehicleReducer from './slices/vehicleSlice'
 import wishlistReducer from './slices/wishlistSlice'
 import cartReducer from './slices/cartSlice'
+import kycReducer from './slices/kycSlice'
+import adminDashboardReducer from './slices/adminDashboardSlice'
 
 
 export const store = configureStore({
@@ -18,6 +20,8 @@ export const store = configureStore({
     vehicle: vehicleReducer,
     wishlist: wishlistReducer,
     cart: cartReducer,
+    kyc: kycReducer,
+    adminDashboard: adminDashboardReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
