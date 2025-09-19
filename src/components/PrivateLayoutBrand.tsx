@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import BrandNav from "./BrandNav";
-import Footer from "./Footer";
+// import Footer from "./Footer";
 
 
 const PrivateLayoutBrand = () => {
@@ -12,7 +12,7 @@ const PrivateLayoutBrand = () => {
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <BrandNav isMenuOpen={isMenuOpen} />
       <main><Outlet /></main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

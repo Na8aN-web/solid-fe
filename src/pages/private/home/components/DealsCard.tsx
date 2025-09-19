@@ -24,8 +24,8 @@ const DealsCard: React.FC<ProductCardProps> = ({
 }) => {
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
   return (
-    <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex w-full">
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16">
+    <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex w-full gap-4">
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16 w-full">
         <div className="relative">
           {discount && (
             <span className="bg-primary text-white text-xs p-2 w-[38px] h-[26px] rounded-3xl flex justify-center items-center absolute top-[-5px] right-[-60px] xl:top-[-50px]">
@@ -35,7 +35,7 @@ const DealsCard: React.FC<ProductCardProps> = ({
           <img
             src={image}
             alt=""
-            className="w-[140px] h-[140px] md:w-[200px] md:h-[200px]"
+            className="w-[140px] h-[140px] md:max-w-[200px] md:h-[200px]"
           />
         </div>
         <div className="flex justify-center lg:flex-col items-center gap-4 w-full pb-6">
@@ -50,7 +50,7 @@ const DealsCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
       </div>
-      <div className="">
+      <div className="w-full">
         <p className="text-[10px] font-semibold text-customGray2 leading-normal">
           {category}
         </p>
@@ -81,7 +81,7 @@ const DealsCard: React.FC<ProductCardProps> = ({
         </div>
         <div className="flex gap-3 pt-4">
           <button
-            className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-56"
+            className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-full"
             onClick={(e) => {
               e.stopPropagation();
               // handle add to cart logic
