@@ -133,11 +133,7 @@ const Login = () => {
             <span className="text-customBrown text-sm">OR</span>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
-          <div className="flex flex-col gap-4 lg:flex-row">
-            <div className="flex items-center justify-center gap-3 border border-[#6558F] rounded-xl py-5 lg:py-4 w-full">
-              <img src="/faceblue.svg" alt="" />
-              <p>Continue with Facebook</p>
-            </div>
+          <div>
             <div className="flex items-center justify-center gap-3 border border-[#6558F] rounded-xl py-5 lg:py-4 w-full">
               <img src="/google.svg" alt="" />
               <p>Continue with Google</p>
