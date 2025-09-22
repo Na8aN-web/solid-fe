@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import SidebarFilter from "./components/SidebarFilter";
 import ProductGrid from "./components/ProductGrid";
 import Recents from "./components/Recents";
-import { fetchProductCount } from "../../../store/slices/productSlice";
+import { fetchProductCount, searchProducts } from "../../../store/slices/productSlice";
 import {
   fetchProducts,
   toggleFavorite,
@@ -10,6 +10,7 @@ import {
   setCurrentPage,
 } from "../../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { useLocation } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -51,23 +52,30 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   extraSection,
   pageTitle = "Products",
 }) => {
-  // const [products, setProducts] = useState<Product[]>(initialProducts);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // const [products, setProducts] = useState<Product[]>(productData);
   const [isMobile, setIsMobile] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   // Add this new state variable
   const [isSortOpen, setIsSortOpen] = useState(false);
-
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  const name = params.get("name");
   const dispatch = useAppDispatch();
   const { products, loading, error, currentPage, itemsPerPage, totalProducts } =
     useAppSelector((state) => state.products);
 
+
+
   useEffect(() => {
-    dispatch(fetchProducts());
-    dispatch(fetchProductCount());
-  }, [dispatch]);
+    if (name && name.trim()) {
+      dispatch(setCurrentPage(1));                // ensure page 1 on a new query
+      dispatch(searchProducts({ name: name.trim() }));
+    } else {
+      dispatch(fetchProducts());
+      dispatch(fetchProductCount());
+    }
+  }, [dispatch, name]);
 
   // Check if the screen is mobile size
   useEffect(() => {
@@ -97,8 +105,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     vehicleTypes: [],
     brands: [],
   });
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const [itemsPerPage, setItemsPerPage] = useState(16);
   const [sortOrder, setSortOrder] = useState("Alphabetical Order");
   const [viewType, setViewType] = useState("grid"); // 'grid' or 'list'
   const [expandedSections, setExpandedSections] = useState({

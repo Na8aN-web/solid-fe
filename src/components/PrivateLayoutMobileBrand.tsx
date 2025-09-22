@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import BrandNav from "./BrandNav";
-import Footer from "./Footer";
+// import Footer from "./Footer";
 
 
 const PrivateLayoutMobileBrand = () => {
@@ -16,7 +16,7 @@ const PrivateLayoutMobileBrand = () => {
       <main>
         <Outlet />
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };
