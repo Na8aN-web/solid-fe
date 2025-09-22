@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../store/slices/authSlice";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
+import axiosInstance from "../services/api/axios";
+import { Category } from "../services/categories/types";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -15,8 +16,82 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const dispatch = useAppDispatch();
-
+  const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // NEW: categories
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [catLoading, setCatLoading] = useState(false);
+  const [selectedCat, setSelectedCat] = useState<string>("");
+
+  // A) Clear search input whenever we leave /products
+  useEffect(() => {
+    if (!location.pathname.startsWith("/products")) {
+      setSearchValue("");
+      // optional: also clear selected category when leaving products
+      // setSelectedCat("");
+    }
+  }, [location.pathname]);
+
+  // B) Fetch all categories (uses your existing backend endpoint)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setCatLoading(true);
+        // 🔧 change the path to your actual endpoint
+        // e.g. "/categories", "/products/categories", etc.
+        const { data } = await axiosInstance.get<{
+          categories: Category[]; // or just Category[] if your API returns a flat list
+        }>("/categories");
+        const list = Array.isArray(data) ? data : data.categories;
+        if (mounted) setCategories(list ?? []);
+      } catch (e) {
+        console.warn("Failed to fetch categories", e);
+      } finally {
+        if (mounted) setCatLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  // C) Navigate when a category is chosen (clear search)
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setSelectedCat(id);
+    setSearchValue(""); // clear search when switching category
+
+    const qs = new URLSearchParams();
+    if (id) qs.set("categoryId", id);
+    qs.set("page", "1");
+    navigate(`/products?${qs.toString()}`);
+  };
+
+  // D) Existing search submit — include category if set
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const q = searchValue.trim();
+    if (!q) return;
+
+    const qs = new URLSearchParams();
+    qs.set("name", q);
+    if (selectedCat) qs.set("categoryId", selectedCat);
+    qs.set("page", "1");
+    navigate(`/products?${qs.toString()}`);
+  };
+
+
+  // const handleSearch = (e?: React.FormEvent) => {
+  //   if (e) e.preventDefault();
+  //   const q = searchValue.trim();
+  //   if (q.length === 0) return;
+  //   navigate(`/products?name=${encodeURIComponent(q)}`);
+  //   setSearchValue("");
+  //   setIsMenuOpen(false);
+  // };
+
+  // const navigate = useNavigate();
 
   const getInitial = (name: string | undefined | null): string => {
     if (!name) {
@@ -117,13 +192,16 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             {/* mobile input */}
             <input
               type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="border h-12 w-full p-2 rounded-lg lg:rounded-r-lg text-sm pl-12 lg:hidden"
               placeholder="Search by part name of OEM number"
             />
           </div>
           {/* desktop */}
           <div className="hidden lg:flex w-full">
-            <div className="flex gap-4 w-full">
+            <form onSubmit={handleSearch} className="flex gap-4 w-full">
               <div className="flex w-full">
                 <div className="flex justify-around items-center w-52 gap-1 h-12 px-2 border border-r-0 rounded-l-lg">
                   <p className="text-sm">All Categories</p>
@@ -137,6 +215,8 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   />
                   <input
                     type="text"
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
                     className="border h-12 w-full p-2 rounded-r-lg text-sm pl-12"
                     placeholder="Search by part name or OEM number"
                   />
@@ -148,7 +228,8 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
               >
                 Search
               </button>
-            </div>
+            </form>
+
             {/* User Options */}
             <div className="flex gap-4 items-center justify-end w-full">
               <div className="flex gap-1 items-center">
@@ -267,10 +348,11 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         </div>
         {/* mobile nav dropdown */}
         <section
-          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
+          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen
               ? "translate-y-0 opacity-100 visible"
               : "-translate-y-10 opacity-0 invisible"
-            }`}
+          }`}
         >
           <div className="py-5 px-5">
             <div className="flex gap-3 items-center">
@@ -350,9 +432,12 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer" onClick={() => {
-                navigate("/account-information/track");
-              }}>
+              <li
+                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => {
+                  navigate("/account-information/track");
+                }}
+              >
                 <div className="flex items-center gap-4">
                   <img
                     src="/track-orders.svg"
@@ -369,9 +454,12 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   className="w-4 h-4"
                 />
               </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer" onClick={() => {
-                navigate("/account-information/messages");
-              }}>
+              <li
+                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => {
+                  navigate("/account-information/messages");
+                }}
+              >
                 <div className="flex items-center gap-4">
                   <img src="/chat.svg" alt="chat" className="w-5 h-5" />
                   <span className="text-sm font-normal text-shadeGray">

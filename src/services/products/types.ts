@@ -18,6 +18,14 @@ export interface Product {
   favorite: boolean;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  hasMore: boolean;
+  totalPages: number;
+}
+
 export interface ProductsResponse {
   products: Product[];
 }
@@ -64,4 +72,8 @@ export interface NewProductsResponse {
 
 export interface DealsOfDayResponse {
   products: NewProduct[];
+}
+
+export interface SearchProductsQuery {
+  name: string;      // search term
 }
