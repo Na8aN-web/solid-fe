@@ -471,13 +471,6 @@ const SignupScreen: React.FC = () => {
                                 type="button"
                                 className="bg-white border w-full md:w-[calc(50%-0.5rem)] border-[#1D192B] text-gray-700 text-[14px] py-4 px-5 rounded-lg inline-flex items-center justify-center hover:bg-gray-50"
                             >
-                                <img src="/facebook.png" alt="Facebook" className="mr-3" />
-                                Continue with Facebook
-                            </button>
-                            <button 
-                                type="button"
-                                className="bg-white border w-full md:w-[calc(50%-0.5rem)] border-[#1D192B] text-gray-700 text-[14px] py-4 px-5 rounded-lg inline-flex items-center justify-center hover:bg-gray-50"
-                            >
                                 <img src="/google.png" alt="Google" className="mr-3" />
                                 Continue with Google
                             </button>

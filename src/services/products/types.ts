@@ -1,7 +1,7 @@
 // src/services/products/types.ts
 export interface Product {
   regularPrice: any;
-  _id: number;
+  _id: string;
   name: string;
   category: string;
   maker: string;

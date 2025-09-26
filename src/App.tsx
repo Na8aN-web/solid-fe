@@ -11,6 +11,7 @@ import EmailVerification from "./pages/authentication/EmailVerification";
 import EnterCode from "./pages/authentication/EnterCode";
 import Product from "./pages/public/products/Product";
 import About from "./pages/public/about/About";
+import HowItWorks from "./pages/public/howitworks/HowItWorks";
 import ProductDetails from "./pages/public/products/productdetails/ProductDetails";
 import Footer from "./components/Footer";
 import Blog from "./pages/public/blog/Blog";
@@ -182,6 +183,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<ContactUs />} />
         </Route>

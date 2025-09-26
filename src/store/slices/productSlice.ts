@@ -207,106 +207,89 @@ export const fetchProductsByBrand = createAsyncThunk<
 });
 
 const productSlice = createSlice({
-  name: "products",
-  initialState,
-  reducers: {
-    setCurrentPage: (state, action: PayloadAction<number>) => {
-      state.currentPage = action.payload;
+    name: "products",
+    initialState,
+    reducers: {
+        setCurrentPage: (state, action: PayloadAction<number>) => {
+            state.currentPage = action.payload;
+        },
+        setItemsPerPage: (state, action: PayloadAction<number>) => {
+            state.itemsPerPage = action.payload;
+            state.currentPage = 1; // Reset to first page when changing items per page
+        },
+        setSortBy: (state, action: PayloadAction<string>) => {
+            state.sortBy = action.payload;
+        },
+        toggleFavorite: (state, action: PayloadAction<string>) => {
+            const product = state.products.find((p) => p._id === action.payload);
+            if (product) {
+                product.favorite = !product.favorite;
+            }
+        },
+        addFilter: (
+            state,
+            action: PayloadAction<{ key: keyof typeof state.filters; value: string }>
+        ) => {
+            const { key, value } = action.payload;
+            if (Array.isArray(state.filters[key])) {
+                const filterArray = state.filters[key] as string[];
+                if (!filterArray.includes(value)) {
+                    filterArray.push(value);
+                }
+            }
+        },
+        removeFilter: (
+            state,
+            action: PayloadAction<{
+                key: "category" | "maker" | "model" | "year";
+                value: string;
+            }>
+        ) => {
+            const { key, value } = action.payload;
+            state.filters[key] = state.filters[key].filter((v) => v !== value);
+        },
+        setPriceRange: (
+            state,
+            action: PayloadAction<{ min: number; max: number }>
+        ) => {
+            state.filters.minPrice = action.payload.min;
+            state.filters.maxPrice = action.payload.max;
+        },
+        clearFilters: (state) => {
+            state.filters = {
+                category: [],
+                maker: [],
+                model: [],
+                year: [],
+                minPrice: 0,
+                maxPrice: 100000,
+            };
+        },
     },
-    setItemsPerPage: (state, action: PayloadAction<number>) => {
-      state.itemsPerPage = action.payload;
-      state.currentPage = 1; // Reset to first page when changing items per page
-    },
-    setSortBy: (state, action: PayloadAction<string>) => {
-      state.sortBy = action.payload;
-    },
-    toggleFavorite: (state, action: PayloadAction<number>) => {
-      const product = state.products.find((p) => p._id === action.payload);
-      if (product) {
-        product.favorite = !product.favorite;
-      }
-    },
-    addFilter: (
-      state,
-      action: PayloadAction<{ key: keyof typeof state.filters; value: string }>
-    ) => {
-      const { key, value } = action.payload;
-      if (Array.isArray(state.filters[key])) {
-        const filterArray = state.filters[key] as string[];
-        if (!filterArray.includes(value)) {
-          filterArray.push(value);
-        }
-      }
-    },
-    removeFilter: (
-      state,
-      action: PayloadAction<{
-        key: "category" | "maker" | "model" | "year";
-        value: string;
-      }>
-    ) => {
-      const { key, value } = action.payload;
-      state.filters[key] = state.filters[key].filter((v) => v !== value);
-    },
-    setPriceRange: (
-      state,
-      action: PayloadAction<{ min: number; max: number }>
-    ) => {
-      state.filters.minPrice = action.payload.min;
-      state.filters.maxPrice = action.payload.max;
-    },
-    clearFilters: (state) => {
-      state.filters = {
-        category: [],
-        maker: [],
-        model: [],
-        year: [],
-        minPrice: 0,
-        maxPrice: 100000,
-      };
-    },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(fetchProducts.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchProducts.fulfilled, (state, action) => {
-      state.loading = false;
-      state.products = action.payload.products;
-      state.totalProducts = action.payload.products.length;
-    });
-    builder.addCase(fetchProducts.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-    // search products
-    builder.addCase(searchProducts.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(
-      searchProducts.fulfilled,
-      (state, action: PayloadAction<ProductsResponse>) => {
-        state.loading = false;
-        state.products = action.payload.products ?? [];
-      }
-    );
-    builder.addCase(searchProducts.rejected, (state, action: any) => {
-      state.loading = false;
-      state.error =
-        action.payload?.message ?? action.error?.message ?? "Search failed";
-    });
-    builder.addCase(fetchProductCount.fulfilled, (state, action) => {
-      state.totalProducts = action.payload;
-    });
-    builder.addCase(fetchProductCount.rejected, (state, action) => {
-      state.error = action.payload as string;
-    });
-    builder.addCase(fetchProductById.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
+    extraReducers: (builder) => {
+        builder.addCase(fetchProducts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchProducts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.products = action.payload.products;
+            state.totalProducts = action.payload.products.length;
+        });
+        builder.addCase(fetchProducts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+        builder.addCase(fetchProductCount.fulfilled, (state, action) => {
+            state.totalProducts = action.payload;
+        });
+        builder.addCase(fetchProductCount.rejected, (state, action) => {
+            state.error = action.payload as string;
+        });
+        builder.addCase(fetchProductById.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
 
     builder.addCase(fetchProductById.fulfilled, (state, action) => {
       state.loading = false;

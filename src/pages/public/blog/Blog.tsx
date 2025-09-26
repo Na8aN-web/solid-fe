@@ -20,7 +20,6 @@ const Blog = () => {
 
   return (
     <>
-      <Navbar />
       {selectedPost ? (
         <BlogPostDetail post={selectedPost} onBack={handleBackClick} />
       ) : (

@@ -2,16 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Minus } from "lucide-react";
 import RecommendedProduct from "../../../private/home/components/RecommendedProduct";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { fetchProductById } from "../../../../store/slices/productSlice";
 import { Product } from "../types/product";
+import { useNavigate } from "react-router-dom";
+import { addProductToCart } from "../../../../store/slices/cartSlice";
 import { FaStar } from "react-icons/fa";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
     "description" | "specs" | "reviews"
   >("description");
@@ -26,6 +29,7 @@ const ProductDetails = () => {
   );
   const loading = useAppSelector((state) => state.products.loading);
   const error = useAppSelector((state) => state.products.error);
+  const { loading: cartLoading } = useAppSelector((state) => state.cart);
 
   useEffect(() => {
     if (id) {
@@ -49,37 +53,60 @@ const ProductDetails = () => {
     );
   }
 
+  const handleAddToCart = () => {
+    if (product) {
+      dispatch(
+        addProductToCart({
+          productId: product._id, // Make sure your product has an _id field
+          quantity: quantityCount,
+        })
+      ).then(() => {
+        // Optional: Show success message or navigate to cart
+        console.log("Product added to cart");
+      });
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (product) {
+      dispatch(
+        addProductToCart({
+          productId: product._id,
+          quantity: quantityCount,
+        })
+      ).then(() => {
+        navigate("/cart"); // Navigate to cart page
+      });
+    }
+  };
+
   // Destructuring the product fields
   const {
-    name,
-    brand,
-    category,
-    briefDescription,
-    fullDescription,
-    images,
-    discountPrice,
-    regularPrice,
-    salesPrice,
-    packageSize,
-    weight,
-    stockStatus,
-    quantityInStock,
-    rating,
-    numReviews,
-    // tieredPricing,
-    // isFeatured,
-    // isNewArrival,
-    // isDealOfTheDay,
-    material,
-    minStock,
-    minOrderQuantity,
-    store,
-    sku,
-    partNumber,
+    name = "Unknown Product",
+    brand = { name: "Unknown Brand" },
+    category = { name: "Unknown Category" },
+    briefDescription = "No description available",
+    fullDescription = "No description available",
+    images = [],
+    discountPrice = 0,
+    regularPrice = 0,
+    salesPrice = 0,
+    packageSize = { length: 0, breadth: 0, width: 0 },
+    weight = 0,
+    stockStatus = "Unknown",
+    quantityInStock = 0,
+    rating = 0,
+    numReviews = 0,
+    material = "Unknown",
+    minStock = 0,
+    minOrderQuantity = 1,
+    store = "Unknown Store",
+    sku = "N/A",
+    partNumber = "N/A",
     updatedAt,
     createdAt,
-    units,
-  } = product;
+    units = "units",
+  } = product || {};
 
   const savedPrice = Math.round(regularPrice - salesPrice);
   const discountAmount = regularPrice - discountPrice;
@@ -116,55 +143,54 @@ const ProductDetails = () => {
         <img
           src="/arrow-down.svg"
           alt=""
-          className={`w-4 transform transition-transform duration-300 ${
-            isDescriptionOpen ? "rotate-180" : ""
-          }`}
+          className={`w-4 transform transition-transform duration-300 ${isDescriptionOpen ? "rotate-180" : ""
+            }`}
         />
       </div>
       <div className={!isDescriptionOpen ? "block" : "hidden"}>
-        <p>{fullDescription}</p>
+        <p>{fullDescription || "No description available"}</p>
 
         <ul className="list-disc pl-5 space-y-1 pt-3">
           <li>
-            <strong>Brand:</strong> {brand?.name}
+            <strong>Brand:</strong> {brand?.name || "Unknown Brand"}
           </li>
           <li>
-            <strong>Category:</strong> {category?.name}
+            <strong>Category:</strong> {category?.name || "Unknown Category"}
           </li>
           <li>
-            <strong>Material:</strong> {material}
+            <strong>Material:</strong> {material || "Unknown"}
           </li>
           <li>
-            <strong>Part Number:</strong> {partNumber}
+            <strong>Part Number:</strong> {partNumber || "N/A"}
           </li>
           <li>
-            <strong>Stock Status:</strong> {stockStatus}
+            <strong>Stock Status:</strong> {stockStatus || "Unknown"}
           </li>
           <li>
-            <strong>In Stock:</strong> {quantityInStock} {units}
+            <strong>In Stock:</strong> {quantityInStock || 0} {units || "units"}
           </li>
           <li>
-            <strong>Minimum Order Quantity:</strong> {minOrderQuantity}
+            <strong>Minimum Order Quantity:</strong> {minOrderQuantity || 1}
           </li>
           <li>
-            <strong>Minimum Stock Alert:</strong> {minStock}
+            <strong>Minimum Stock Alert:</strong> {minStock || 0}
           </li>
           <li>
-            <strong>Weight:</strong> {weight} kg
+            <strong>Weight:</strong> {weight || 0} kg
           </li>
           <li>
             <strong>Dimensions (L×B×W):</strong> {packageSize?.length} ×
             {packageSize?.breadth} × {packageSize?.width} cm
           </li>
           <li>
-            <strong>Rating:</strong> {rating?.toFixed(1)} / 5 ({numReviews}{" "}
+            <strong>Rating:</strong> {rating?.toFixed(1) || "0.0"} / 5 ({numReviews || 0}{" "}
             reviews)
           </li>
           <li>
-            <strong>SKU:</strong> {sku}
+            <strong>SKU:</strong> {sku || "N/A"}
           </li>
           <li>
-            <strong>Store:</strong> {store}
+            <strong>Store:</strong> {store || "Unknown Store"}
           </li>
         </ul>
       </div>
@@ -181,9 +207,8 @@ const ProductDetails = () => {
         <img
           src="/arrow-down.svg"
           alt=""
-          className={`w-4 transform transition-transform duration-300 ${
-            isSpecsOpen ? "rotate-180" : ""
-          }`}
+          className={`w-4 transform transition-transform duration-300 ${isSpecsOpen ? "rotate-180" : ""
+            }`}
         />
       </div>
       <div className={!isSpecsOpen ? "block" : "hidden"}>
@@ -194,19 +219,20 @@ const ProductDetails = () => {
                 <th className="border py-3 px-2 text-left">Dimensions</th>
                 <td className="border py-3 px-2 text-left">
                   {/* {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`} */}
+                  {`${packageSize?.length || 0} cm x ${packageSize?.breadth || 0} cm x ${packageSize?.width || 0} cm`}
                 </td>
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Weight</th>
-                <td className="border py-3 px-2 text-left">{weight} kg</td>
+                <td className="border py-3 px-2 text-left">{weight || 0} kg</td>
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Main Material</th>
-                <td className="border py-3 px-2 text-left">{material}</td>
+                <td className="border py-3 px-2 text-left">{material || "Unknown"}</td>
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Product Type</th>
-                <td className="border py-3 px-2 text-left">{category?.name}</td>
+                <td className="border py-3 px-2 text-left">{category.name}</td>
               </tr>
             </tbody>
           </table>
@@ -264,7 +290,7 @@ const ProductDetails = () => {
                 </td>
                 <td className="w-1/4 py-3 px-2 text-center">{weight} kg</td>
                 <td className="w-1/4 py-3 px-2 text-center">{material}</td>
-                <td className="w-1/4 py-3 px-2 text-center">{category?.name}</td>
+                <td className="w-1/4 py-3 px-2 text-center">{category.name}</td>
               </tr>
             </tbody>
           </table>
@@ -283,9 +309,8 @@ const ProductDetails = () => {
         <img
           src="/arrow-down.svg"
           alt=""
-          className={`w-4 transform transition-transform duration-300 ${
-            isDescriptionOpen ? "" : ""
-          }`}
+          className={`w-4 transform transition-transform duration-300 ${isDescriptionOpen ? "" : ""
+            }`}
         />
       </div>
       <div className={!isReviewsOpen ? "block" : "hidden"}>
@@ -418,17 +443,23 @@ const ProductDetails = () => {
       ) : (
         <div>
           <section className="lg:px-5 lg:py-4">
-            <h2 className="py-2 px-5">Body Parts</h2>
+            <h2 className="py-2 px-5"><Link to="/products"><img src="/white-left.png" alt="back" /></Link> {product?.name}</h2>
             <div className="lg:flex lg:gap-6">
               <div className="py-6 px-4 lg:px-8 flex flex-col lg:w-2/3 gap-6 lg:gap-10 lg:flex-row bg-white lg:rounded-lg">
                 <div className="flex-1">
                   <div className="flex flex-col flex-1 items-center gap-16 w-full pt-24">
                     <div className="h-[220px] border">
-                      <img
-                        src={images[0]}
-                        alt={name}
-                        className="w-[220px] h-[220px] object-fill"
-                      />
+                      {images.length > 0 ? (
+                        <img
+                          src={images[0]}
+                          alt={name}
+                          className="w-[220px] h-[220px] object-fill"
+                        />
+                      ) : (
+                        <div className="w-[220px] h-[220px] flex items-center justify-center bg-gray-100">
+                          <span>No Image</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center justify-between w-full">
                       <div className="border px-4 py-4 rounded flex justify-center items-center">
@@ -728,16 +759,20 @@ const ProductDetails = () => {
                   </div>
                   <div className="space-y-6 pt-6">
                     <button
-                      type="submit"
-                      className="bg-primary rounded-lg h-[60px] w-full text-base text-white"
+                      type="button"
+                      onClick={handleBuyNow}
+                      disabled={cartLoading}
+                      className="bg-primary rounded-lg h-[60px] w-full text-base text-white disabled:bg-gray-400"
                     >
-                      Buy Now
+                      {cartLoading ? "Processing..." : "Buy Now"}
                     </button>
                     <button
-                      type="submit"
-                      className="bg-white border border-primary rounded-lg h-[60px] w-full text-base text-primary"
+                      type="button"
+                      onClick={handleAddToCart}
+                      disabled={cartLoading}
+                      className="bg-white border border-primary rounded-lg h-[60px] w-full text-base text-primary disabled:bg-gray-100 disabled:text-gray-400"
                     >
-                      Add to Cart
+                      {cartLoading ? "Adding..." : "Add to Cart"}
                     </button>
                   </div>
                 </form>
@@ -753,11 +788,10 @@ const ProductDetails = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab as any)}
-                    className={`text-sm font-medium py-2 ${
-                      activeTab === tab
-                        ? "text-primary border-b-2 border-primary"
-                        : "text-shadeGray"
-                    }`}
+                    className={`text-sm font-medium py-2 ${activeTab === tab
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-shadeGray"
+                      }`}
                   >
                     {tab === "description"
                       ? "Description"

@@ -9,25 +9,26 @@ import {
   setItemsPerPage,
   setCurrentPage,
 } from "../../../store/slices/productSlice";
+import { addProductToCart } from "../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { useLocation } from "react-router-dom";
 
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  maker: string;
-  model: string;
-  year: string;
-  price: number;
-  salePrice: number;
-  image: string;
-  description: string;
-  reviews: number;
-  rating: number;
-  discount: number;
-  favorite: boolean;
-}
+// interface Product {
+//   id: number;
+//   name: string;
+//   category: string;
+//   maker: string;
+//   model: string;
+//   year: string;
+//   price: number;
+//   salePrice: number;
+//   image: string;
+//   description: string;
+//   reviews: number;
+//   rating: number;
+//   discount: number;
+//   favorite: boolean;
+// }
 
 interface FilterState {
   maker: string;
@@ -62,6 +63,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   const params = new URLSearchParams(search);
   const name = params.get("name");
   const dispatch = useAppDispatch();
+  const { loading: cartLoading } = useAppSelector((state) => state.cart);
   const { products, loading, error, currentPage, itemsPerPage, totalProducts } =
     useAppSelector((state) => state.products);
 
@@ -143,9 +145,27 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     indexOfLastProduct
   );
 
-  const addToCart = (id: number) => {
-    console.log(`Added product ${id} to cart`);
-  };
+const addToCart = (productId: string) => {
+  console.log('Adding to cart, productId:', productId, 'Type:', typeof productId);
+  
+  if (!productId) {
+    console.error('Product ID is undefined or empty');
+    return;
+  }
+
+  dispatch(
+    addProductToCart({
+      productId,
+      quantity: 1,
+    })
+  ).then((result) => {
+    if (addProductToCart.fulfilled.match(result)) {
+      console.log(`Added product ${productId} to cart successfully`);
+    } else {
+      console.error('Failed to add to cart:', result.payload);
+    }
+  });
+};
 
   const handlePriceChange = ({
     minPrice,
@@ -268,6 +288,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
               setCurrentPage={setCurrentPage}
               toggleFavorite={toggleFavorite}
               addToCart={addToCart}
+              cartLoading={cartLoading}
               isMobile={isMobile}
               setIsMobile={setIsMobile}
               toggleFilter={toggleFilter}
