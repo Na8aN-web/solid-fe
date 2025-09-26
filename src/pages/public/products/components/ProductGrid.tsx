@@ -4,7 +4,7 @@ import SortSidebar from "./SortSidebar";
 import { Link } from "react-router-dom";
 
 interface Product {
-  _id: number;
+  _id: string;
   name: string;
   category: string;
   maker: string;
@@ -32,13 +32,14 @@ interface ProductGridProps {
   setItemsPerPage: (count: number) => void;
   setSortOrder: (order: string) => void;
   setCurrentPage: (page: number) => void;
-  toggleFavorite: (id: number) => void;
-  addToCart: (id: number) => void;
+  toggleFavorite: (id: string) => void;
+  addToCart: (productId: string, quantity: number) => void;
   isMobile: boolean;
   setIsMobile: React.Dispatch<React.SetStateAction<boolean>>;
   toggleFilter: () => void;
   isSortOpen: boolean;
   setIsSortOpen: (isOpen: boolean) => void;
+  cartLoading: boolean;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
@@ -60,8 +61,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   addToCart,
   isSortOpen,
   setIsSortOpen,
+  cartLoading,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
 
   // Check if the screen is mobile size
   useEffect(() => {
@@ -80,6 +83,16 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       window.removeEventListener("resize", checkIfMobile);
     };
   }, [setIsMobile]);
+
+  const handleAddToCart = (productId: string) => {
+    setAddingProductId(productId);
+    addToCart(productId, 1); // Default quantity is 1
+
+    // Reset the loading state after a short delay (you might want to handle this differently based on your actual implementation)
+    setTimeout(() => {
+      setAddingProductId(null);
+    }, 2000);
+  };
 
   // Render star ratings
   const renderStars = (rating: number) => {
@@ -300,23 +313,39 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   )}
 
                   <button
-                    onClick={() => addToCart(product._id)}
-                    className="w-full flex items-center justify-center bg-primary text-white py-2 px-4 rounded hover:bg-blue-700 transition text-sm"
+                    onClick={() => handleAddToCart(product._id)}
+                    disabled={cartLoading && addingProductId === product._id}
+                    className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm mt-2 ${cartLoading && addingProductId === product._id
+                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                        : "bg-primary text-white hover:bg-blue-700"
+                      }`}
                   >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    Add to cart
+                    {cartLoading && addingProductId === product._id ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                          />
+                        </svg>
+                        Add to cart
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

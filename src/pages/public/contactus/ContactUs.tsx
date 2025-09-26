@@ -4,7 +4,6 @@ import Navbar from "../../../components/LandingNavbar";
 const ContactUs = () => {
   return (
     <div>
-      <Navbar />
       <section className="relative bg-black py-[60px] px-5 lg:px-14 w-full">
         <div className="space-y-6">
           <button className="bg-customGold w-full lg:w-[265px] h-[65px] lg:h-[70px] rounded-[10px] text-base font-semibold text-black">

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../../store";
 import { fetchCategories } from "../../../store/slices/categoriesSlice";
 import HeroSection from "./components/Hero";
-import HowItWorks from "./components/HowItWorks";
+import HowItWorks from "../howitworks/HowItWorks";
 import PopularCategories from "./components/PopularCategories";
 import WhyChooseSolidParts from "./components/WhyChooseSolid";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
@@ -87,7 +87,6 @@ const Header = () => {
           </button>
         </div>
       </div>
-      <HowItWorks />
       <PopularCategories />
       <section className="py-[20px] px-[20px] md:px-[80px]">
         <div className="flex justify-between items-center pb-2 sm:pb-6">

@@ -27,7 +27,7 @@ export const fetchUserCart = createAsyncThunk(
 
 export const addProductToCart = createAsyncThunk<
   Cart,
-  { productId: string; quantity: number },
+  { productId: string; quantity: number }, // Changed to string
   { rejectValue: string }
 >(
   "cart/addProductToCart",
@@ -52,7 +52,7 @@ export const addProductToCart = createAsyncThunk<
 
 export const removeProductFromCart = createAsyncThunk<
   Cart,
-  { productId: string },
+  { productId: string }, // Changed to string
   { rejectValue: string }
 >("cart/removeProductFromCart", async ({ productId }, { rejectWithValue }) => {
   try {
@@ -70,43 +70,45 @@ export const removeProductFromCart = createAsyncThunk<
 
 export const updateCartItemQuantity = createAsyncThunk<
   Cart,
-  { productId: string },
-  { rejectValue: string }
->("cart/updateCartItemQuantity", async ({ productId }, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.put("/cart/update");
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      return rejectWithValue(
-        error.response.data.message || "Failed to update cart product"
-      );
-    }
-    return rejectWithValue("Network error. Please try again.");
-  }
-});
-
-export const removeAllProductFromCart = createAsyncThunk<
-  Cart,
-  { productId: string },
+  { productId: string; quantity: number }, // Changed to string and added quantity
   { rejectValue: string }
 >(
-  "cart/removeAllProductFromCart",
-  async ({ productId }, { rejectWithValue }) => {
+  "cart/updateCartItemQuantity",
+  async ({ productId, quantity }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.delete("/cart/clear");
+      const response = await axiosInstance.put(`/cart/update/${productId}`, {
+        quantity,
+      });
       return response.data;
     } catch (error: any) {
       if (error.response) {
         return rejectWithValue(
-          error.response.data.message ||
-            "Failed to remove product from wishlist"
+          error.response.data.message || "Failed to update cart product"
         );
       }
       return rejectWithValue("Network error. Please try again.");
     }
   }
 );
+
+export const removeAllProductFromCart = createAsyncThunk<
+  Cart,
+  void, // Changed from { productId: string } to void since this clears all
+  { rejectValue: string }
+>("cart/removeAllProductFromCart", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.delete("/cart/clear");
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(
+        error.response.data.message ||
+          "Failed to remove all products from cart"
+      );
+    }
+    return rejectWithValue("Network error. Please try again.");
+  }
+});
 
 const cartSlice = createSlice({
   name: "Cart",
