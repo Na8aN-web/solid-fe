@@ -280,6 +280,22 @@ const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload as string;
         });
+        // Search products
+        builder.addCase(searchProducts.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+        });
+        
+        builder.addCase(searchProducts.fulfilled, (state, action) => {
+          state.loading = false;
+          state.products = action.payload.products;
+          state.totalProducts = action.payload.products.length;
+        });
+        
+        builder.addCase(searchProducts.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload as string;
+        });
         builder.addCase(fetchProductCount.fulfilled, (state, action) => {
             state.totalProducts = action.payload;
         });

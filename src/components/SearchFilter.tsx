@@ -23,7 +23,7 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
   useEffect(() => {
     if (!location.pathname.startsWith("/products")) {
       setSearchValue("");
-      setSelectedCatId("");
+      // setSelectedCatId("");
     }
   }, [location.pathname]);
 
@@ -53,13 +53,25 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
     setSelectedCatId(id);
   };
 
+  // const goSearch = () => {
+  //   const q = searchValue.trim();
+  //   const qs = new URLSearchParams();
+
+  //   if (q) qs.set("name", q);
+  //   if (selectedCatId) qs.set("categoryId", selectedCatId);
+  //   qs.set("page", "1");
+  //   console.log("Search Query:", qs.toString());
+  //   navigate(`/products?${qs.toString()}`);
+  //   onSearchDone?.();
+  // };
+
   const goSearch = () => {
     const q = searchValue.trim();
     const qs = new URLSearchParams();
-
+  
     if (q) qs.set("name", q);
-    if (selectedCatId) qs.set("categoryId", selectedCatId);
     qs.set("page", "1");
+  
     console.log("Search Query:", qs.toString());
     navigate(`/products?${qs.toString()}`);
     onSearchDone?.();
@@ -82,8 +94,6 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
           >
             <option value="">{loading ? "Loading..." : "All Categories"}</option>
             {categories.map((c) => (
-              // IMPORTANT: make sure you use the correct id field here:
-              // if your backend returns `_id`, replace c.id with c._id
               <option key={(c as any).id ?? (c as any)._id} value={(c as any).id ?? (c as any)._id}>
                 {c.name}
               </option>
