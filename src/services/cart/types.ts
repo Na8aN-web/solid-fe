@@ -1,18 +1,25 @@
 // src/services/cart/types.ts
-export interface cartProduct {
+export interface CartItem {
   _id: string;
-  name: string;
-  images: string[];
-  salesPrice: number;
-  stockStatus: string;
+  productId: {
+    _id: string;
+    name: string;
+    price: number;
+    image?: string;
+    inStock?: boolean;
+  };
   quantity: number;
-  totalPrice: number;
+  price: number;
 }
 
 export interface Cart {
   _id: string;
   user: string;
-  products: cartProduct[];
+  total: number;
+  items: CartItem[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface cartState {

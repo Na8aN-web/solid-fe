@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../../store";
 import { fetchCategories } from "../../../store/slices/categoriesSlice";
+import { fetchVehicleTypes } from "../../../store/slices/vehicleSlice";
 import HeroSection from "./components/Hero";
 import HowItWorks from "../howitworks/HowItWorks";
 import PopularCategories from "./components/PopularCategories";
@@ -13,25 +14,51 @@ import DealsOfTheDay from "./components/DealsOfTheDay";
 import Features from "./components/Features";
 import InteractiveFAQPage from "./components/Faq";
 import VehicleBlogPage from "./components/Blog";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  
   const {
     categories,
     loading: categoriesLoading,
     error: categoriesError,
   } = useSelector((state: RootState) => state.categories);
 
-  console.log(categories)
+  const {
+    vehicleTypes,
+    loading: vehicleTypesLoading,
+    error: vehicleTypesError,
+  } = useSelector((state: RootState) => state.vehicle);
 
-  // Fetch categories on component mount
+  console.log(categories);
+
+  // Fetch categories and vehicle types on component mount
   useEffect(() => {
     dispatch(fetchCategories());
+    dispatch(fetchVehicleTypes());
   }, [dispatch]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  // Handle vehicle type click - redirect to products page with filter
+  const handleVehicleTypeClick = (vehicleTypeId: string) => {
+    navigate(`/products?vehicleType=${encodeURIComponent(vehicleTypeId)}`);
+  };
+
+  // Handle navigation for carousel buttons (optional functionality)
+  const handleNext = () => {
+    // You can implement carousel navigation logic here if needed
+    console.log("Next vehicle types");
+  };
+
+  const handlePrev = () => {
+    // You can implement carousel navigation logic here if needed
+    console.log("Previous vehicle types");
   };
 
   return (
@@ -88,6 +115,8 @@ const Header = () => {
         </div>
       </div>
       <PopularCategories />
+      
+      {/* Dynamic Vehicle Types Section */}
       <section className="py-[20px] px-[20px] md:px-[80px]">
         <div className="flex justify-between items-center pb-2 sm:pb-6">
           <div className="flex gap-0 items-center">
@@ -96,50 +125,65 @@ const Header = () => {
               Popular Vehicles Types
             </h2>
           </div>
-          <div className="flex gap-2">
-            <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center">
+          {/* <div className="flex gap-2">
+            <button 
+              onClick={handlePrev}
+              className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+            >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center">
+            <button 
+              onClick={handleNext}
+              className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+            >
               <ChevronRight className="w-4 h-4" />
             </button>
-          </div>
+          </div> */}
         </div>
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col items-center">
-            <img src="/passenger-car.svg" alt="" />
-            <p className="text-sm text-customBrown font-normal pt-4">
-              Passengers Cars
-            </p>
+
+        {vehicleTypesLoading ? (
+          <div className="flex justify-between items-center">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="flex flex-col items-center animate-pulse">
+                <div className="w-16 h-16 bg-gray-200 rounded-full mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
+              </div>
+            ))}
           </div>
-          <div className="flex flex-col items-center">
-            <img src="/suvs.svg" alt="suvs" />
-            <p className="text-sm text-customBrown font-normal pt-4">
-              SUVs and Crossovers
-            </p>
+        ) : vehicleTypesError ? (
+          <div className="text-center text-red-500 py-4">
+            Error loading vehicle types: {vehicleTypesError}
           </div>
-          <div className="sm:flex flex-col items-center hidden">
-            <img src="/trucks.svg" alt="trucks" />
-            <p className="text-sm text-customBrown font-normal pt-4">Trucks</p>
+        ) : vehicleTypes && vehicleTypes.length > 0 ? (
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            {vehicleTypes.slice(0, 6).map((vehicleType, index) => (
+              <button
+                key={vehicleType._id || index}
+                onClick={() => handleVehicleTypeClick(vehicleType._id)}
+                className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform duration-200 p-2 rounded-lg hover:bg-gray-50 min-w-[200px]"
+              >
+                <img 
+                  src={vehicleType.image || "/passenger-car.svg"}
+                  alt={vehicleType.name}
+                  className="w-12 h-12 sm:w-full sm:h-full object-contain"
+                  onError={(e) => {
+                    // Fallback if vehicle type image doesn't load
+                    (e.target as HTMLImageElement).src = "/passenger-car.svg";
+                  }}
+                />
+                <p className="text-sm text-customBrown font-normal pt-2 text-center max-w-24">
+                  {vehicleType.name}
+                </p>
+              </button>
+            ))}
           </div>
-          <div className="sm:flex flex-col items-center hidden">
-            <img src="/equip-heavy.svg" alt="heavy-equipment" />
-            <p className="text-sm text-customBrown font-normal pt-4">
-              Heavy Equipment and Machinery
-            </p>
+        ) : (
+          <div className="text-center text-gray-500 py-4">
+            No vehicle types available
           </div>
-          <div className="lg:flex flex-col items-center hidden">
-            <img src="/tricycles.svg" alt="tricycle" />
-            <p className="text-sm text-customBrown font-normal pt-4">
-              Tricycles
-            </p>
-          </div>
-          <div className="lg:flex flex-col items-center hidden">
-            <img src="/buses.svg" alt="buses" />
-            <p className="text-sm text-customBrown font-normal pt-4">Buses</p>
-          </div>
-        </div>
+        )}
       </section>
+
       <WhyChooseSolidParts />
       <Testimonial />
       <ManufacturersGrid />

@@ -8,41 +8,18 @@ import {
   removeAllProductFromCart,
   clearCartError
 } from "../../../store/slices/cartSlice"; 
-import { useAppDispatch, useAppSelector } from "../../../store/hooks"; // Use your typed hooks
-
-// Define your cart types (adjust based on your actual types file)
-interface Cart {
-  _id: string;
-  items: CartItem[];
-  totalAmount: number;
-  totalItems: number;
-}
-
-interface CartItem {
-  _id: string;
-  productId: {
-    _id: string;
-    name: string;
-    price: number;
-    image?: string;
-    inStock?: boolean;
-  };
-  quantity: number;
-  price: number;
-}
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { Cart, CartItem } from "../../../services/cart/types"; // Import your types
 
 const ShoppingCart = () => {
-  // Use typed hooks instead of the regular ones
   const dispatch = useAppDispatch();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
 
   useEffect(() => {
-    // Fetch cart data when component mounts
     dispatch(fetchUserCart());
   }, [dispatch]);
 
   useEffect(() => {
-    // Clear error after some time
     if (error) {
       const timer = setTimeout(() => {
         dispatch(clearCartError());
@@ -54,7 +31,6 @@ const ShoppingCart = () => {
   const handleQuantityUpdate = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      // Now this should work without TypeScript errors
       await dispatch(updateCartItemQuantity({ productId, quantity: newQuantity })).unwrap();
     } catch (err) {
       console.error('Failed to update quantity:', err);
@@ -89,8 +65,8 @@ const ShoppingCart = () => {
     );
   }
 
-  // Empty cart state
-  if (!cart) {
+  // Empty cart state - Check if cart exists AND has no items
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="bg-[#F5F5F5] min-h-screen">
         <div className="px-5 py-6 bg-white lg:bg-[#F5F5F5] w-full">
@@ -112,10 +88,16 @@ const ShoppingCart = () => {
     );
   }
 
-  // const subtotal = cart.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  // const discount = subtotal * 0.2; // 20% discount as shown in your original code
-  // const deliveryFee = 2000; // Standard delivery fee
-  // const totalAmount = subtotal - discount + deliveryFee;
+  // Calculate totals using cart items
+  const subtotal = cart.items.reduce((total: number, item: CartItem) => 
+    total + (item.price * item.quantity), 0
+  );
+  const discount = subtotal * 0.2;
+  const deliveryFee = 2000;
+  const totalAmount = subtotal - discount + deliveryFee;
+  const totalItems = cart.items.reduce((total: number, item: CartItem) => 
+    total + item.quantity, 0
+  );
 
   return (
     <div>
@@ -131,129 +113,126 @@ const ShoppingCart = () => {
         </div>
       )}
 
-      {/* <section className="bg-[#F5F5F5]">
+      <section className="bg-[#F5F5F5]">
         <div className="px-5 py-6 bg-white lg:bg-[#F5F5F5] w-full">
           <h2 className="text-xl font-semibold">Shopping Cart</h2>
         </div>
         <div className="lg:flex lg:gap-5 lg:px-5 lg:pb-12">
           <div className="bg-white w-full lg:w-2/3 lg:p-5 self-start px-5 lg:rounded-lg lg:border lg:border-[#D9D9D9]">
             <table className="w-full">
-              <tr className="w-full bg-[#F5F5F5]">
-                <td className="pl-3 py-4 text-sm text-customGray1 font-normal lg:hidden">
-                  subtotal: <span className="font-bold">total items</span>
-                </td>
-                <td className="text-sm font-medium pr-3 py-4 lg:hidden">
-                  ₦subtotal
-                </td>
-                <td className="pl-5 py-4 text-sm text-customGray1 font-normal hidden lg:table-cell">
-                  Item details
-                </td>
-                <td className="text-sm font-medium pr-5 py-4 hidden lg:table-cell">
-                  Item price total
-                </td>
-                <td className="text-sm font-medium pr-5 py-4 hidden lg:table-cell">
-                  Action
-                </td>
-              </tr>
-              
-              {cart.items.map((item) => (
-                <tr key={item._id} className="border-t">
-                  <td>
-                    <div className="flex gap-8 py-5 px-2 w-full">
-                      
-                      <div className="flex flex-col gap-4">
-                        <img
-                          src={item.productId.image || "/tyres.svg"}
-                          alt={item.productId.name}
-                          className="w-[80px] h-[80px] object-cover"
-                        />
+              <thead>
+                <tr className="w-full bg-[#F5F5F5]">
+                  <td className="pl-3 py-4 text-sm text-customGray1 font-normal lg:hidden">
+                    subtotal: <span className="font-bold">{totalItems} items</span>
+                  </td>
+                  <td className="text-sm font-medium pr-3 py-4 lg:hidden">
+                    ₦{subtotal.toLocaleString()}
+                  </td>
+                  <td className="pl-5 py-4 text-sm text-customGray1 font-normal hidden lg:table-cell">
+                    Item details
+                  </td>
+                  <td className="text-sm font-medium pr-5 py-4 hidden lg:table-cell">
+                    Item price total
+                  </td>
+                  <td className="text-sm font-medium pr-5 py-4 hidden lg:table-cell">
+                    Action
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.items.map((item: CartItem) => (
+                  <tr key={item._id} className="border-t">
+                    <td>
+                      <div className="flex gap-8 py-5 px-2 w-full">
+                        <div className="flex flex-col gap-4">
+                          <img
+                            src={item.productId.image || "/tyres.svg"}
+                            alt={item.productId.name}
+                            className="w-[80px] h-[80px] object-cover"
+                          />
 
-                        
-                        <div className="flex items-center justify-center border rounded-[2px] max-w-[106px] h-[28px] lg:hidden">
-                          <button
-                            className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                            onClick={() => handleQuantityUpdate(item.productId._id, item.quantity - 1)}
-                            disabled={loading || item.quantity <= 1}
-                          >
-                            <Minus className="w-4" />
-                          </button>
-                          <span className="flex-[2] w-full text-center border-l border-r text-customBrown text-base font-medium">
-                            {item.quantity}
-                          </span>
-                          <button
-                            className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                            onClick={() => handleQuantityUpdate(item.productId._id, item.quantity + 1)}
-                            disabled={loading}
-                          >
-                            <Plus className="w-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      
-                      <div className="flex flex-col justify-between">
-                        <div className="space-y-1/2 block">
-                          <p className="text-sm text-customBrown">
-                            {item.productId.name}
-                          </p>
-                          <p className="text-base text-customBrown">
-                            ₦{item.productId.price.toLocaleString()}
-                          </p>
-
-                  
-                          <div className="flex flex-col gap-1">
-                            <span className={`text-xs ${item.productId.inStock !== false ? 'text-[#15B70D]' : 'text-red-500'}`}>
-                              {item.productId.inStock !== false ? 'In Stock' : 'Out of Stock'}
+                          <div className="flex items-center justify-center border rounded-[2px] max-w-[106px] h-[28px] lg:hidden">
+                            <button
+                              className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
+                              onClick={() => handleQuantityUpdate(item.productId._id, item.quantity - 1)}
+                              disabled={loading || item.quantity <= 1}
+                            >
+                              <Minus className="w-4" />
+                            </button>
+                            <span className="flex-[2] w-full text-center border-l border-r text-customBrown text-base font-medium">
+                              {item.quantity}
                             </span>
-
-                            
-                            <div className="hidden lg:flex items-center justify-center border rounded-[2px] max-w-[106px] h-[28px]">
-                              <button
-                                className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                                onClick={() => handleQuantityUpdate(item.productId._id, item.quantity - 1)}
-                                disabled={loading || item.quantity <= 1}
-                              >
-                                <Minus className="w-4" />
-                              </button>
-                              <span className="flex-[2] w-full text-center border-l border-r text-customBrown text-base font-medium">
-                                {item.quantity}
-                              </span>
-                              <button
-                                className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                                onClick={() => handleQuantityUpdate(item.productId._id, item.quantity + 1)}
-                                disabled={loading}
-                              >
-                                <Plus className="w-4" />
-                              </button>
-                            </div>
+                            <button
+                              className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
+                              onClick={() => handleQuantityUpdate(item.productId._id, item.quantity + 1)}
+                              disabled={loading}
+                            >
+                              <Plus className="w-4" />
+                            </button>
                           </div>
                         </div>
 
-                        
-                        <div 
-                          className="flex gap-2 items-center lg:hidden cursor-pointer hover:opacity-70"
-                          onClick={() => handleRemoveItem(item.productId._id)}
-                        >
-                          <X className="w-4" />
-                          <p className="text-sm text-customGray3">Remove</p>
+                        <div className="flex flex-col justify-between">
+                          <div className="space-y-1/2 block">
+                            <p className="text-sm text-customBrown">
+                              {item.productId.name}
+                            </p>
+                            <p className="text-base text-customBrown">
+                              ₦{item.productId.price.toLocaleString()}
+                            </p>
+
+                            <div className="flex flex-col gap-1">
+                              <span className={`text-xs ${item.productId.inStock !== false ? 'text-[#15B70D]' : 'text-red-500'}`}>
+                                {item.productId.inStock !== false ? 'In Stock' : 'Out of Stock'}
+                              </span>
+
+                              <div className="hidden lg:flex items-center justify-center border rounded-[2px] max-w-[106px] h-[28px]">
+                                <button
+                                  className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
+                                  onClick={() => handleQuantityUpdate(item.productId._id, item.quantity - 1)}
+                                  disabled={loading || item.quantity <= 1}
+                                >
+                                  <Minus className="w-4" />
+                                </button>
+                                <span className="flex-[2] w-full text-center border-l border-r text-customBrown text-base font-medium">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
+                                  onClick={() => handleQuantityUpdate(item.productId._id, item.quantity + 1)}
+                                  disabled={loading}
+                                >
+                                  <Plus className="w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div 
+                            className="flex gap-2 items-center lg:hidden cursor-pointer hover:opacity-70"
+                            onClick={() => handleRemoveItem(item.productId._id)}
+                          >
+                            <X className="w-4" />
+                            <p className="text-sm text-customGray3">Remove</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="hidden lg:table-cell">
-                    ₦{(item.price * item.quantity).toLocaleString()}
-                  </td>
-                  <td className="hidden lg:table-cell">
-                    <div 
-                      className="flex gap-2 items-center cursor-pointer hover:opacity-70"
-                      onClick={() => handleRemoveItem(item.productId._id)}
-                    >
-                      <X className="w-4" />
-                      <p className="text-sm text-customGray3">Remove</p>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="hidden lg:table-cell">
+                      ₦{(item.price * item.quantity).toLocaleString()}
+                    </td>
+                    <td className="hidden lg:table-cell">
+                      <div 
+                        className="flex gap-2 items-center cursor-pointer hover:opacity-70"
+                        onClick={() => handleRemoveItem(item.productId._id)}
+                      >
+                        <X className="w-4" />
+                        <p className="text-sm text-customGray3">Remove</p>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
             
             <div className="flex justify-between items-center py-4">
@@ -318,7 +297,7 @@ const ShoppingCart = () => {
                   <div className="space-y-2 pt-6">
                     <div className="flex justify-between text-sm font-semibold text-customBrown pb-1 border-b">
                       <h3>Order Summary</h3>
-                      <p>{cart.totalItems} Items</p>
+                      <p>{totalItems} Items</p>
                     </div>
                     <div className="flex justify-between pt-2">
                       <p className="text-sm text-customGray3">Subtotal:</p>
@@ -365,7 +344,7 @@ const ShoppingCart = () => {
             </div>
           </div>
         </div>
-      </section> */}
+      </section>
     </div>
   );
 };
