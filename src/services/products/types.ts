@@ -1,5 +1,6 @@
 // src/services/products/types.ts
 export interface Product {
+  categoryName: any;
   regularPrice: any;
   _id: string;
   name: string;

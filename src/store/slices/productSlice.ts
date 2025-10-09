@@ -36,12 +36,52 @@ const initialState: ProductState = {
   sortBy: "Alphabetical Order",
 };
 
-// Async thunk to fetch products
+// UPDATED: Async thunk to fetch products with optional filters
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
-  async (_, { rejectWithValue }) => {
+  async (
+    filters: {
+      categories?: string[];
+      brands?: string[];
+      vehicleTypes?: string[];
+      departments?: string[];
+      minPrice?: number;
+      maxPrice?: number;
+    } | void,
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axiosInstance.get<ProductsResponse>("/products");
+      // Build query string from filters
+      const params = new URLSearchParams();
+      
+      if (filters?.categories && filters.categories.length > 0) {
+        filters.categories.forEach(cat => params.append('category', cat));
+      }
+      
+      if (filters?.brands && filters.brands.length > 0) {
+        filters.brands.forEach(brand => params.append('brand', brand));
+      }
+      
+      if (filters?.vehicleTypes && filters.vehicleTypes.length > 0) {
+        filters.vehicleTypes.forEach(type => params.append('vehicleType', type));
+      }
+      
+      if (filters?.departments && filters.departments.length > 0) {
+        filters.departments.forEach(dept => params.append('department', dept));
+      }
+      
+      if (filters?.minPrice !== undefined) {
+        params.append('minPrice', filters.minPrice.toString());
+      }
+      
+      if (filters?.maxPrice !== undefined) {
+        params.append('maxPrice', filters.maxPrice.toString());
+      }
+
+      const queryString = params.toString();
+      const url = queryString ? `/products?${queryString}` : '/products';
+      
+      const response = await axiosInstance.get<ProductsResponse>(url);
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -114,7 +154,6 @@ export const fetchProductCount = createAsyncThunk(
 );
 
 //new arrival product
-
 export const newProducts = createAsyncThunk<NewProduct[], void>(
   "products/newProducts",
   async (_, { rejectWithValue }) => {
@@ -307,87 +346,104 @@ const productSlice = createSlice({
             state.error = null;
         });
 
-    builder.addCase(fetchProductById.fulfilled, (state, action) => {
-      state.loading = false;
-      state.product = action.payload.product;
-    });
+        builder.addCase(fetchProductById.fulfilled, (state, action) => {
+            state.loading = false;
+            state.product = action.payload.product;
+        });
 
-    builder.addCase(fetchProductById.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+        builder.addCase(fetchProductById.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
 
-    builder.addCase(newProducts.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
+        builder.addCase(newProducts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
 
-    builder.addCase(newProducts.fulfilled, (state, action) => {
-      state.loading = false;
-      state.newArrivals = action.payload;
-    });
+        builder.addCase(newProducts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.newArrivals = action.payload;
+        });
 
-    builder.addCase(newProducts.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+        builder.addCase(newProducts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
 
-    builder.addCase(featuredProducts.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
+        builder.addCase(featuredProducts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
 
-    builder.addCase(featuredProducts.fulfilled, (state, action) => {
-      state.loading = false;
-      state.featuredProducts = action.payload;
-    });
+        builder.addCase(featuredProducts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.featuredProducts = action.payload;
+        });
 
-    builder.addCase(featuredProducts.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-    builder.addCase(dealsOfTheDay.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
+        builder.addCase(featuredProducts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+        
+        builder.addCase(dealsOfTheDay.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
 
-    builder.addCase(dealsOfTheDay.fulfilled, (state, action) => {
-      state.loading = false;
-      state.dealsOfTheDay = action.payload;
-    });
+        builder.addCase(dealsOfTheDay.fulfilled, (state, action) => {
+            state.loading = false;
+            state.dealsOfTheDay = action.payload;
+        });
 
-    builder.addCase(dealsOfTheDay.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-    builder.addCase(fetchProductsByCategory.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchProductsByCategory.fulfilled, (state, action) => {
-      state.loading = false;
-      state.products = action.payload;
-      state.totalProducts = action.payload.length;
-    });
-    builder.addCase(fetchProductsByCategory.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+        builder.addCase(dealsOfTheDay.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+        
+        builder.addCase(fetchProductsByCategory.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchProductsByCategory.fulfilled, (state, action) => {
+            state.loading = false;
+            state.products = action.payload;
+            state.totalProducts = action.payload.length;
+        });
+        builder.addCase(fetchProductsByCategory.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
 
-    builder.addCase(fetchProductsByBrand.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchProductsByBrand.fulfilled, (state, action) => {
-      state.loading = false;
-      state.products = action.payload;
-      state.totalProducts = action.payload.length;
-    });
-    builder.addCase(fetchProductsByBrand.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-  },
+        builder.addCase(fetchProductsByBrand.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchProductsByBrand.fulfilled, (state, action) => {
+            state.loading = false;
+            state.products = action.payload;
+            state.totalProducts = action.payload.length;
+        });
+        builder.addCase(fetchProductsByBrand.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+        
+        // NEW: Add case for search products
+        builder.addCase(searchProducts.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(searchProducts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.products = action.payload.products;
+            state.totalProducts = action.payload.products.length;
+        });
+        builder.addCase(searchProducts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+    },
 });
 
 export const {

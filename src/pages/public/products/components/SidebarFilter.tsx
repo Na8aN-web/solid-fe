@@ -27,12 +27,14 @@ interface FilterState {
 }
 type SectionKey = 'category' | 'department' | 'vehicleType' | 'brand';
 
-
 interface SidebarFilterProps {
   filters: FilterState;
   handlePriceChange: ({ minPrice, maxPrice }: { minPrice: number; maxPrice: number }) => void;
   expandedSections: Record<SectionKey, boolean>;
   toggleSection: (section: SectionKey) => void;
+  selectedCategory?: string | null;
+  onCategorySelect?: (category: string) => void;
+  onFilterChange: (filters: FilterState) => void;
 }
 
 
@@ -53,14 +55,26 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, isExpanded, toggle
   </div>
 );
 
-// Checkbox Item Component for filter options
-const CheckboxItem = ({ name, count }: { name: string; count: number }) => (
+// Checkbox Item Component for filter options - NOW WITH ONCHANGE
+const CheckboxItem = ({ 
+  name, 
+  checked, 
+  onChange 
+}: { 
+  name: string; 
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) => (
   <div className="flex justify-start gap-2 py-4 items-center">
-    <label className="flex items-center">
-      <input type="checkbox" className="form-checkbox h-4 w-4 text-blue-600" />
+    <label className="flex items-center cursor-pointer">
+      <input 
+        type="checkbox" 
+        className="form-checkbox h-4 w-4 text-blue-600"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
       <span className="ml-3 text-gray-700">{name}</span>
     </label>
-    <span className="text-[16px] text-[#5E5E5E] bg-[#E7EAEA] px-2 py-0.5 rounded-md">{count}</span>
   </div>
 );
 
@@ -68,20 +82,81 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
   filters,
   handlePriceChange,
   expandedSections,
-  toggleSection
+  toggleSection,
+  onFilterChange // NEW: Destructure this prop
 }) => {
-
-
   const dispatch = useDispatch<AppDispatch>();
   const { brands, loading, error } = useSelector((state: RootState) => state.brands);
   const { vehicleTypes, totalVehicleTypes, loading: vehicleLoading, error: vehicleError } = useSelector((state: RootState) => state.vehicle);
   const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
+  console.log(categories)
 
   useEffect(() => {
     dispatch(fetchBrands());
     dispatch(fetchCategories());
     dispatch(fetchVehicleTypes());
   }, [dispatch]);
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const categoryFromUrl = params.get('category');
+  
+  if (categoryFromUrl && !filters.categories.includes(categoryFromUrl)) {
+    // If there's a category in URL that's not in filters, add it
+    onFilterChange({
+      ...filters,
+      categories: [categoryFromUrl]
+    });
+  }
+}, [window.location.search]);
+
+  // NEW: Handler for category checkbox changes
+  const handleCategoryChange = (categoryId: string, checked: boolean) => {
+    const updatedCategories = checked
+      ? [...filters.categories, categoryId]
+      : filters.categories.filter(id => id !== categoryId);
+    
+    onFilterChange({
+      ...filters,
+      categories: updatedCategories
+    });
+  };
+
+  // NEW: Handler for vehicle type checkbox changes
+  const handleVehicleTypeChange = (vehicleTypeId: string, checked: boolean) => {
+    const updatedVehicleTypes = checked
+      ? [...filters.vehicleTypes, vehicleTypeId]
+      : filters.vehicleTypes.filter(id => id !== vehicleTypeId);
+    
+    onFilterChange({
+      ...filters,
+      vehicleTypes: updatedVehicleTypes
+    });
+  };
+
+  // NEW: Handler for brand checkbox changes
+  const handleBrandChange = (brandId: string, checked: boolean) => {
+    const updatedBrands = checked
+      ? [...filters.brands, brandId]
+      : filters.brands.filter(id => id !== brandId);
+    
+    onFilterChange({
+      ...filters,
+      brands: updatedBrands
+    });
+  };
+
+  // NEW: Handler for department checkbox changes
+  const handleDepartmentChange = (department: string, checked: boolean) => {
+    const updatedDepartments = checked
+      ? [...filters.departments, department]
+      : filters.departments.filter(d => d !== department);
+    
+    onFilterChange({
+      ...filters,
+      departments: updatedDepartments
+    });
+  };
 
   return (
     <div className="w-full">
@@ -168,11 +243,11 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
               <CheckboxItem 
                 key={category._id} 
                 name={category.name} 
-                count={0} // You might want to fetch actual counts later
+                checked={filters.categories.includes(category._id)}
+                onChange={(checked) => handleCategoryChange(category._id, checked)}
               />
             ))
           )}
-         
         </FilterSection>
 
         {/* Department filter */}
@@ -187,7 +262,12 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
             { name: 'Car Lights', count: 11 },
             { name: 'Custom Wheels', count: 2 }
           ].map((dept) => (
-            <CheckboxItem key={dept.name} name={dept.name} count={dept.count} />
+            <CheckboxItem 
+              key={dept.name} 
+              name={dept.name} 
+              checked={filters.departments.includes(dept.name)}
+              onChange={(checked) => handleDepartmentChange(dept.name, checked)}
+            />
           ))}
         </FilterSection>
 
@@ -198,15 +278,16 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
           toggleSection={() => toggleSection('vehicleType')}
         >
           {vehicleLoading ? (
-            <div className="py-4 text-center text-gray-500">Loading brands...</div>
+            <div className="py-4 text-center text-gray-500">Loading vehicle types...</div>
           ) : vehicleError ? (
-            <div className="py-4 text-center text-red-500">Error loading brands</div>
+            <div className="py-4 text-center text-red-500">Error loading vehicle types</div>
           ) : (
             vehicleTypes?.map((vehicle) => (
               <CheckboxItem
                 key={vehicle._id}
                 name={vehicle.name}
-                count={0}
+                checked={filters.vehicleTypes.includes(vehicle._id)}
+                onChange={(checked) => handleVehicleTypeChange(vehicle._id, checked)}
               />
             ))
           )}
@@ -227,7 +308,8 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
               <CheckboxItem
                 key={brand._id}
                 name={brand.name}
-                count={0}
+                checked={filters.brands.includes(brand._id)}
+                onChange={(checked) => handleBrandChange(brand._id, checked)}
               />
             ))
           )}
