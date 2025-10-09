@@ -7,8 +7,17 @@ import FeaturedProducts from "./components/FeaturedProducts";
 import DealsOfTheDay from "./components/DealsOfTheDay";
 import { Link } from "react-router-dom";
 
+
 const HomeGuest = () => {
   // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const ShopNowButton = () => (
+    <Link
+      to="/products"
+      className="bg-primary text-white w-28 h-12 rounded-lg text-base flex items-center justify-center"
+    >
+      Shop Now
+    </Link>
+  );
 
   return (
     <div className="pb-16">
@@ -27,11 +36,7 @@ const HomeGuest = () => {
                   <h1 className="text-xl sm:text-4xl text-customBrown font-semibold w-56 sm:w-80 leading-tight pb-4 sm:pb-8">
                     Quality Auto Spare Parts at a go!
                   </h1>
-                  <Link to={'/products'}>
-                    <button className="border h-12 w-28 rounded-lg bg-primary text-white text-sm font-semibold">
-                      Shop Now
-                    </button>
-                  </Link>
+                  <ShopNowButton />
                 </div>
                 <div className="sm:flex-shrink-0">
                   <picture>
@@ -87,11 +92,7 @@ const HomeGuest = () => {
                   <p className="text-sm md:text-base font-normal text-customGold pb-4">
                     MANY MORE
                   </p>
-                  <Link to={'/products'}>
-                    <button className="bg-primary text-white w-28 h-12 rounded-lg text-base">
-                      Shop Now
-                    </button>
-                  </Link>
+                  <ShopNowButton />
                 </div>
                 <picture>
                   <source media="(min-width: 768px)" srcSet="/half-car.svg" />
@@ -118,11 +119,7 @@ const HomeGuest = () => {
                   <p className="text-base font-normal text-customGold pb-4">
                     MANY MORE
                   </p>
-                  <Link to={'/products'}>
-                    <button className="bg-primary text-white w-28 h-12 rounded-lg">
-                      Shop Now
-                    </button>
-                  </Link>
+                  <ShopNowButton />
                 </div>
                 <img
                   src="/half-car.svg"
@@ -139,11 +136,7 @@ const HomeGuest = () => {
               className="w-full h-[158px] md:h-[273px] bg-cover bg-center flex items-center justify-center"
               style={{ backgroundImage: "url('/car-engine.jpeg')" }}
             >
-              <Link to={'/products'}>
-                <button className="bg-primary text-white w-28 h-12 rounded-lg text-base">
-                  Shop Now
-                </button>
-              </Link>
+             <ShopNowButton />
             </div>
             <div className="bg-primary flex flex-col items-center justify-center w-full h-[158px] md:h-[273px]">
               <p className="text-base text-white font-normal">ONLY THIS WEEK</p>
@@ -153,11 +146,7 @@ const HomeGuest = () => {
               className="w-full h-[158px] md:h-[273px] bg-cover bg-center flex items-center justify-center"
               style={{ backgroundImage: "url('/car-engine.jpeg')" }}
             >
-              <Link to={'/products'}>
-                <button className="bg-primary text-white w-28 h-12 rounded-lg text-base">
-                  Shop Now
-                </button>
-              </Link>
+            <ShopNowButton />
             </div>
           </section>
           {/* Featured Products */}
@@ -167,11 +156,7 @@ const HomeGuest = () => {
               className="w-full h-[158px] md:h-[273px] bg-cover bg-center flex items-center justify-center"
               style={{ backgroundImage: "url('/car-engine.jpeg')" }}
             >
-              <Link to={'/products'}>
-                <button className="bg-primary text-white w-28 h-12 rounded-lg text-base">
-                  Shop Now
-                </button>
-              </Link>
+             <ShopNowButton />
             </div>
             <div className="bg-primary flex flex-col items-center justify-center w-full h-[158px] md:h-[273px]">
               <p className="text-base text-white font-normal">ONLY THIS WEEK</p>
@@ -181,11 +166,7 @@ const HomeGuest = () => {
               className="w-full h-[158px] md:h-[273px] bg-cover bg-center flex items-center justify-center"
               style={{ backgroundImage: "url('/car-engine.jpeg')" }}
             >
-              <Link to={'/products'}>
-                <button className="bg-primary text-white w-28 h-12 rounded-lg text-base">
-                  Shop Now
-                </button>
-              </Link>
+             <ShopNowButton />
             </div>
           </section>
           {/* Deals of the day */}
