@@ -353,7 +353,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           </Link>
         ))}
       </div>
-
+ <p>Products</p>
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
