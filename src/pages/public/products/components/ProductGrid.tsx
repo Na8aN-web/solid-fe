@@ -40,6 +40,8 @@ interface ProductGridProps {
   isSortOpen: boolean;
   setIsSortOpen: (isOpen: boolean) => void;
   cartLoading: boolean;
+  filterLoading?: boolean;
+  activeFilterText?: string;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
@@ -62,6 +64,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   isSortOpen,
   setIsSortOpen,
   cartLoading,
+  activeFilterText,
+  filterLoading,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
@@ -114,6 +118,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   return (
     <div className="w-full md:w-3/4">
+      {activeFilterText && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <p className="text-blue-700 text-sm">{activeFilterText}</p>
+        </div>
+      )}
+
       {/* View controls */}
       <div className="bg-white rounded-md shadow-sm p-4 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -228,132 +238,196 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       </div>
 
-      {/* Product grid - Modified to be 2x2 in grid view */}
-      <div
-        className={`grid ${viewType === "grid" ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1"} gap-4`}
-      >
-        {products.map((product) => (
-          <Link to={`/product/${product._id}`}>
-            <div
-              key={product._id}
-              className={`bg-white rounded-[20px] hover:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.15)] ${viewType === "list" ? "p-4" : "p-2"} overflow-hidden`}
+      {products.length === 0 && !filterLoading ? (
+        <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+          <div className="text-gray-400 mb-4">
+            <svg
+              className="w-16 h-16 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <div className="relative">
-                {/* Discount tag */}
-                <div
-                  className={`absolute ${viewType === "grid" ? "top-2 left-2" : "top-2 left-2"} bg-primary text-white rounded-full h-8 w-8 flex items-center justify-center`}
-                >
-                  <span className="text-xs font-bold">{product.discount}%</span>
-                </div>
-
-                {/* Favorite button - Moved to top right for both views as shown in reference image 2 */}
-                <button
-                  onClick={() => toggleFavorite(product._id)}
-                  className="absolute top-2 right-2 bg-transparent"
-                >
-                  <svg
-                    className={`w-5 h-5 ${product.favorite ? "text-primary fill-current" : "text-primary fill-transparent"}`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            No products found
+          </h3>
+          <p className="text-gray-500 max-w-md mb-4">
+            {activeFilterText
+              ? `No products match your current filters. Try adjusting your filter criteria.`
+              : "No products are currently available. Please check back later."}
+          </p>
+          {activeFilterText && (
+            <button
+              onClick={() => {
+                // This will trigger a page reload to clear all filters
+                window.location.href = window.location.pathname;
+              }}
+              className="bg-primary text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Clear All Filters
+            </button>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`grid ${viewType === "grid" ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1"} gap-4`}
+        >
+          {products.map((product) => (
+            <Link to={`/product/${product._id}`} key={product._id}>
               <div
-                className={`${viewType === "list" ? "flex flex-row gap-4 items-start" : ""}`}
+                className={`bg-white rounded-[20px] hover:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.15)] ${viewType === "list" ? "p-4" : "p-2"} overflow-hidden`}
               >
-                <div
-                  className={`${viewType === "list" ? "flex-shrink-0 w-1/3" : ""} p-2`}
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className={`${viewType === "list" ? "max-w-none w-full h-auto" : "w-full h-32 object-contain"} mx-auto`}
-                  />
-                </div>
-
-                <div className={`${viewType === "list" ? "flex-1" : ""} p-2`}>
-                  <div className="text-[10px] text-[#9A9A9A] uppercase mb-1">
-                    BODY PARTS
-                  </div>
-                  <h3 className="text-sm font-semibold text-[#2D2828] mb-2">
-                    {product.name}
-                  </h3>
-
-                  <div className="flex items-center mb-2">
-                    {renderStars(product.rating)}
-                    <span className="text-xs text-[#827E7E] ml-1">
-                      ({product.numReviews} reviews)
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-bold text-[#2D2828]">
-                      ₦{product.displayPrice?.toLocaleString()}
-                    </span>
-                    {product.price > product.displayPrice && (
-                      <span className="text-gray-500 line-through text-sm">
-                        ₦{product.price?.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-
-                  {viewType === "list" && (
-                    <div className="text-[12px] my-2 text-[#919191]">
-                      Designed for ultimate comfort and durability, featuring
-                      all adjustable, a...
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => handleAddToCart(product._id)}
-                    disabled={cartLoading && addingProductId === product._id}
-                    className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm mt-2 ${cartLoading && addingProductId === product._id
-                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-blue-700"
-                      }`}
+                <div className="relative">
+                  {/* Discount tag */}
+                  <div
+                    className={`absolute ${viewType === "grid" ? "top-2 left-2" : "top-2 left-2"} bg-primary text-white rounded-full h-8 w-8 flex items-center justify-center`}
                   >
-                    {cartLoading && addingProductId === product._id ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-4 h-4 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                          />
-                        </svg>
-                        Add to cart
-                      </>
-                    )}
+                    <span className="text-xs font-bold">
+                      {product.discount}%
+                    </span>
+                  </div>
+
+                  {/* Favorite button - Moved to top right for both views as shown in reference image 2 */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFavorite(product._id);
+                    }}
+                    className="absolute top-2 right-2 bg-transparent"
+                  >
+                    <svg
+                      className={`w-5 h-5 ${product.favorite ? "text-primary fill-current" : "text-primary fill-transparent"}`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
                   </button>
                 </div>
+                <div
+                  className={`${viewType === "list" ? "flex flex-row gap-4 items-start" : ""}`}
+                >
+                  <div
+                    className={`${viewType === "list" ? "flex-shrink-0 w-1/3" : ""} p-2`}
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className={`${viewType === "list" ? "max-w-none w-full h-auto" : "w-full h-32 object-contain"} mx-auto`}
+                    />
+                  </div>
+
+                  <div className={`${viewType === "list" ? "flex-1" : ""} p-2`}>
+                    <div className="text-[10px] text-[#9A9A9A] uppercase mb-1">
+                      BODY PARTS
+                    </div>
+                    <h3 className="text-sm font-semibold text-[#2D2828] mb-2">
+                      {product.name}
+                    </h3>
+
+                    <div className="flex items-center mb-2">
+                      {renderStars(product.rating)}
+                      <span className="text-xs text-[#827E7E] ml-1">
+                        ({product.numReviews} reviews)
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="font-bold text-[#2D2828]">
+                        ₦{product.displayPrice?.toLocaleString()}
+                      </span>
+                      {product.price > product.displayPrice && (
+                        <span className="text-gray-500 line-through text-sm">
+                          ₦{product.price?.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+
+                    {viewType === "list" && (
+                      <div className="text-[12px] my-2 text-[#919191]">
+                        Designed for ultimate comfort and durability, featuring
+                        all adjustable, a...
+                      </div>
+                    )}
+
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddToCart(product._id);
+                      }}
+                      disabled={cartLoading && addingProductId === product._id}
+                      className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm mt-2 ${
+                        cartLoading && addingProductId === product._id
+                          ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                          : "bg-primary text-white hover:bg-blue-700"
+                      }`}
+                    >
+                      {cartLoading && addingProductId === product._id ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
+                          </svg>
+                          Add to cart
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
- <p>Products</p>
+            </Link>
+          ))}
+        </div>
+      )}
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

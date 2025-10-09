@@ -2,6 +2,7 @@
 
 // Single Vehicle Type
 export interface VehicleType {
+  image: string;
   _id: string;
   name: string;
   createdAt: string;

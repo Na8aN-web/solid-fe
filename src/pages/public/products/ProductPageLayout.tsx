@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import SidebarFilter from "./components/SidebarFilter";
 import ProductGrid from "./components/ProductGrid";
 import Recents from "./components/Recents";
-import { fetchProductCount, searchProducts } from "../../../store/slices/productSlice";
 import {
+  fetchProductCount,
+  fetchProductsByCategory,
+  searchProducts,
   fetchProducts,
   toggleFavorite,
   setItemsPerPage,
@@ -12,23 +14,6 @@ import {
 import { addProductToCart } from "../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { useLocation } from "react-router-dom";
-
-// interface Product {
-//   id: number;
-//   name: string;
-//   category: string;
-//   maker: string;
-//   model: string;
-//   year: string;
-//   price: number;
-//   salePrice: number;
-//   image: string;
-//   description: string;
-//   reviews: number;
-//   rating: number;
-//   discount: number;
-//   favorite: boolean;
-// }
 
 interface FilterState {
   maker: string;
@@ -53,47 +38,21 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   extraSection,
   pageTitle = "Products",
 }) => {
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  // Add this new state variable
   const [isSortOpen, setIsSortOpen] = useState(false);
   const { search } = useLocation();
   const params = new URLSearchParams(search);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const name = params.get("name");
   const dispatch = useAppDispatch();
   const { loading: cartLoading } = useAppSelector((state) => state.cart);
-  const { products, loading, error, currentPage, itemsPerPage, totalProducts } =
-    useAppSelector((state) => state.products);
+  const { products, loading, error, currentPage, itemsPerPage, totalProducts } = useAppSelector((state) => state.products);
 
-
-
-  useEffect(() => {
-    if (name && name.trim()) {
-      dispatch(setCurrentPage(1));                // ensure page 1 on a new query
-      dispatch(searchProducts({ name: name.trim() }));
-    } else {
-      dispatch(fetchProducts());
-      dispatch(fetchProductCount());
-    }
-  }, [dispatch, name]);
-
-  // Check if the screen is mobile size
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkIfMobile();
-
-    // Add event listener for window resize
-    window.addEventListener("resize", checkIfMobile);
-
-    // Clean up event listener
-    return () => {
-      window.removeEventListener("resize", checkIfMobile);
-    };
-  }, []);
+  // NEW: State for filter loading and active filter text
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [activeFilterText, setActiveFilterText] = useState("");
 
   const [filters, setFilters] = useState<FilterState>({
     maker: "",
@@ -108,13 +67,167 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     brands: [],
   });
   const [sortOrder, setSortOrder] = useState("Alphabetical Order");
-  const [viewType, setViewType] = useState("grid"); // 'grid' or 'list'
+  const [viewType, setViewType] = useState("grid");
   const [expandedSections, setExpandedSections] = useState({
     category: true,
     department: true,
     vehicleType: true,
     brand: true,
   });
+
+  // In ProductPageLayout.tsx - Update generateFilterText
+  const generateFilterText = (newFilters: FilterState) => {
+    console.log(newFilters)
+    const activeFilters = [];
+
+    if (newFilters.categories.length > 0) {
+      activeFilters.push(`${newFilters.categories.length} categor${newFilters.categories.length === 1 ? 'y' : 'ies'}`);
+    }
+    if (newFilters.brands.length > 0) {
+      activeFilters.push(`${newFilters.brands.length} brand${newFilters.brands.length === 1 ? '' : 's'}`);
+    }
+    if (newFilters.vehicleTypes.length > 0) {
+      activeFilters.push(`${newFilters.vehicleTypes.length} vehicle type${newFilters.vehicleTypes.length === 1 ? '' : 's'}`);
+    }
+    if (newFilters.departments.length > 0) {
+      activeFilters.push(`${newFilters.departments.length} department${newFilters.departments.length === 1 ? '' : 's'}`);
+    }
+    if (newFilters.minPrice !== 100 || newFilters.maxPrice !== 200000) {
+      activeFilters.push(`price range ₦${newFilters.minPrice} - ₦${newFilters.maxPrice}`);
+    }
+
+    return activeFilters.length > 0
+      ? `Filtering by: ${activeFilters.join(', ')}`
+      : "";
+  };
+
+  const fetchFilteredProducts = async () => {
+    setFilterLoading(true);
+
+    const hasFilters =
+      filters.categories.length > 0 ||
+      filters.brands.length > 0 ||
+      filters.vehicleTypes.length > 0 ||
+      filters.departments.length > 0 ||
+      filters.minPrice !== 100 ||
+      filters.maxPrice !== 200000;
+
+    try {
+      if (name && name.trim()) {
+        // If there's a search query, use search with filters
+        await dispatch(searchProducts({
+          name: name.trim(),
+        })).unwrap();
+      } else if (hasFilters) {
+        // If there are active filters, fetch with filters
+        await dispatch(fetchProducts({
+          categories: filters.categories,
+          brands: filters.brands,
+          vehicleTypes: filters.vehicleTypes,
+          departments: filters.departments,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+        } as any)).unwrap();
+      } else {
+        // No filters and no search query, fetch all products
+        await dispatch(fetchProducts()).unwrap();
+      }
+    } catch (error) {
+      console.error('Error fetching filtered products:', error);
+    } finally {
+      setFilterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Scroll to top when component mounts or search params change
+    window.scrollTo(0, 0);
+  }, [search]);
+
+  // Also add this for initial page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // In ProductPageLayout.tsx - Update the initial fetch useEffect
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const name = params.get("name");
+    const category = params.get("category");
+    const vehicleType = params.get("vehicleType"); // NEW: Get vehicle type from URL
+
+    const fetchInitialData = async () => {
+      setFilterLoading(true);
+      try {
+        if (name && name.trim()) {
+          dispatch(setCurrentPage(1));
+          await dispatch(searchProducts({ name: name.trim() })).unwrap();
+        } else if (category) {
+          dispatch(setCurrentPage(1));
+          await dispatch(fetchProductsByCategory(category)).unwrap();
+
+          // Set the category in filters
+          setFilters(prev => ({
+            ...prev,
+            categories: [category]
+          }));
+        } else if (vehicleType) {
+          // NEW: Handle vehicle type from URL
+          dispatch(setCurrentPage(1));
+          // Use the filter system for vehicle types
+          setFilters(prev => ({
+            ...prev,
+            vehicleTypes: [vehicleType]
+          }));
+          // The filter useEffect will automatically trigger the fetch
+        } else {
+          await dispatch(fetchProducts()).unwrap();
+          await dispatch(fetchProductCount()).unwrap();
+        }
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      } finally {
+        setFilterLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [dispatch, search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const category = params.get("category");
+
+    if (category) {
+      // Remove the category parameter from URL without refreshing
+      const newUrl = window.location.pathname + '?' + params.toString().replace(`category=${category}`, '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [search]);
+
+  useEffect(() => {
+    // Fetch products whenever any of these filter arrays change
+    // This will handle both adding filters AND removing all filters
+    dispatch(setCurrentPage(1)); // Reset to first page when filters change
+    fetchFilteredProducts();
+  }, [filters.categories, filters.brands, filters.vehicleTypes, filters.departments]);
+  // NEW: Update filter text when filters change
+  useEffect(() => {
+    setActiveFilterText(generateFilterText(filters));
+  }, [filters]);
+
+  // Check if the screen is mobile size
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkIfMobile();
+
+    window.addEventListener("resize", checkIfMobile);
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+    };
+  }, []);
 
   // Toggle filter sidebar visibility
   const toggleFilter = () => {
@@ -128,15 +241,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     }
   };
 
-  // Handler for toggling favorite
-  // const toggleFavorite = (id: number) => {
-  //     setProducts(products.map(product =>
-  //         product.id === id ? { ...product, favorite: !product.favorite } : product
-  //     ));
-  // };
-
   // Calculate pagination values
-  // const totalProducts = products.length;
   const totalPages = Math.ceil(totalProducts / itemsPerPage);
   const indexOfLastProduct = currentPage * itemsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
@@ -145,27 +250,27 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     indexOfLastProduct
   );
 
-const addToCart = (productId: string) => {
-  console.log('Adding to cart, productId:', productId, 'Type:', typeof productId);
-  
-  if (!productId) {
-    console.error('Product ID is undefined or empty');
-    return;
-  }
+  const addToCart = (productId: string) => {
+    console.log('Adding to cart, productId:', productId, 'Type:', typeof productId);
 
-  dispatch(
-    addProductToCart({
-      productId,
-      quantity: 1,
-    })
-  ).then((result) => {
-    if (addProductToCart.fulfilled.match(result)) {
-      console.log(`Added product ${productId} to cart successfully`);
-    } else {
-      console.error('Failed to add to cart:', result.payload);
+    if (!productId) {
+      console.error('Product ID is undefined or empty');
+      return;
     }
-  });
-};
+
+    dispatch(
+      addProductToCart({
+        productId,
+        quantity: 1,
+      })
+    ).then((result) => {
+      if (addProductToCart.fulfilled.match(result)) {
+        console.log(`Added product ${productId} to cart successfully`);
+      } else {
+        console.error('Failed to add to cart:', result.payload);
+      }
+    });
+  };
 
   const handlePriceChange = ({
     minPrice,
@@ -188,8 +293,14 @@ const addToCart = (productId: string) => {
     });
   };
 
-  const applyFilters = () => {
+  // NEW: Handler for filter changes from SidebarFilter
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const applyFilters = async () => {
     console.log("Applying filters:", filters);
+    await fetchFilteredProducts();
     if (isMobile) {
       setIsFilterOpen(false);
     }
@@ -198,18 +309,22 @@ const addToCart = (productId: string) => {
   return (
     <div className="font-roboto">
       <div className="bg-gray-100 min-h-screen ">
-        {/* Navigation bar. */}
-        {/* <nav className="bg-[#F5F5F5] p-4 border-b hidden md:block">
-                    <div className="mx-auto flex items-center">
-                        <div className="flex space-x-6 ml-[50px]">
-                            <a href="#" className="text-gray-500 hover:text-gray-700">Home</a>
-                            <img src="/arrow-right.svg" alt="arrow facing right" />
-                            <a href="#" className="text-gray-900 font-semibold">Products</a>
-                        </div>
-                    </div>
-                </nav> */}
-
         <div className="mx-auto p-4 bg-[#F9F9F9] relative">
+          {/* NEW: Loading overlay */}
+          {(loading || filterLoading) && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                <p className="text-gray-700">Loading products...</p>
+                {activeFilterText && (
+                  <p className="text-sm text-gray-500 mt-2 text-center max-w-xs">
+                    {activeFilterText}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row gap-6 relative min-h-[calc(100vh-200px)]">
             {isMobile && isFilterOpen && (
               <div
@@ -248,9 +363,12 @@ const addToCart = (productId: string) => {
                     </button>
                     <h2 className="font-semibold text-[20px]">Filter</h2>
                   </div>
-                  <p className="text-[16px] text-primary font-semibold">
+                  <button
+                    onClick={applyFilters}
+                    className="text-[16px] text-primary font-semibold"
+                  >
                     Apply Filter
-                  </p>
+                  </button>
                 </div>
               )}
 
@@ -259,10 +377,12 @@ const addToCart = (productId: string) => {
                 handlePriceChange={handlePriceChange}
                 expandedSections={expandedSections}
                 toggleSection={toggleSection}
+                selectedCategory={params.get("category")}
+                onFilterChange={handleFilterChange}
               />
               {/* Apply Button for Mobile */}
               {isMobile && (
-                <div className="md:sticky hidden bottom-0 p-4 bg-white border-t">
+                <div className="md:sticky bottom-0 p-4 bg-white border-t">
                   <button
                     onClick={applyFilters}
                     className="w-full bg-primary text-white font-semibold py-3 px-4 rounded-md focus:outline-none hover:bg-blue-800"
@@ -294,6 +414,10 @@ const addToCart = (productId: string) => {
               toggleFilter={toggleFilter}
               isSortOpen={isSortOpen}
               setIsSortOpen={setIsSortOpen}
+              // NEW: Pass loading states and filter text
+              filterLoading={filterLoading}
+              activeFilterText={activeFilterText}
+              
             />
           </div>
         </div>
