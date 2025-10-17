@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../store";
 import { fetchBrands } from "../store/slices/brandSlice";
-import { fetchCategories } from "../store/slices/categoriesSlice"; // Import the categories slice
+import { fetchCategories } from "../store/slices/categoriesSlice";
+import { useNavigate } from "react-router-dom"; // Add this import
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
@@ -18,6 +19,7 @@ interface BrandNavProps {
 
 const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate(); // Add this hook
   const { brands, loading: brandsLoading, error: brandsError } = useSelector((state: RootState) => state.brands);
   const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
   const [isDropOpen, setIsDropOpen] = useState(false);
@@ -30,6 +32,14 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
 
   // Prepare brands array for display
   const displayBrands = brands?.map(brand => brand.name);
+
+  // Add this function to handle category click
+  const handleCategoryClick = (categoryId: string, categoryName: string) => {
+    // Navigate to products page with category filter
+    navigate(`/products?category=${encodeURIComponent(categoryId)}`);
+    // Close the dropdown after selection
+    setIsDropOpen(false);
+  };
 
   return (
     <div className="flex flex-col items-center lg:flex-row w-full gap-5 pt-6 pb-3 z-10 bg-white">
@@ -73,6 +83,7 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
                 <li 
                   key={category._id}
                   className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                  onClick={() => handleCategoryClick(category._id, category.name)} // Add onClick handler
                 >
                   <div className="flex items-center gap-4">
                     {/* Commented out the icon since we don't have category icons from API */}

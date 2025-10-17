@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import SidebarFilter from "./components/SidebarFilter";
 import ProductGrid from "./components/ProductGrid";
 import Recents from "./components/Recents";
@@ -50,7 +50,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   const { loading: cartLoading } = useAppSelector((state) => state.cart);
   const { products, loading, error, currentPage, itemsPerPage, totalProducts } = useAppSelector((state) => state.products);
 
-  // NEW: State for filter loading and active filter text
   const [filterLoading, setFilterLoading] = useState(false);
   const [activeFilterText, setActiveFilterText] = useState("");
 
@@ -66,7 +65,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     vehicleTypes: [],
     brands: [],
   });
-  const [sortOrder, setSortOrder] = useState("Alphabetical Order");
+  const [sortOrder, setSortOrder] = useState("");
   const [viewType, setViewType] = useState("grid");
   const [expandedSections, setExpandedSections] = useState({
     category: true,
@@ -75,9 +74,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     brand: true,
   });
 
-  // In ProductPageLayout.tsx - Update generateFilterText
   const generateFilterText = (newFilters: FilterState) => {
-    console.log(newFilters)
     const activeFilters = [];
 
     if (newFilters.categories.length > 0) {
@@ -101,87 +98,125 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
       : "";
   };
 
-  const fetchFilteredProducts = async () => {
-    setFilterLoading(true);
+  // FIXED: Removed fetchFilteredProducts from dependencies to prevent infinite loop
+  useEffect(() => {
+    const fetchData = async () => {
+      setFilterLoading(true);
 
-    const hasFilters =
-      filters.categories.length > 0 ||
-      filters.brands.length > 0 ||
-      filters.vehicleTypes.length > 0 ||
-      filters.departments.length > 0 ||
-      filters.minPrice !== 100 ||
-      filters.maxPrice !== 200000;
+      const hasFilters =
+        filters.categories.length > 0 ||
+        filters.brands.length > 0 ||
+        filters.vehicleTypes.length > 0 ||
+        filters.departments.length > 0 ||
+        filters.minPrice !== 100 ||
+        filters.maxPrice !== 200000;
 
-    try {
-      if (name && name.trim()) {
-        // If there's a search query, use search with filters
-        await dispatch(searchProducts({
-          name: name.trim(),
-        })).unwrap();
-      } else if (hasFilters) {
-        // If there are active filters, fetch with filters
-        await dispatch(fetchProducts({
-          categories: filters.categories,
-          brands: filters.brands,
-          vehicleTypes: filters.vehicleTypes,
-          departments: filters.departments,
-          minPrice: filters.minPrice,
-          maxPrice: filters.maxPrice,
-        } as any)).unwrap();
-      } else {
-        // No filters and no search query, fetch all products
-        await dispatch(fetchProducts()).unwrap();
+      try {
+        if (name && name.trim()) {
+          await dispatch(searchProducts({
+            name: name.trim(),
+            page: currentPage,
+            limit: itemsPerPage,
+            sortBy: sortOrder
+          })).unwrap();
+        } else if (hasFilters) {
+          await dispatch(fetchProducts({
+            categories: filters.categories,
+            brands: filters.brands,
+            vehicleTypes: filters.vehicleTypes,
+            departments: filters.departments,
+            minPrice: filters.minPrice,
+            maxPrice: filters.maxPrice,
+            page: currentPage,
+            limit: itemsPerPage,
+            sortBy: sortOrder
+          } as any)).unwrap();
+        } else {
+          await dispatch(fetchProducts({
+            page: currentPage,
+            limit: itemsPerPage,
+            sortBy: sortOrder
+          })).unwrap();
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setFilterLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching filtered products:', error);
-    } finally {
-      setFilterLoading(false);
-    }
+    };
+
+    fetchData();
+  }, [
+    currentPage, 
+    itemsPerPage, 
+    sortOrder, 
+    filters.categories,
+    filters.brands,
+    filters.vehicleTypes,
+    filters.departments,
+    filters.minPrice,
+    filters.maxPrice,
+    name,
+    dispatch
+  ]);
+
+  const handleSortOrderChange = async (newSortOrder: string) => {
+    setSortOrder(newSortOrder);
+    dispatch(setCurrentPage(1));
   };
 
-  useEffect(() => {
-    // Scroll to top when component mounts or search params change
-    window.scrollTo(0, 0);
-  }, [search]);
+  const handleItemsPerPageChange = async (newItemsPerPage: number) => {
+    dispatch(setItemsPerPage(newItemsPerPage));
+    dispatch(setCurrentPage(1));
+  };
 
-  // Also add this for initial page load
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // FIXED: Updated to properly dispatch Redux action
+  const handlePageChange = (page: number) => {
+    console.log('Page change requested:', page);
+    dispatch(setCurrentPage(page));
+  };
 
-  // In ProductPageLayout.tsx - Update the initial fetch useEffect
   useEffect(() => {
     const params = new URLSearchParams(search);
     const name = params.get("name");
     const category = params.get("category");
-    const vehicleType = params.get("vehicleType"); // NEW: Get vehicle type from URL
+    const vehicleType = params.get("vehicleType");
 
     const fetchInitialData = async () => {
       setFilterLoading(true);
       try {
         if (name && name.trim()) {
           dispatch(setCurrentPage(1));
-          await dispatch(searchProducts({ name: name.trim() })).unwrap();
+          await dispatch(searchProducts({
+            name: name.trim(),
+            page: 1,
+            limit: itemsPerPage,
+            sortBy: sortOrder
+          })).unwrap();
         } else if (category) {
           dispatch(setCurrentPage(1));
-          await dispatch(fetchProductsByCategory(category)).unwrap();
+          await dispatch(fetchProductsByCategory({
+            categoryId: category,
+            page: 1,
+            limit: itemsPerPage
+          })).unwrap();
 
-          // Set the category in filters
           setFilters(prev => ({
             ...prev,
             categories: [category]
           }));
         } else if (vehicleType) {
-          // NEW: Handle vehicle type from URL
           dispatch(setCurrentPage(1));
-          // Use the filter system for vehicle types
           setFilters(prev => ({
             ...prev,
             vehicleTypes: [vehicleType]
           }));
-          // The filter useEffect will automatically trigger the fetch
         } else {
-          await dispatch(fetchProducts()).unwrap();
+          await dispatch(fetchProducts({
+            page: 1,
+            limit: itemsPerPage,
+            sortBy: sortOrder
+          })).unwrap();
           await dispatch(fetchProductCount()).unwrap();
         }
       } catch (error) {
@@ -199,24 +234,15 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     const category = params.get("category");
 
     if (category) {
-      // Remove the category parameter from URL without refreshing
       const newUrl = window.location.pathname + '?' + params.toString().replace(`category=${category}`, '');
       window.history.replaceState({}, '', newUrl);
     }
   }, [search]);
 
   useEffect(() => {
-    // Fetch products whenever any of these filter arrays change
-    // This will handle both adding filters AND removing all filters
-    dispatch(setCurrentPage(1)); // Reset to first page when filters change
-    fetchFilteredProducts();
-  }, [filters.categories, filters.brands, filters.vehicleTypes, filters.departments]);
-  // NEW: Update filter text when filters change
-  useEffect(() => {
     setActiveFilterText(generateFilterText(filters));
   }, [filters]);
 
-  // Check if the screen is mobile size
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -229,19 +255,16 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     };
   }, []);
 
-  // Toggle filter sidebar visibility
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
   };
 
-  // Close filter sidebar when clicking outside
   const handleOverlayClick = () => {
     if (isFilterOpen) {
       setIsFilterOpen(false);
     }
   };
 
-  // Calculate pagination values
   const totalPages = Math.ceil(totalProducts / itemsPerPage);
   const indexOfLastProduct = currentPage * itemsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
@@ -284,6 +307,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
       minPrice,
       maxPrice,
     }));
+    dispatch(setCurrentPage(1)); // Reset to first page when price changes
   };
 
   const toggleSection = (section: SectionKey) => {
@@ -293,14 +317,13 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     });
   };
 
-  // NEW: Handler for filter changes from SidebarFilter
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
+    dispatch(setCurrentPage(1)); // Reset to first page when filters change
   };
 
   const applyFilters = async () => {
     console.log("Applying filters:", filters);
-    await fetchFilteredProducts();
     if (isMobile) {
       setIsFilterOpen(false);
     }
@@ -310,7 +333,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     <div className="font-roboto">
       <div className="bg-gray-100 min-h-screen ">
         <div className="mx-auto p-4 bg-[#F9F9F9] relative">
-          {/* NEW: Loading overlay */}
           {(loading || filterLoading) && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
@@ -380,7 +402,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
                 selectedCategory={params.get("category")}
                 onFilterChange={handleFilterChange}
               />
-              {/* Apply Button for Mobile */}
               {isMobile && (
                 <div className="md:sticky bottom-0 p-4 bg-white border-t">
                   <button
@@ -393,9 +414,8 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
               )}
             </div>
 
-            {/* Product Grid Component */}
             <ProductGrid
-              products={currentProducts}
+              products={products}
               viewType={viewType}
               currentPage={currentPage}
               totalPages={totalPages}
@@ -403,9 +423,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
               itemsPerPage={itemsPerPage}
               sortOrder={sortOrder}
               setViewType={setViewType}
-              setItemsPerPage={setItemsPerPage}
-              setSortOrder={setSortOrder}
-              setCurrentPage={setCurrentPage}
+              setCurrentPage={handlePageChange}
               toggleFavorite={toggleFavorite}
               addToCart={addToCart}
               cartLoading={cartLoading}
@@ -414,10 +432,10 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
               toggleFilter={toggleFilter}
               isSortOpen={isSortOpen}
               setIsSortOpen={setIsSortOpen}
-              // NEW: Pass loading states and filter text
+              setItemsPerPage={handleItemsPerPageChange}
+              setSortOrder={handleSortOrderChange}
               filterLoading={filterLoading}
               activeFilterText={activeFilterText}
-              
             />
           </div>
         </div>
@@ -452,7 +470,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
           </div>
         </div>
 
-        {/* Dropdown filters */}
         <div className="p-4 border-t border-gray-200">
           {["Maker", "Model", "Year", "Engine"].map((filter) => (
             <div key={filter} className="mb-4">
@@ -479,7 +496,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
             </div>
           ))}
 
-          {/* Search button */}
           <button className="w-full bg-primary text-white font-semibold py-3 px-4 rounded-md focus:outline-none hover:bg-blue-800">
             Search
           </button>

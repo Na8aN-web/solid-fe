@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { loginUser, clearError } from "../../store/slices/authSlice";
+import { loginUser, clearError, initiateGoogleLogin } from "../../store/slices/authSlice";
 
 interface LoginData {
   email: string;
@@ -47,12 +47,12 @@ const Login = () => {
     handleLogin(email, password);
   };
 
-  // const handleLogin = (email: string, password: string) => {
-  //   dispatch(loginUser({ email, password }));
-  // };
-
   const handleLogin = (emailOrPhone: string, password: string) => {
     dispatch(loginUser({ email: emailOrPhone, password }));
+  };
+
+  const handleGoogleLogin = () => {
+    dispatch(initiateGoogleLogin());
   };
 
   return (
@@ -134,11 +134,15 @@ const Login = () => {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
           <div className="flex flex-col gap-4 lg:flex-row">
-            
-            <div className="flex items-center justify-center gap-3 border border-[#6558F] rounded-xl py-5 lg:py-4 w-full">
-              <img src="/google.svg" alt="" />
+            <button
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              type="button"
+              className="flex items-center justify-center gap-3 border border-[#6558F5] rounded-xl py-5 lg:py-4 w-full hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <img src="/google.svg" alt="Google" />
               <p>Continue with Google</p>
-            </div>
+            </button>
           </div>
         </div>
       </section>

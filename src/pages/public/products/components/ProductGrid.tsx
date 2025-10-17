@@ -98,7 +98,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     }, 2000);
   };
 
-  // Render star ratings
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newItemsPerPage = Number(e.target.value);
+    setItemsPerPage(newItemsPerPage); // This will trigger the API call
+  };
+
+  // NEW: Handler for sort order change
+  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSortOrder = e.target.value;
+    setSortOrder(newSortOrder);
+  };
+
   const renderStars = (rating: number) => {
     return (
       <div className="flex">
@@ -124,7 +134,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       )}
 
-      {/* View controls */}
+
       <div className="bg-white rounded-md shadow-sm p-4 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           {/* Left Section */}
@@ -212,13 +222,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <select
                 className="border border-black rounded-[10px] px-4 py-2 text-sm"
                 value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                onChange={handleItemsPerPageChange} // Updated: Use new handler
               >
-                <option>6</option>
-                <option>12</option>
-                <option>18</option>
+                <option value={10}>Default</option>
+                <option value={6}>6</option>
+                <option value={12}>12</option>
+                <option value={18}>18</option>
               </select>
-              <div className="text-sm text-gray-600 ml-2">per page</div>
+              <div className="text-sm text-gray-600 ml-2">products per page</div>
             </div>
 
             <div className="flex items-center w-[250px]">
@@ -226,12 +237,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <select
                 className="border border-black rounded-[10px] px-4 py-2 text-sm"
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
+                onChange={handleSortOrderChange}
               >
-                <option>Alphabetical Order</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Best Rating</option>
+                <option value="">Default</option>
+                <option value="name-asc">Alphabetical Order</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rating-desc">Rating</option>
               </select>
             </div>
           </div>
@@ -433,7 +445,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         totalPages={totalPages}
         totalItems={totalProducts}
         itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
+        setCurrentPage={setCurrentPage}
+
       />
 
       <SortSidebar

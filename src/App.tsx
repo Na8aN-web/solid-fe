@@ -54,6 +54,8 @@ import ReportsAnalytics from "./pages/admin/report/Report";
 import SendNotifications from "./pages/admin/notifications/SendNotifications";
 import SentNotifications from "./pages/admin/notifications/SentNotifications";
 
+import GoogleCallback from "./services/GoogleCallback";
+
 import { useAppSelector } from "./store/hooks";
 import { Navigate } from "react-router-dom";
 import Order from "./pages/private/accountinformation/components/orders/Orders";
@@ -187,6 +189,8 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<ContactUs />} />
         </Route>
+
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
         {/* Private layout without brands nav */}
         <Route element={<PrivateLayout />}>

@@ -5,7 +5,7 @@ interface PaginationProps {
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
-  onPageChange: (page: number) => void;
+  setCurrentPage: (page: number) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -13,7 +13,7 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   totalItems,
   itemsPerPage,
-  onPageChange
+  setCurrentPage
 }) => {
   // Calculate the current range of items being displayed
   const startItem = (currentPage - 1) * itemsPerPage + 1;
@@ -65,7 +65,7 @@ const Pagination: React.FC<PaginationProps> = ({
       <div className="flex items-center space-x-1">
         {/* Previous button */}
         <button
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
           className="h-8 w-8 rounded-full flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50"
           aria-label="Previous page"
@@ -80,7 +80,7 @@ const Pagination: React.FC<PaginationProps> = ({
           typeof page === 'number' ? (
             <button
               key={index}
-              onClick={() => onPageChange(page)}
+              onClick={() => setCurrentPage(page)}
               className={`h-8 w-8 rounded-full flex items-center justify-center ${
                 currentPage === page 
                   ? 'bg-blue-900 text-white' 
@@ -98,7 +98,7 @@ const Pagination: React.FC<PaginationProps> = ({
         
         {/* Next button */}
         <button
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => setCurrentPage(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="h-8 w-8 rounded-full flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50"
           aria-label="Next page"

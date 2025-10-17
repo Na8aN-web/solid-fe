@@ -29,6 +29,13 @@ export interface PaginationMeta {
 
 export interface ProductsResponse {
   products: Product[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+    totalPages: number;
+  };
 }
 
 export interface ProductState {
@@ -76,5 +83,7 @@ export interface DealsOfDayResponse {
 }
 
 export interface SearchProductsQuery {
-  name: string;      // search term
+  name: string;
+  page?: number;
+  limit?: number;
 }
