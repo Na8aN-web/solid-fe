@@ -1,6 +1,7 @@
 // src/store/slices/adminDashboardSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
+import { RootState } from "..";
 
 // Types
 export interface DashboardMetrics {
@@ -247,6 +248,8 @@ export interface AdminDashboardState {
     orders: boolean;
     lowStock: boolean;
     products: boolean;
+    fetchProductById: boolean;
+    updateProduct: boolean;
     deleteProduct: boolean;
     addProduct: boolean;
     addProductCategory: boolean;
@@ -258,6 +261,7 @@ export interface AdminDashboardState {
     addProductVehicleType: boolean;
     updateProductVehicleType: boolean;
     vehicles: boolean;
+    selectedProduct: boolean;
   };
   error: {
     metrics: string | null;
@@ -266,6 +270,8 @@ export interface AdminDashboardState {
     orders: string | null;
     lowStock: string | null;
     products: string | null;
+    fetchProductById: string | null;
+    updateProduct: string | null;
     deleteProduct: string | null;
     addProduct: string | null;
     addProductCategory: string | null;
@@ -277,6 +283,8 @@ export interface AdminDashboardState {
     addProductVehicleType: string | null;
     updateProductVehicleType: string | null;
     vehicles: string | null;
+    error: string | null; // ✅ ensure this exists
+    selectedProduct: any | null; 
   };
 }
 
@@ -308,8 +316,12 @@ const initialState: AdminDashboardState = {
     vehicles: false,
     users: false,
     user: false,
+    fetchProductById: false,
+    updateProduct: false,
+    selectedProduct: false,
   },
   error: {
+    error: null,
     metrics: null,
     orders: null,
     lowStock: null,
@@ -327,6 +339,9 @@ const initialState: AdminDashboardState = {
     vehicles: null,
     users: null,
     user: null,
+    fetchProductById: null, 
+    updateProduct: null,
+    selectedProduct: null,
   },
 };
 
@@ -867,7 +882,6 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
-// Update your addProduct thunk to handle FormData
 export const addProduct = createAsyncThunk(
   "adminDashboard/addProduct",
   async (productData: FormData, { rejectWithValue }) => {
@@ -892,6 +906,45 @@ export const addProduct = createAsyncThunk(
         return rejectWithValue(error.response.data.error);
       }
       return rejectWithValue("Failed to add product. Please try again.");
+    }
+  }
+);
+
+// Add these to your adminDashboardSlice.ts
+
+// Fetch single product by ID
+export const fetchProductById = createAsyncThunk(
+  "adminDashboard/fetchProductById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      // const response = await axiosInstance.post<{ product: BackendProduct }>(
+      //   `/products/${productId}`,
+      //   productId,
+      //   { headers: { "Content-Type": "multipart/form-data" } }
+      // );
+      // return response.data;
+      const response = await axiosInstance.get(`/products/${id}`);
+      return response.data; // return the product data
+      console.log(response.data);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Update a product
+export const updateProduct = createAsyncThunk(
+  "adminDashboard/updateProduct",
+  async ({ id, data }: { id: string; data: FormData }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.put(`/products/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update product"
+      );
     }
   }
 );
@@ -971,6 +1024,8 @@ const adminDashboardSlice = createSlice({
         orders: null,
         lowStock: null,
         products: null,
+        fetchProductById: null,
+        updateProduct: null,
         deleteProduct: null,
         addProduct: null,
         addProductCategory: null,
@@ -982,6 +1037,8 @@ const adminDashboardSlice = createSlice({
         addProductVehicleType: null,
         updateProductVehicleType: null,
         vehicles: null,
+        selectedProduct: null,
+        error: null,
       };
     },
     refreshDashboard: (state) => {
@@ -993,6 +1050,8 @@ const adminDashboardSlice = createSlice({
         orders: true,
         lowStock: true,
         products: true,
+        fetchProductById: true,
+        updateProduct: true,
         deleteProduct: true,
         addProduct: true,
         addProductCategory: true,
@@ -1004,6 +1063,7 @@ const adminDashboardSlice = createSlice({
         addProductVehicleType: true,
         updateProductVehicleType: true,
         vehicles: true,
+        selectedProduct: true,
       };
     },
     // Add a reducer to update individual metrics if needed
@@ -1164,6 +1224,43 @@ const adminDashboardSlice = createSlice({
       state.loading.addProduct = false;
       state.error.addProduct = action.payload as string;
     });
+
+    // --- Fetch single product ---
+    builder.addCase(fetchProductById.pending, (state) => {
+      state.loading.fetchProductById = true;
+      state.error.fetchProductById = null;
+    })
+    builder.addCase(fetchProductById.fulfilled, (state, action) => {
+      state.loading.fetchProductById = false;
+      state.products = action.payload.data || action.payload;
+    })
+    builder.addCase(fetchProductById.rejected, (state, action) => {
+      state.loading.fetchProductById = false;
+      state.error.fetchProductById = action.payload as string;
+    });
+    
+
+    // --- Update product ---
+    builder.addCase(updateProduct.pending, (state) => {
+      state.loading.updateProduct = true;
+      state.error.fetchProductById = null;
+    });
+    builder.addCase(updateProduct.fulfilled, (state, action) => {
+      state.loading.updateProduct = false;
+      // Optionally update products list if you store them
+      if (state.products && Array.isArray(state.products)) {
+        const updated = action.payload.data || action.payload;
+        const index = state.products.findIndex(
+          (p: any) => p._id === updated._id
+        );
+        if (index !== -1) state.products[index] = updated;
+      }
+    });
+    builder.addCase(updateProduct.rejected, (state, action) => {
+      state.loading.updateProduct = false;
+      state.error.fetchProductById = action.payload as string;
+    });
+
     // Add product Category
     builder.addCase(addProductCategory.pending, (state) => {
       state.loading.addProductCategory = true;
@@ -1337,5 +1434,8 @@ const adminDashboardSlice = createSlice({
 
 export const { clearDashboardErrors, refreshDashboard, updateMetric } =
   adminDashboardSlice.actions;
+
+// export const selectSelectedProduct = (state: RootState) =>
+//   state.adminDashboard.selectedProduct;
 
 export default adminDashboardSlice.reducer;
