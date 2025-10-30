@@ -60,7 +60,6 @@ import { useAppSelector } from "./store/hooks";
 import { Navigate } from "react-router-dom";
 import Order from "./pages/private/accountinformation/components/orders/Orders";
 
-
 interface AdminRouteProps {
   children: React.ReactNode;
   adminOnly?: boolean; // New prop to restrict to full admins only
@@ -119,8 +118,10 @@ const UnauthorizedAccess: React.FC<UnauthorizedAccessProps> = ({
   </div>
 );
 
-const EmailVerificationRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { emailVerification, user } = useAppSelector(state => state.auth);
+const EmailVerificationRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { emailVerification, user } = useAppSelector((state) => state.auth);
 
   // If user is already verified, redirect to home
   if (user?.verified) {
@@ -245,8 +246,6 @@ function App() {
           />
         </Route>
 
-
-
         {/* Private layout with brands nav */}
         <Route element={<PrivateLayoutMobileBrand />}>
           <Route path="/account-information" element={<Account />}>
@@ -319,6 +318,14 @@ function App() {
         />
         <Route
           path="/admin/add-product"
+          element={
+            <AdminRoute>
+              <AddProduct />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/edit-product/:id"
           element={
             <AdminRoute>
               <AddProduct />

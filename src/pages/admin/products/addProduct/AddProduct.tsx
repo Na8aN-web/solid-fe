@@ -4,14 +4,17 @@ import FileUploader from "../components/FileUploader";
 import { Plus, ArrowLeft, Ban, CalendarCheck } from "lucide-react";
 import circleX from "../../../../assets/circleX.svg";
 import AdminLayout from "../../components/AdminLayout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   addProduct,
   fetchAllBrands,
   fetchAllCategories,
   fetchAllVehiclesType,
+  updateProduct,
+  fetchProductById
 } from "../../../../store/slices/adminDashboardSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+
 
 // ---- Types ----
 interface ProductFormData {
@@ -23,6 +26,7 @@ interface ProductFormData {
 
   // Images (Files, because no separate media endpoint)
   imageFiles: (File | null)[]; // 4 fixed slots
+  existingImages?: string[]; // URLs of existing images
 
   // IDs selected in UI
   selectedCategoryId: string;
@@ -123,6 +127,9 @@ function debugFormData(fd: FormData) {
 const AddProduct: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { id: productId } = useParams<{ id: string }>(); // Get product ID from URL
+  const isEditMode = !!productId;
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false);
 
   const { categories, brands, vehicles, loading } = useAppSelector(
     (state) => state.adminDashboard
@@ -183,6 +190,73 @@ const AddProduct: React.FC = () => {
     storeName: "",
   });
 
+  useEffect(() => {
+    if (isEditMode && productId) {
+      const loadProduct = async () => {
+        setIsLoadingProduct(true);
+        try {
+          const result = await dispatch(fetchProductById(productId)).unwrap();
+          const product = result.data || result;
+
+          // Populate form with existing product data
+          setFormData({
+            name: product.name || "",
+            briefDescription: product.briefDescription || "",
+            fullDescription: product.fullDescription || "",
+            description: product.description || "",
+            imageFiles: [null, null, null, null],
+            existingImages: product.images || [],
+            selectedCategoryId: getId(product.category) || "",
+            selectedBrandId: getId(product.brand) || "",
+            selectedVehicleTypeId: getId(product.vehicleType) || "",
+            partNumber: product.partNumber || "",
+            department: product.department || "",
+            weight: product.weight?.toString() || "",
+            length: product.packageSize?.length?.toString() || "",
+            breadth: product.packageSize?.breadth?.toString() || "",
+            width: product.packageSize?.width?.toString() || "",
+            material: product.material || "",
+            stockStatus: product.stockStatus || "In Stock",
+            stock: product.quantityInStock?.toString() || "",
+            units: product.units || "",
+            sku: product.sku || "",
+            minStock: product.minStock?.toString() || "",
+            regularPrice: product.regularPrice?.toString() || "",
+            displayPrice: product.salesPrice?.toString() || "",
+            discount: product.discount?.toString() || "",
+            discountPrice: product.discountPrice?.toString() || "",
+            minOrderQuantity: product.minOrderQuantity?.toString() || "",
+            tieredPricingType: product.tieredPricingType || "Fixed",
+            isFeatured: product.isFeatured || false,
+            isNewArrival: product.isNewArrival || false,
+            isDealOfTheDay: product.isDealOfTheDay || false,
+            storeName:
+              typeof product.store === "string"
+                ? product.store
+                : product.store?.name || "",
+          });
+
+          // Populate tiered pricing if exists
+          if (product.tieredPricing && product.tieredPricing.length > 0) {
+            setTieredPrices(
+              product.tieredPricing.map((tier: any) => ({
+                id: crypto.randomUUID(),
+                quantity: tier.quantity?.toString() || "",
+                price: tier.price?.toString() || "",
+              }))
+            );
+          }
+        } catch (error) {
+          console.error("Failed to load product:", error);
+          setErrors({ submit: "Failed to load product data" });
+        } finally {
+          setIsLoadingProduct(false);
+        }
+      };
+      loadProduct();
+    }
+  }, [isEditMode, productId, dispatch]);
+
   const [tieredPrices, setTieredPrices] = useState<TieredPrice[]>([
     { id: crypto.randomUUID(), quantity: "", price: "" },
   ]);
@@ -195,6 +269,13 @@ const AddProduct: React.FC = () => {
     () => Object.values(imageUploading).some(Boolean),
     [imageUploading]
   );
+
+  const removeExistingImage = (index: number) =>
+    setFormData((prev) => {
+      const next = [...(prev.existingImages ?? [])];
+      next.splice(index, 1);
+      return { ...prev, existingImages: next };
+    });
 
   // generic input handler
   const handleInputChange = (
@@ -265,8 +346,13 @@ const AddProduct: React.FC = () => {
       next.regularPrice = "Enter regular price";
     if (formData.displayPrice === "" || Number(formData.displayPrice) <= 0)
       next.displayPrice = "Enter display price";
-    if (!formData.imageFiles.some((f) => f))
-      next.imageFiles = "At least one image is required";
+    
+    // Check for images: either existing images or new files
+    const hasImages =
+      (formData.existingImages && formData.existingImages.length > 0) ||
+      formData.imageFiles.some((f) => f);
+    if (!hasImages) next.imageFiles = "At least one image is required";
+
     if (!formData.storeName?.trim()) next.storeName = "Store name is required";
 
     setErrors(next);
@@ -284,7 +370,7 @@ const AddProduct: React.FC = () => {
     }
     if (!validateForm()) return;
 
-    if (!createdById) {
+    if (!createdById && !isEditMode) {
       setErrors((e) => ({
         ...e,
         submit: "Missing createdBy (user id). Are you logged in?",
@@ -397,43 +483,85 @@ const AddProduct: React.FC = () => {
     debugFormData(fd);
 
     try {
-      await dispatch(addProduct(fd)).unwrap();
+      if (isEditMode) {
+        await dispatch(updateProduct({ id: productId!, data: fd })).unwrap();
+      } else {
+        await dispatch(addProduct(fd)).unwrap();
+      }
       navigate("/admin/products");
     } catch (error: any) {
       const msg =
         error?.message ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Failed to add product.";
+        `Failed to ${isEditMode ? "update" : "add"} product.`;
       setErrors((e) => ({ ...e, submit: msg }));
     }
   };
 
   // ---- UI helpers: image slot component ----
-  const ImageSlot: React.FC<{
-    slot: number;
-    file: File | null;
-    big?: boolean;
-  }> = ({ slot, file, big }) => {
+  const ImageSlot: React.FC<{ slot: number; file: File | null; big?: boolean }> = ({
+    slot,
+    file,
+    big,
+  }) => {
+    const existingUrl = formData.existingImages?.[slot] ?? null;
     const preview = useObjectURL(file);
+    const displayUrl = preview || existingUrl;
     const base = big ? "w-full h-[198px]" : "w-[161px] h-[87px]";
     const border = file
       ? "border border-primary"
       : "border border-primary border-dashed";
     return (
+      // <div
+      //   className={`relative ${base} flex items-center justify-center rounded-[12px] ${border}`}
+      // >
+      //   {file && preview ? (
+      //     <div className="w-full h-full relative">
+      //       <img
+      //         src={preview}
+      //         alt={`Preview ${slot + 1}`}
+      //         className="w-full h-full object-cover rounded"
+      //       />
+      //       <button
+      //         type="button"
+      //         onClick={() => removeImageAt(slot)}
+      //         className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+      //       >
+      //         ×
+      //       </button>
+      //     </div>
+      //   ) : (
+      //     <FileUploader
+      //       onUpload={(f: File) => uploadImageAt(slot, f)}
+      //       onRemove={() => removeImageAt(slot)}
+      //     />
+      //   )}
+      //   {!!imageUploading[slot] && (
+      //     <span className="absolute bottom-2 right-2 text-xs">Uploading…</span>
+      //   )}
+      // </div>
       <div
         className={`relative ${base} flex items-center justify-center rounded-[12px] ${border}`}
       >
-        {file && preview ? (
+        {displayUrl ? (
           <div className="w-full h-full relative">
             <img
-              src={preview}
+              src={displayUrl}
               alt={`Preview ${slot + 1}`}
               className="w-full h-full object-cover rounded"
             />
             <button
               type="button"
-              onClick={() => removeImageAt(slot)}
+              onClick={() => {
+                if (file) {
+                  removeImageAt(slot);
+                } else if (existingUrl) {
+                  const index =
+                    formData.existingImages?.indexOf(existingUrl) ?? -1;
+                  if (index !== -1) removeExistingImage(index);
+                }
+              }}
               className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
             >
               ×
@@ -451,6 +579,19 @@ const AddProduct: React.FC = () => {
       </div>
     );
   };
+
+  if (isLoadingProduct) {
+    return (
+      <AdminLayout pageTitle="">
+        <div className="p-6 flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading product data...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   // ---- Render ----
   return (
