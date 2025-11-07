@@ -32,6 +32,8 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
 
   // Prepare brands array for display
   const displayBrands = brands?.map(brand => brand.name);
+  console.log(displayBrands);
+  
 
   // Add this function to handle category click
   const handleCategoryClick = (categoryId: string, categoryName: string) => {

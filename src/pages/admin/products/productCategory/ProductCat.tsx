@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Search, Plus, ArrowLeft, ArrowUpDown } from "lucide-react";
-import carTyre from "../../../../assets/tyres.svg";
 import edit from "../../../../assets/edit.svg";
 import deLete from "../../../../assets/delete.svg";
 import AdminLayout from "../../components/AdminLayout";
@@ -8,18 +7,23 @@ import { useNavigate } from "react-router-dom";
 import AddNewProductCategory from "../components/AddNewProductCategory";
 import AddNewProductBrand from "../components/AddNewProductBrand";
 import AddNewVehicleType from "../components/AddNewVehicleType";
+import AddNewDepartment from "../components/AddNewDepartment";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import {
   fetchAllCategories,
   fetchAllBrands,
   fetchAllVehiclesType,
+  fetchAllDepartments,
   ProductCategory,
   deleteProductCategory,
   ProductBrand,
   ProductVehicleType,
   deleteProductBrand,
   deleteProductVehicleType,
+  ProductDepartment,
+  deleteProductDepartment,
 } from "../../../../store/slices/adminDashboardSlice";
+
 
 const handleEdit = (id: string) => {
   console.log("Editing product with ID:", id);
@@ -322,8 +326,8 @@ const Vehicles = () => {
           )}
         </tbody>
       </table>
-         {/* EDIT vehicle modal (reuses Add modal) */}
-         {editVehicle && (
+      {/* EDIT vehicle modal (reuses Add modal) */}
+      {editVehicle && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <AddNewVehicleType
             onClose={() => setEditVehicle(null)}
@@ -352,7 +356,9 @@ const Vehicles = () => {
                 className="px-3 h-9 rounded bg-red-600 text-white"
                 onClick={async () => {
                   try {
-                    await dispatch(deleteProductVehicleType(deleteId!)).unwrap();
+                    await dispatch(
+                      deleteProductVehicleType(deleteId!)
+                    ).unwrap();
                     setDeleteId(null);
                   } catch (e) {
                     console.error("Delete failed:", e);
@@ -369,7 +375,117 @@ const Vehicles = () => {
   );
 };
 
-type Tab = "categories" | "brands" | "vehicles";
+const Departments = () => {
+  const dispatch = useAppDispatch();
+  const { departments, loading, error } = useAppSelector((s) => s.adminDashboard);
+  
+
+  const [editDepartment, setEditDepartment] = useState<ProductDepartment | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchAllDepartments());
+  }, [dispatch]);
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="text-left text-sm bg-[#F8F8F8] text-gray-600 border-b">
+            <th className="p-4">
+              <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
+            </th>
+            <th className="p-4">Name</th>
+            <th className="p-4">Created Date</th>
+            <th className="p-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {departments.map((department) => (
+            <tr
+              key={department._id}
+              className="border-b text-[#5E5E5E] last:border-b-0"
+            >
+              <td className="p-4">
+                <div className="w-5 h-5 border border-[#D9D9D9] bg-white rounded-[4px]"></div>
+              </td>
+              <td className="p-4 text-sm">{department.name}</td>
+              <td className="p-4 text-sm">
+                {department.createdAt
+                  ? new Date(department.createdAt).toLocaleDateString()
+                  : "—"}
+              </td>
+
+              <td className="p-4">
+                <div className="flex items-center gap-6">
+                  <button
+                    onClick={() => setEditDepartment(department)}
+                    className="w-[55px] h-[30px] bg-primary rounded-[6px] text-white flex items-center justify-center text-xs font-semibold gap-1"
+                  >
+                    <img src={edit} alt="" /> Edit
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(department._id)}
+                    className="border border-[#E3E6EA] bg-white p-2 rounded-[8px]"
+                  >
+                    <img src={deLete} alt="" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* EDIT department modal (reuses Add modal) */}
+      {editDepartment && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <AddNewDepartment
+            onClose={() => setEditDepartment(null)}
+            department={editDepartment}
+          />
+        </div>
+      )}
+
+      {/* DELETE confirm */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[360px]">
+            <h3 className="text-lg font-semibold mb-2">Delete Department?</h3>
+            <p className="text-sm text-gray-600 mb-5">
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-3 h-9 rounded border"
+                onClick={() => setDeleteId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 h-9 rounded bg-red-600 text-white"
+                onClick={async () => {
+                  try {
+                    await dispatch(deleteProductDepartment(deleteId!)).unwrap();
+                    setDeleteId(null);
+                  } catch (e) {
+                    console.error("Delete failed:", e);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
+type Tab = "categories" | "brands" | "vehicles" | "departments";
 
 const ProductCat: React.FC = () => {
   const [openModalFor, setOpenModalFor] = useState<Tab | null>(null);
@@ -378,6 +494,7 @@ const ProductCat: React.FC = () => {
     { label: "Product Categories", value: "categories" },
     { label: "Brands", value: "brands" },
     { label: "Vehicles", value: "vehicles" },
+    { label: "Departments", value: "departments" },
   ];
 
   const [activeTab, setActiveTab] = useState<Tab>("categories");
@@ -405,7 +522,9 @@ const ProductCat: React.FC = () => {
                   ? "Product Categories"
                   : activeTab === "brands"
                     ? "Brands"
-                    : "Vehicles"}
+                    : activeTab === "vehicles"
+                      ? "Vehicles"
+                    : "Departments"}
               </h1>
             </div>
             <div className="relative">
@@ -437,6 +556,9 @@ const ProductCat: React.FC = () => {
         {openModalFor === "vehicles" && (
           <AddNewVehicleType onClose={() => setOpenModalFor(null)} />
         )}
+         {openModalFor === "departments" && (
+          <AddNewDepartment onClose={() => setOpenModalFor(null)} />
+        )}
 
         <section className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
@@ -464,6 +586,7 @@ const ProductCat: React.FC = () => {
         {activeTab === "categories" && <Categories />}
         {activeTab === "brands" && <Brands />}
         {activeTab === "vehicles" && <Vehicles />}
+        {activeTab === "departments" && <Departments />}
       </div>
     </AdminLayout>
   );

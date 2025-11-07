@@ -11,10 +11,12 @@ import {
   fetchAllCategories,
   fetchAllVehiclesType,
   updateProduct,
-  fetchProductById
+  fetchProductById,
+  fetchAllDepartments,
+  // fetchAllProducts
 } from "../../../../store/slices/adminDashboardSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-
+import { fetchProducts } from "../../../../store/slices/productSlice";
 
 // ---- Types ----
 interface ProductFormData {
@@ -24,7 +26,7 @@ interface ProductFormData {
   fullDescription?: string;
   description?: string;
 
-  // Images (Files, because no separate media endpoint)
+  // Images (Files)
   imageFiles: (File | null)[]; // 4 fixed slots
   existingImages?: string[]; // URLs of existing images
 
@@ -32,12 +34,12 @@ interface ProductFormData {
   selectedCategoryId: string;
   selectedBrandId: string;
   selectedVehicleTypeId?: string;
+  selectedDepartmentId?: string;
 
   // Additional product details
   partNumber?: string;
-  department?: string;
 
-  // Physical properties (strings in form; coerced on submit)
+  // Physical properties)
   weight?: string;
   length?: string;
   breadth?: string;
@@ -45,8 +47,8 @@ interface ProductFormData {
   material?: string;
 
   // Inventory
-  stockStatus?: string; // "In Stock" etc.
-  stock?: number | string; // -> quantityInStock
+  stockStatus?: "In Stock" | "Out of Stock"; // "In Stock"
+  stock?: number | string;
   units?: string;
   sku?: string;
   minStock?: number | string;
@@ -59,14 +61,14 @@ interface ProductFormData {
 
   // Wholesale / bulk
   minOrderQuantity?: number | string;
-  tieredPricingType?: "Fixed" | "Percentage";
+  tieredPricingType?: "Fixed" | "Dynamic";
 
   // Flags in schema
   isFeatured?: boolean;
   isNewArrival?: boolean;
   isDealOfTheDay?: boolean;
 
-  // Store name (string, not ObjectId)
+  // Store name
   storeName: string;
 }
 
@@ -77,7 +79,7 @@ interface TieredPrice {
 }
 
 // ---- Helpers ----
-const getId = (x: { _id?: string; id?: string }) => x._id ?? x.id ?? "";
+const getId = (x: any) => (typeof x === "string" ? x : (x?._id ?? x?.id ?? ""));
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
 const validateFile = (f: File) => {
@@ -131,11 +133,11 @@ const AddProduct: React.FC = () => {
   const isEditMode = !!productId;
   const [isLoadingProduct, setIsLoadingProduct] = useState(false);
 
-  const { categories, brands, vehicles, loading } = useAppSelector(
+  const { categories, brands, vehicles, departments, loading } = useAppSelector(
     (state) => state.adminDashboard
   );
 
-  // auth (for createdBy) — adjust if your auth slice has a different shape
+  // auth (for createdBy)
   const authState: any = useAppSelector((s: any) => s.auth ?? {});
   const createdById: string = authState?.user?._id ?? authState?._id ?? "";
 
@@ -144,7 +146,14 @@ const AddProduct: React.FC = () => {
     if (!categories.length) dispatch(fetchAllCategories());
     if (!brands.length) dispatch(fetchAllBrands());
     if (!vehicles.length) dispatch(fetchAllVehiclesType());
-  }, [dispatch, categories.length, brands.length, vehicles.length]);
+    if (!departments.length) dispatch(fetchAllDepartments());
+  }, [
+    dispatch,
+    categories.length,
+    brands.length,
+    vehicles.length,
+    departments.length,
+  ]);
 
   // form state
   const [formData, setFormData] = useState<ProductFormData>({
@@ -158,9 +167,9 @@ const AddProduct: React.FC = () => {
     selectedCategoryId: "",
     selectedBrandId: "",
     selectedVehicleTypeId: "",
+    selectedDepartmentId: "",
 
     partNumber: "",
-    department: "",
 
     weight: "",
     length: "",
@@ -196,8 +205,8 @@ const AddProduct: React.FC = () => {
         setIsLoadingProduct(true);
         try {
           const result = await dispatch(fetchProductById(productId)).unwrap();
-          const product = result.data || result;
-
+          const product = (result && (result.product || result.data)) || result;
+          if (!product || !product._id) throw new Error("Product not found");
           // Populate form with existing product data
           setFormData({
             name: product.name || "",
@@ -209,8 +218,8 @@ const AddProduct: React.FC = () => {
             selectedCategoryId: getId(product.category) || "",
             selectedBrandId: getId(product.brand) || "",
             selectedVehicleTypeId: getId(product.vehicleType) || "",
+            selectedDepartmentId: getId(product.department) || "",
             partNumber: product.partNumber || "",
-            department: product.department || "",
             weight: product.weight?.toString() || "",
             length: product.packageSize?.length?.toString() || "",
             breadth: product.packageSize?.breadth?.toString() || "",
@@ -342,11 +351,12 @@ const AddProduct: React.FC = () => {
     if (!formData.name.trim()) next.name = "Product name is required";
     if (!formData.selectedCategoryId) next.categoryId = "Select a category";
     if (!formData.selectedBrandId) next.brandId = "Select a brand";
+    // if (!formData.selectedDepartmentId) next.departmentId = "Select a department";
     if (formData.regularPrice === "" || Number(formData.regularPrice) <= 0)
       next.regularPrice = "Enter regular price";
     if (formData.displayPrice === "" || Number(formData.displayPrice) <= 0)
       next.displayPrice = "Enter display price";
-    
+
     // Check for images: either existing images or new files
     const hasImages =
       (formData.existingImages && formData.existingImages.length > 0) ||
@@ -359,7 +369,6 @@ const AddProduct: React.FC = () => {
     return Object.keys(next).length === 0;
   };
 
-  // submit as multipart/form-data (files + fields)
   const handleSubmit = async () => {
     if (uploadingAny) {
       setErrors((e) => ({
@@ -399,6 +408,79 @@ const AddProduct: React.FC = () => {
       }))
       .filter((t) => t.quantity > 0 && t.price > 0);
 
+    // Check if we have new images to upload
+    const hasNewImages = formData.imageFiles.some((f) => f instanceof File);
+
+    // For EDIT mode without new images, use JSON payload
+    if (isEditMode && !hasNewImages) {
+      const jsonPayload = {
+        name: formData.name.trim(),
+        category: formData.selectedCategoryId,
+        brand: formData.selectedBrandId,
+        ...(formData.selectedVehicleTypeId && {
+          vehicleType: formData.selectedVehicleTypeId,
+        }),
+        ...(formData.selectedDepartmentId && {
+          department: formData.selectedDepartmentId,
+        }),
+        briefDescription: formData.briefDescription?.trim() || "",
+        fullDescription: formData.fullDescription?.trim() || "",
+        description:
+          formData.description?.trim() ||
+          formData.fullDescription?.trim() ||
+          formData.briefDescription?.trim() ||
+          formData.name,
+        quantityInStock: num(formData.stock) ?? 0,
+        stockStatus: formData.stockStatus || "In Stock",
+        ...(formData.partNumber && { partNumber: formData.partNumber }),
+        ...(formData.units && { units: formData.units }),
+        ...(formData.sku && { sku: formData.sku }),
+        minStock: num(formData.minStock) ?? 0,
+        store: formData.storeName.trim(),
+        ...(formData.weight && { weight: num(formData.weight) ?? 0 }),
+        ...(formData.material && { material: formData.material }),
+        packageSize, // ✅ Send as object (not stringified)
+        regularPrice: regular,
+        salesPrice: sales,
+        ...(discPct != null && { discount: discPct }),
+        ...(discPx != null && { discountPrice: discPx }),
+        minOrderQuantity: num(formData.minOrderQuantity) ?? 1,
+        tieredPricingType: formData.tieredPricingType || "Fixed",
+        ...(tiered.length > 0 && { tieredPricing: tiered }), // ✅ Send as array (not stringified)
+        averageRating: 0,
+        numOfReviews: 0,
+        isFeatured: !!formData.isFeatured,
+        isNewArrival: !!formData.isNewArrival,
+        isDealOfTheDay: !!formData.isDealOfTheDay,
+        // Keep existing images if no new ones
+        ...(formData.existingImages &&
+          formData.existingImages.length > 0 && {
+            images: formData.existingImages,
+          }),
+      };
+
+      try {
+        await dispatch(
+          updateProduct({ id: productId!, data: jsonPayload as any })
+        ).unwrap();
+        console.log("✅ Update Response:", Response);
+      
+        // Refresh products list before navigating
+        await dispatch(fetchProducts());  
+        navigate("/admin/products");
+        return;
+      } catch (error: any) {
+        const msg =
+          error?.message ||
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          "Failed to update product.";
+        setErrors((e) => ({ ...e, submit: msg }));
+        return;
+      }
+    }
+
+    // For CREATE or EDIT with new images, use FormData
     const fd = new FormData();
 
     // required & core fields
@@ -407,6 +489,9 @@ const AddProduct: React.FC = () => {
     fd.append("brand", formData.selectedBrandId);
     if (formData.selectedVehicleTypeId)
       fd.append("vehicleType", formData.selectedVehicleTypeId);
+
+    if (formData.selectedDepartmentId)
+      fd.append("department", formData.selectedDepartmentId);
 
     // descriptions
     const briefDesc = formData.briefDescription?.trim() || "";
@@ -423,7 +508,6 @@ const AddProduct: React.FC = () => {
 
     // identifiers / misc
     if (formData.partNumber) fd.append("partNumber", formData.partNumber);
-    if (formData.department) fd.append("department", formData.department);
     if (formData.units) fd.append("units", formData.units);
     if (formData.sku) fd.append("sku", formData.sku);
     if (formData.minStock !== "" && formData.minStock != null)
@@ -431,17 +515,16 @@ const AddProduct: React.FC = () => {
 
     // store as STRING + createdBy
     fd.append("store", formData.storeName.trim());
-    fd.append("createdBy", createdById);
+    if (!isEditMode) fd.append("createdBy", createdById);
 
     // physical props
     if (formData.weight) fd.append("weight", String(num(formData.weight) ?? 0));
     if (formData.material) fd.append("material", formData.material);
 
-    // nested package size (send both JSON and dotted just in case)
-    fd.append("packageSize", JSON.stringify(packageSize));
-    // fd.append("packageSize.length", String(packageSize.length));
-    // fd.append("packageSize.breadth", String(packageSize.breadth));
-    // fd.append("packageSize.width", String(packageSize.width));
+    // nested package size using bracket notation
+    fd.append("packageSize[length]", String(packageSize.length));
+    fd.append("packageSize[breadth]", String(packageSize.breadth));
+    fd.append("packageSize[width]", String(packageSize.width));
 
     // pricing
     fd.append("regularPrice", String(regular));
@@ -455,10 +538,15 @@ const AddProduct: React.FC = () => {
         String(num(formData.minOrderQuantity) ?? 1)
       );
     fd.append("tieredPricingType", formData.tieredPricingType || "Fixed");
-    if (tiered.length) fd.append("tieredPricing", JSON.stringify(tiered));
 
-    fd.append("rating", "0"); // rating field (default 0)
-    fd.append("numReviews", "0"); // numReviews field (default 0)
+    // ✅ FIX: tiered pricing using bracket notation
+    tiered.forEach((tier, index) => {
+      fd.append(`tieredPricing[${index}][quantity]`, String(tier.quantity));
+      fd.append(`tieredPricing[${index}][price]`, String(tier.price));
+    });
+
+    fd.append("averageRating", "0");
+    fd.append("numOfReviews", "0");
 
     // flags
     fd.append("isFeatured", String(!!formData.isFeatured));
@@ -466,21 +554,27 @@ const AddProduct: React.FC = () => {
     fd.append("isDealOfTheDay", String(!!formData.isDealOfTheDay));
 
     // images (duplicate selection allowed)
-    const IMAGES_KEY = "images[]";
+    const IMAGES_KEY = "images";
     formData.imageFiles.forEach((f, i) => {
       if (f) fd.append(IMAGES_KEY, f, f.name || `image_${i}.jpg`);
     });
 
+    // If editing and we have existing images, preserve them
+    if (
+      isEditMode &&
+      formData.existingImages &&
+      formData.existingImages.length > 0
+    ) {
+      formData.existingImages.forEach((url, i) => {
+        fd.append(`existingImages[${i}]`, url);
+      });
+    }
+
     // DEBUG: inspect payload
-    for (const [k, v] of (fd as any).entries()) console.log("FD:", k, v);
-    console.log("Derived:", {
-      createdById,
-      store: formData.storeName,
-      category: formData.selectedCategoryId,
-      brand: formData.selectedBrandId,
-    });
-    console.log("Numbers:", { regular, sales, discPct, discPx, packageSize });
-    debugFormData(fd);
+    console.log("=== FormData Contents ===");
+    for (const [k, v] of (fd as any).entries()) {
+      console.log(`${k}:`, v instanceof File ? `File(${v.name})` : v);
+    }
 
     try {
       if (isEditMode) {
@@ -488,6 +582,7 @@ const AddProduct: React.FC = () => {
       } else {
         await dispatch(addProduct(fd)).unwrap();
       }
+      await dispatch(fetchProducts());
       navigate("/admin/products");
     } catch (error: any) {
       const msg =
@@ -500,11 +595,11 @@ const AddProduct: React.FC = () => {
   };
 
   // ---- UI helpers: image slot component ----
-  const ImageSlot: React.FC<{ slot: number; file: File | null; big?: boolean }> = ({
-    slot,
-    file,
-    big,
-  }) => {
+  const ImageSlot: React.FC<{
+    slot: number;
+    file: File | null;
+    big?: boolean;
+  }> = ({ slot, file, big }) => {
     const existingUrl = formData.existingImages?.[slot] ?? null;
     const preview = useObjectURL(file);
     const displayUrl = preview || existingUrl;
@@ -513,34 +608,6 @@ const AddProduct: React.FC = () => {
       ? "border border-primary"
       : "border border-primary border-dashed";
     return (
-      // <div
-      //   className={`relative ${base} flex items-center justify-center rounded-[12px] ${border}`}
-      // >
-      //   {file && preview ? (
-      //     <div className="w-full h-full relative">
-      //       <img
-      //         src={preview}
-      //         alt={`Preview ${slot + 1}`}
-      //         className="w-full h-full object-cover rounded"
-      //       />
-      //       <button
-      //         type="button"
-      //         onClick={() => removeImageAt(slot)}
-      //         className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
-      //       >
-      //         ×
-      //       </button>
-      //     </div>
-      //   ) : (
-      //     <FileUploader
-      //       onUpload={(f: File) => uploadImageAt(slot, f)}
-      //       onRemove={() => removeImageAt(slot)}
-      //     />
-      //   )}
-      //   {!!imageUploading[slot] && (
-      //     <span className="absolute bottom-2 right-2 text-xs">Uploading…</span>
-      //   )}
-      // </div>
       <div
         className={`relative ${base} flex items-center justify-center rounded-[12px] ${border}`}
       >
@@ -946,14 +1013,24 @@ const AddProduct: React.FC = () => {
                     >
                       Stock Status
                     </label>
-                    <input
+                    {/* <input
                       type="text"
                       id="stockStatus"
                       name="stockStatus"
                       value={formData.stockStatus}
                       onChange={handleInputChange}
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                    />
+                    /> */}
+                    <select
+                      id="stockStatus"
+                      name="stockStatus"
+                      value={formData.stockStatus || "In Stock"}
+                      onChange={handleInputChange}
+                      className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
+                    >
+                      <option value="In Stock">In Stock</option>
+                      <option value="Out of Stock">Out of Stock</option>
+                    </select>
                   </div>
                   <div className="flex flex-col w-full">
                     <label
@@ -966,8 +1043,9 @@ const AddProduct: React.FC = () => {
                       type="number"
                       id="quantityInStock"
                       name="stock"
-                      value={formData.stock as any}
+                      value={formData.stock}
                       onChange={handleInputChange}
+                      min="0"
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     />
                   </div>
@@ -1120,20 +1198,33 @@ const AddProduct: React.FC = () => {
               <div className="border border-[#D9D9D9] w-full p-4 rounded-[12px]">
                 <div className="flex flex-col">
                   <label
-                    htmlFor="department"
+                    htmlFor="vehicleType"
                     className="text-sm font-normal text-customBrown pb-2"
                   >
                     Department
                   </label>
-                  <input
-                    type="text"
+                  <select
                     id="department"
-                    name="department"
-                    value={formData.department}
+                    name="selectedDepartmentId"
+                    value={formData.selectedDepartmentId}
                     onChange={handleInputChange}
-                    placeholder="e.g., Auto Parts, Electronics"
                     className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
-                  />
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((d) => {
+                      const id = getId(d as any);
+                      return (
+                        <option key={id} value={id}>
+                          {d.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {errors.departmentId && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.departmentId}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-6 items-center mb-6 mt-6">
                   <div className="flex flex-col w-full">
@@ -1167,7 +1258,7 @@ const AddProduct: React.FC = () => {
                       className="border border-[#D9D9D9] focus:border-gray-600 focus:outline-none w-full p-4 rounded-[8px]"
                     >
                       <option value="Fixed">Fixed</option>
-                      <option value="Percentage">Percentage</option>
+                      <option value="Dynamic">Dynamic</option>
                     </select>
                   </div>
                 </div>
@@ -1280,14 +1371,7 @@ const AddProduct: React.FC = () => {
                 <Ban className="w-4" />
                 <span>Discard</span>
               </button>
-              <div className="flex items-center gap-5">
-                <button
-                  type="button"
-                  className="w-[115px] border border-primary flex gap-2 items-center py-3 px-2 rounded-[6px] hover:bg-primary text-sm font-semibold text-primary hover:text-white"
-                >
-                  <CalendarCheck className="w-6" />
-                  <span>Schedule</span>
-                </button>
+              <div>
                 <button
                   type="button"
                   onClick={handleSubmit}
@@ -1318,7 +1402,3 @@ const AddProduct: React.FC = () => {
 };
 
 export default AddProduct;
-
-// FileUploader contract (already in your app):
-// onUpload(file: File) must be called with the picked file.
-// onRemove() can be called to clear a slot.

@@ -1,7 +1,6 @@
 // src/store/slices/adminDashboardSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
-import { RootState } from "..";
 
 // Types
 export interface DashboardMetrics {
@@ -32,7 +31,7 @@ function parseUsersList(data: any): User[] {
   if (Array.isArray(data)) return data as User[];
   if (Array.isArray(data?.users)) return data.users as User[];
   if (Array.isArray(data?.data?.users)) return data.data.users as User[];
-  // If API returns a single user instead of a list by mistake, wrap it
+  // If API returns a single user instead of a list by mistake
   if (data && typeof data === "object" && data._id) return [data as User];
   throw new Error("Invalid users payload");
 }
@@ -77,6 +76,7 @@ export interface Product {
   stock?: number;
   quantity?: number;
   minStock?: number;
+  department?: string;
 }
 
 // Product creation interface
@@ -132,7 +132,7 @@ export interface BackendProduct {
   description?: string;
   partNumber?: string;
   category: string; // id
-  department?: string;
+  department?: string; // id
   brand: string; // id
   vehicleType?: string; // id
   weight?: number;
@@ -199,6 +199,18 @@ export interface ProductVehicleType {
   updatedAt: string;
 }
 
+export interface CreateProductDepartment {
+  name: string;
+}
+
+// Vehicle interface
+export interface ProductDepartment {
+  _id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // API Response Types (matching Swagger)
 interface UsersCountResponse {
   userCount: number;
@@ -231,6 +243,13 @@ interface VehicleCreateResponse {
   vehicle: ProductVehicleType;
 }
 
+interface DepartmentsResponse {
+  departments: ProductDepartment[];
+}
+interface DepartmentCreateResponse {
+  department: ProductDepartment;
+}
+
 export interface AdminDashboardState {
   metrics: DashboardMetrics | null;
   users: User[];
@@ -241,6 +260,7 @@ export interface AdminDashboardState {
   categories: ProductCategory[];
   brands: ProductBrand[];
   vehicles: ProductVehicleType[];
+  departments: ProductDepartment[];
   loading: {
     metrics: boolean;
     users: boolean;
@@ -261,6 +281,9 @@ export interface AdminDashboardState {
     addProductVehicleType: boolean;
     updateProductVehicleType: boolean;
     vehicles: boolean;
+    addProductDepartment: boolean;
+    updateProductDepartment: boolean;
+    departments: boolean;
     selectedProduct: boolean;
   };
   error: {
@@ -283,8 +306,11 @@ export interface AdminDashboardState {
     addProductVehicleType: string | null;
     updateProductVehicleType: string | null;
     vehicles: string | null;
-    error: string | null; // ✅ ensure this exists
-    selectedProduct: any | null; 
+    addProductDepartment: string | null;
+    updateProductDepartment: string | null;
+    departments: string | null;
+    error: string | null;
+    selectedProduct: any | null;
   };
 }
 
@@ -296,6 +322,7 @@ const initialState: AdminDashboardState = {
   categories: [],
   brands: [],
   vehicles: [],
+  departments: [],
   users: [],
   userDetails: null,
   loading: {
@@ -314,6 +341,9 @@ const initialState: AdminDashboardState = {
     addProductVehicleType: false,
     updateProductVehicleType: false,
     vehicles: false,
+    addProductDepartment: false,
+    updateProductDepartment: false,
+    departments: false,
     users: false,
     user: false,
     fetchProductById: false,
@@ -337,9 +367,12 @@ const initialState: AdminDashboardState = {
     updateProductCategory: null,
     updateProductVehicleType: null,
     vehicles: null,
+    addProductDepartment: null,
+    updateProductDepartment: null,
+    departments: null,
     users: null,
     user: null,
-    fetchProductById: null, 
+    fetchProductById: null,
     updateProduct: null,
     selectedProduct: null,
   },
@@ -540,36 +573,6 @@ export const fetchUserById = createAsyncThunk<
   }
 });
 
-// All Product
-export const fetchAllProducts = createAsyncThunk(
-  "adminDashboard/products",
-  async (_, { rejectWithValue }) => {
-    try {
-      // Fetch products - using the correct response structure from Swagger
-      const response = await axiosInstance.get<ProductsResponse>("/products");
-
-      // Handle both possible response structures
-      const products = response.data.products || response.data || [];
-
-      if (!Array.isArray(products)) {
-        throw new Error("Invalid products data received");
-      }
-
-      return products as Product[];
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        return rejectWithValue(error.response.data.message);
-      }
-      if (error.response?.data?.error) {
-        return rejectWithValue(error.response.data.error);
-      }
-      return rejectWithValue(
-        "Failed to fetch low stock products. Please try again."
-      );
-    }
-  }
-);
-
 // fetch categories thunk
 export const fetchAllCategories = createAsyncThunk(
   "adminDashboard/categories",
@@ -650,6 +653,33 @@ export const fetchAllVehiclesType = createAsyncThunk(
   }
 );
 
+export const fetchAllDepartments = createAsyncThunk(
+  "adminDashboard/departments",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get<
+        DepartmentsResponse | ProductDepartment[]
+      >("/departments");
+
+      const departments: ProductDepartment[] = Array.isArray(res.data)
+        ? res.data
+        : res.data.departments;
+
+      if (!Array.isArray(departments)) {
+        throw new Error("Invalid departments data received");
+      }
+      console.log(departments);
+      return departments;
+    } catch (error: any) {
+      if (error.response?.data?.message)
+        return rejectWithValue(error.response.data.message);
+      if (error.response?.data?.error)
+        return rejectWithValue(error.response.data.error);
+      return rejectWithValue("Failed to fetch departments. Please try again.");
+    }
+  }
+);
+
 export const addProductCategory = createAsyncThunk(
   "adminDashboard/addProductCategory",
   async (categoryData: CreateProductCategory, { rejectWithValue }) => {
@@ -715,6 +745,29 @@ export const addProductVehicleType = createAsyncThunk(
         return rejectWithValue(error.response.data.error);
       }
       return rejectWithValue("Failed to add vehicle. Please try again.");
+    }
+  }
+);
+
+export const addProductDepartment = createAsyncThunk(
+  "adminDashboard/addProductDepartment",
+  async (departmentData: CreateProductDepartment, { rejectWithValue }) => {
+    try {
+      // Make POST request to create department
+      const response = await axiosInstance.post<DepartmentCreateResponse>(
+        "/departments",
+        departmentData
+      );
+
+      return response.data.department;
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      }
+      if (error.response?.data?.error) {
+        return rejectWithValue(error.response.data.error);
+      }
+      return rejectWithValue("Failed to add department. Please try again.");
     }
   }
 );
@@ -815,7 +868,7 @@ export const deleteProductBrand = createAsyncThunk<
   }
 });
 
-// update product brand
+// update product vehicle type
 export interface UpdateProductVehicleType {
   name?: string;
 }
@@ -862,6 +915,51 @@ export const deleteProductVehicleType = createAsyncThunk<
   }
 );
 
+// update product vehicle type
+export interface UpdateProductDepartment {
+  name?: string;
+}
+// UPDATE department
+export const updateProductDepartment = createAsyncThunk<
+  ProductDepartment,
+  { id: string; data: UpdateProductDepartment },
+  { rejectValue: string }
+>(
+  "adminDashboard/updateProductDepartment",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.put(`/departments/${id}`, data);
+      const department = res.data;
+      if (!department)
+        return rejectWithValue("Invalid department-type payload");
+      return department;
+    } catch (err: any) {
+      if (err.response?.data?.message)
+        return rejectWithValue(err.response.data.message);
+      if (err.response?.data?.error)
+        return rejectWithValue(err.response.data.error);
+      return rejectWithValue("Failed to update department.");
+    }
+  }
+);
+
+export const deleteProductDepartment = createAsyncThunk<
+  string, // we return the deleted id
+  string, // id
+  { rejectValue: string }
+>("adminDashboard/deleteProductDepartment", async (id, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/departments/${id}`);
+    return id;
+  } catch (err: any) {
+    if (err.response?.data?.message)
+      return rejectWithValue(err.response.data.message);
+    if (err.response?.data?.error)
+      return rejectWithValue(err.response.data.error);
+    return rejectWithValue("Failed to delete department.");
+  }
+});
+
 export const deleteProduct = createAsyncThunk(
   "adminDashboard/deleteProduct",
   async (productId: string, { rejectWithValue }) => {
@@ -884,35 +982,41 @@ export const deleteProduct = createAsyncThunk(
 
 export const addProduct = createAsyncThunk(
   "adminDashboard/addProduct",
-  async (productData: FormData, { rejectWithValue }) => {
+  async (data: FormData | Record<string, any>, { rejectWithValue }) => {
     try {
-      // Make POST request with FormData
-      const response = await axiosInstance.post<{ product: BackendProduct }>(
+      const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+
+      const res = await axiosInstance.post<{ product: BackendProduct }>(
         "/products",
-        productData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        data,
+        {
+          ...(isFormData && {
+            headers: { "Content-Type": "multipart/form-data" },
+          }),
+        }
       );
-      return response.data.product;
+
+      // The API returns { product: {...} }
+      console.log("Add product response:", res.data.product);
+      
+      return res.data.product;
     } catch (error: any) {
       console.error(
         "Add product error:",
-        error.response?.data || error.message
+        error?.response?.data || error?.message
       );
 
-      if (error.response?.data?.message) {
-        return rejectWithValue(error.response.data.message);
-      }
-      if (error.response?.data?.error) {
-        return rejectWithValue(error.response.data.error);
-      }
-      return rejectWithValue("Failed to add product. Please try again.");
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to add product. Please try again.";
+      return rejectWithValue(msg);
     }
   }
 );
 
-// Add these to your adminDashboardSlice.ts
 
-// Fetch single product by ID
 export const fetchProductById = createAsyncThunk(
   "adminDashboard/fetchProductById",
   async (id: string, { rejectWithValue }) => {
@@ -925,25 +1029,38 @@ export const fetchProductById = createAsyncThunk(
       // return response.data;
       const response = await axiosInstance.get(`/products/${id}`);
       return response.data; // return the product data
-      console.log(response.data);
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// Update a product
 export const updateProduct = createAsyncThunk(
   "adminDashboard/updateProduct",
-  async ({ id, data }: { id: string; data: FormData }, { rejectWithValue }) => {
+  async (
+    { id, data }: { id: string; data: FormData | Record<string, any> }, 
+    { rejectWithValue }
+  ) => {
     try {
+      const isFormData = data instanceof FormData;
+      
       const response = await axiosInstance.put(`/products/${id}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
+        // Only set multipart header if it's FormData
+        ...(isFormData && { 
+          headers: { 
+            "Content-Type": "multipart/form-data" 
+          } 
+        }),
       });
+      
       return response.data;
     } catch (error: any) {
+      console.error("Update product error:", error.response?.data || error.message);
+      
       return rejectWithValue(
-        error.response?.data?.message || "Failed to update product"
+        error.response?.data?.message || 
+        error.response?.data?.error ||
+        "Failed to update product"
       );
     }
   }
@@ -1037,6 +1154,9 @@ const adminDashboardSlice = createSlice({
         addProductVehicleType: null,
         updateProductVehicleType: null,
         vehicles: null,
+        addProductDepartment: null,
+        updateProductDepartment: null,
+        departments: null,
         selectedProduct: null,
         error: null,
       };
@@ -1063,6 +1183,9 @@ const adminDashboardSlice = createSlice({
         addProductVehicleType: true,
         updateProductVehicleType: true,
         vehicles: true,
+        addProductDepartment: true,
+        updateProductDepartment: true,
+        departments: true,
         selectedProduct: true,
       };
     },
@@ -1149,20 +1272,6 @@ const adminDashboardSlice = createSlice({
       state.loading.user = false;
       state.error.user = (action.payload as string) ?? "Failed to fetch user.";
     });
-
-    //Fetch all products
-    builder.addCase(fetchAllProducts.pending, (state) => {
-      state.loading.products = true;
-      state.error.products = null;
-    });
-    builder.addCase(fetchAllProducts.fulfilled, (state, action) => {
-      state.loading.products = false;
-      state.products = action.payload;
-    });
-    builder.addCase(fetchAllProducts.rejected, (state, action) => {
-      state.loading.products = false;
-      state.error.products = action.payload as string;
-    });
     // Fetch all categories
     builder.addCase(fetchAllCategories.pending, (state) => {
       state.loading.categories = true;
@@ -1188,6 +1297,7 @@ const adminDashboardSlice = createSlice({
       state.products = state.products.filter(
         (product) => product._id !== action.payload
       );
+      state.error.deleteProduct = null;
     });
     builder.addCase(deleteProduct.rejected, (state, action) => {
       state.loading.deleteProduct = false;
@@ -1198,28 +1308,30 @@ const adminDashboardSlice = createSlice({
       state.loading.addProduct = true;
       state.error.addProduct = null;
     });
+
     builder.addCase(addProduct.fulfilled, (state, action) => {
       state.loading.addProduct = false;
       const p = action.payload as unknown as BackendProduct;
-
+    
       const uiProduct: Product = {
         _id: p._id,
         name: p.name,
-        displayPrice: p.salesPrice, // map salesPrice -> displayPrice
+        displayPrice: p.salesPrice,
         regularPrice: p.regularPrice,
         numReviews: p.numReviews ?? 0,
         rating: p.rating ?? 0,
         image: p.images?.[0] ?? "",
-        categoryName:
-          state.categories.find((c) => c._id === p.category)?.name ?? "",
-        brandName: state.brands.find((b) => b._id === p.brand)?.name ?? "",
+        categoryName: state.categories.find(c => c._id === p.category)?.name ?? "",
+        brandName: state.brands.find(b => b._id === p.brand)?.name ?? "",
+        department: state.departments.find(d => d._id === p.department)?.name ?? "",
         stock: p.quantityInStock,
         minStock: p.minStock,
       };
-
+    
+      if (!Array.isArray(state.products)) state.products = [];
       state.products.unshift(uiProduct);
-    });
-
+    });   
+    
     builder.addCase(addProduct.rejected, (state, action) => {
       state.loading.addProduct = false;
       state.error.addProduct = action.payload as string;
@@ -1229,16 +1341,15 @@ const adminDashboardSlice = createSlice({
     builder.addCase(fetchProductById.pending, (state) => {
       state.loading.fetchProductById = true;
       state.error.fetchProductById = null;
-    })
+    });
     builder.addCase(fetchProductById.fulfilled, (state, action) => {
       state.loading.fetchProductById = false;
       state.products = action.payload.data || action.payload;
-    })
+    });
     builder.addCase(fetchProductById.rejected, (state, action) => {
       state.loading.fetchProductById = false;
       state.error.fetchProductById = action.payload as string;
     });
-    
 
     // --- Update product ---
     builder.addCase(updateProduct.pending, (state) => {
@@ -1287,6 +1398,7 @@ const adminDashboardSlice = createSlice({
       state.loading.addProductBrand = false;
       state.error.addProductBrand = action.payload as string;
     });
+
     // Add product Vehicle Type
     builder.addCase(addProductVehicleType.pending, (state) => {
       state.loading.addProductVehicleType = true;
@@ -1300,6 +1412,22 @@ const adminDashboardSlice = createSlice({
       state.loading.addProductVehicleType = false;
       state.error.addProductVehicleType = action.payload as string;
     });
+
+    // Add product Department
+    builder.addCase(addProductDepartment.pending, (state) => {
+      state.loading.addProductDepartment = true;
+      state.error.addProductDepartment = null;
+    });
+    builder.addCase(addProductDepartment.fulfilled, (state, action) => {
+      state.loading.addProductDepartment = false;
+      state.departments.push(action.payload);
+    });
+    builder.addCase(addProductDepartment.rejected, (state, action) => {
+      state.loading.addProductDepartment = false;
+      state.error.addProductDepartment = action.payload as string;
+    });
+
+    // fetch all brands
     builder.addCase(fetchAllBrands.pending, (state) => {
       state.loading.brands = true;
       state.error.brands = null;
@@ -1313,6 +1441,7 @@ const adminDashboardSlice = createSlice({
       state.error.brands = action.payload as string;
     });
 
+    // fetch all vehicle type
     builder.addCase(fetchAllVehiclesType.pending, (state) => {
       state.loading.vehicles = true;
       state.error.vehicles = null;
@@ -1325,6 +1454,56 @@ const adminDashboardSlice = createSlice({
       state.loading.vehicles = false;
       state.error.vehicles = action.payload as string;
     });
+
+    // fetch all department
+    builder.addCase(fetchAllDepartments.pending, (state) => {
+      state.loading.departments = true;
+      state.error.departments = null;
+    });
+    builder.addCase(fetchAllDepartments.fulfilled, (state, action) => {
+      state.loading.departments = false;
+      state.departments = action.payload;
+    });
+    builder.addCase(fetchAllDepartments.rejected, (state, action) => {
+      state.loading.departments = false;
+      state.error.departments = action.payload as string;
+    });
+
+    // UPDATE DEPARTMENT
+    builder
+      .addCase(updateProductDepartment.pending, (state) => {
+        state.loading.updateProductDepartment = true; // Use specific key
+        state.error.updateProductDepartment = null;
+      })
+      .addCase(updateProductDepartment.fulfilled, (state, action) => {
+        state.loading.updateProductDepartment = false;
+        const updated = action.payload;
+        const idx = state.departments.findIndex((d) => d._id === updated._id);
+        if (idx !== -1) state.departments[idx] = updated;
+      })
+      .addCase(updateProductDepartment.rejected, (state, action) => {
+        state.loading.updateProductDepartment = false;
+        state.error.updateProductDepartment =
+          (action.payload as string) ?? "Failed to update department.";
+      });
+
+    // DELETE DEPARTMENT
+    builder
+      .addCase(deleteProductDepartment.pending, (state) => {
+        state.loading.departments = true;
+        state.error.departments = null;
+      })
+      .addCase(deleteProductDepartment.fulfilled, (state, action) => {
+        state.loading.departments = false;
+        const id = action.payload;
+        state.departments = state.departments.filter((d) => d._id !== id);
+      })
+      .addCase(deleteProductDepartment.rejected, (state, action) => {
+        state.loading.departments = false;
+        state.error.departments =
+          (action.payload as string) ?? "Failed to delete department.";
+      });
+
     // UPDATE CATEGORY
     builder
       .addCase(updateProductCategory.pending, (state) => {

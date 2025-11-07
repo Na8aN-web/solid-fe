@@ -48,7 +48,7 @@ export const fetchProducts = createAsyncThunk(
       maxPrice?: number;
       page?: number;
       limit?: number;
-      sortBy?: string; // NEW: Add sortBy parameter
+      sortBy?: string;
     } | void,
     { rejectWithValue, getState }
   ) => {
@@ -56,7 +56,7 @@ export const fetchProducts = createAsyncThunk(
       const state = getState() as { products: ProductState };
       const currentPage = filters?.page || state.products.currentPage;
       const itemsPerPage = filters?.limit || state.products.itemsPerPage;
-      const sortBy = filters?.sortBy || state.products.sortBy; // NEW: Get sortBy
+      const sortBy = filters?.sortBy || state.products.sortBy;
 
       const params = new URLSearchParams();
 
@@ -64,27 +64,32 @@ export const fetchProducts = createAsyncThunk(
       params.append('page', currentPage.toString());
       params.append('limit', itemsPerPage.toString());
 
-      // NEW: Add sorting parameter
+      // Add sorting parameter (use 'sort' not 'sortBy' for backend)
       if (sortBy) {
         params.append('sort', sortBy);
       }
 
+      // Add filters - each category ID as separate param
       if (filters?.categories && filters.categories.length > 0) {
         filters.categories.forEach(cat => params.append('category', cat));
       }
 
+      // Add brand filters - each brand ID as separate param
       if (filters?.brands && filters.brands.length > 0) {
         filters.brands.forEach(brand => params.append('brand', brand));
       }
 
+      // Add vehicle type filters
       if (filters?.vehicleTypes && filters.vehicleTypes.length > 0) {
         filters.vehicleTypes.forEach(type => params.append('vehicleType', type));
       }
 
+      // Add department filters
       if (filters?.departments && filters.departments.length > 0) {
         filters.departments.forEach(dept => params.append('department', dept));
       }
 
+      // Add price range filters
       if (filters?.minPrice !== undefined) {
         params.append('minPrice', filters.minPrice.toString());
       }
@@ -96,9 +101,21 @@ export const fetchProducts = createAsyncThunk(
       const queryString = params.toString();
       const url = queryString ? `/products?${queryString}` : '/products';
 
+      console.log('API Request URL:', url);
+      console.log('Query params:', Object.fromEntries(params.entries()));
+
       const response = await axiosInstance.get<ProductsResponse>(url);
+      
+      console.log('API Response:', {
+        totalProducts: response.data.pagination?.total,
+        productsCount: response.data.products?.length,
+        filterData: response.data.filter_data,
+      });
+
       return response.data;
     } catch (error: any) {
+      console.error('Fetch products error:', error.response?.data || error.message);
+      
       if (error.response) {
         return rejectWithValue(
           error.response.data.message || "Failed to fetch products"
@@ -111,30 +128,51 @@ export const fetchProducts = createAsyncThunk(
 
 export const searchProducts = createAsyncThunk<
   ProductsResponse,
-  SearchProductsQuery & { sortBy?: string } // NEW: Add sortBy to search
+  SearchProductsQuery & { 
+    sortBy?: string;
+    categories?: string[];
+    brands?: string[];
+  }
 >("products/search", async (params, { rejectWithValue, getState }) => {
   try {
     const state = getState() as { products: ProductState };
     const page = params.page || state.products.currentPage;
     const limit = params.limit || state.products.itemsPerPage;
-    const sortBy = params.sortBy || state.products.sortBy; // NEW: Get sortBy
+    const sortBy = params.sortBy || state.products.sortBy;
 
-    const requestParams: any = {
-      ...params,
-      page,
-      limit
-    };
-
-    if (sortBy && sortBy.trim() !== "") {
-      requestParams.sort = sortBy;
+    const requestParams = new URLSearchParams();
+    
+    // Add search name
+    if (params.name) {
+      requestParams.append('name', params.name);
     }
 
-    const { data } = await axiosInstance.get<ProductsResponse>(
-      "/products/search",
-      { params: requestParams }
-    );
+    // Add pagination
+    requestParams.append('page', page.toString());
+    requestParams.append('limit', limit.toString());
+
+    // Add sorting (use 'sort' not 'sortBy')
+    if (sortBy && sortBy.trim() !== "") {
+      requestParams.append('sort', sortBy);
+    }
+
+    // Add category filters
+    if (params.categories && params.categories.length > 0) {
+      params.categories.forEach(cat => requestParams.append('category', cat));
+    }
+
+    // Add brand filters
+    if (params.brands && params.brands.length > 0) {
+      params.brands.forEach(brand => requestParams.append('brand', brand));
+    }
+
+    const url = `/products/search?${requestParams.toString()}`;
+    console.log('Search URL:', url);
+
+    const { data } = await axiosInstance.get<ProductsResponse>(url);
     return data;
   } catch (err: any) {
+    console.error('Search products error:', err?.response?.data || err?.message);
     return rejectWithValue(
       err?.response?.data ?? { message: "Failed to search products" }
     );
@@ -241,31 +279,34 @@ export const dealsOfTheDay = createAsyncThunk<NewProduct[]>(
 
 export const fetchProductsByCategory = createAsyncThunk<
   ProductsResponse,
-  { categoryId: string; page?: number; limit?: number }, // Change to object with pagination
+  { categoryId: string; page?: number; limit?: number },
   { rejectValue: string }
->("products/fetchByCategory", async ({ categoryId, page, limit }, { rejectWithValue, getState }) => {
-  try {
-    const state = getState() as { products: ProductState };
-    const currentPage = page || state.products.currentPage;
-    const itemsPerPage = limit || state.products.itemsPerPage;
+>(
+  "products/fetchByCategory",
+  async ({ categoryId, page, limit }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as { products: ProductState };
+      const currentPage = page || state.products.currentPage;
+      const itemsPerPage = limit || state.products.itemsPerPage;
 
-    const params = new URLSearchParams();
-    params.append('page', currentPage.toString());
-    params.append('limit', itemsPerPage.toString());
+      const params = new URLSearchParams();
+      params.append("page", currentPage.toString());
+      params.append("limit", itemsPerPage.toString());
 
-    const response = await axiosInstance.get<ProductsResponse>(
-      `/products/category/${categoryId}?${params.toString()}`
-    );
-    return response.data;
-  } catch (err: any) {
-    return rejectWithValue(
-      err.response?.data.message || "Failed to fetch products by category"
-    );
+      const response = await axiosInstance.get<ProductsResponse>(
+        `/products/category/${categoryId}?${params.toString()}`
+      );
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data.message || "Failed to fetch products by category"
+      );
+    }
   }
-});
+);
 
 export const fetchProductsByBrand = createAsyncThunk<
-  ProductsResponse, // Change from Product[] to ProductsResponse
+  ProductsResponse,
   string,
   { rejectValue: string }
 >("products/fetchByBrand", async (brandName, { rejectWithValue }) => {
