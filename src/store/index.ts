@@ -8,7 +8,9 @@ import vehicleReducer from './slices/vehicleSlice'
 import wishlistReducer from './slices/wishlistSlice'
 import cartReducer from './slices/cartSlice'
 import kycReducer from './slices/kycSlice'
+import departmentReducer from './slices/departmentSlice'
 import adminDashboardReducer from './slices/adminDashboardSlice'
+import { deprecate } from 'util';
 
 
 export const store = configureStore({
@@ -16,6 +18,7 @@ export const store = configureStore({
     auth: authReducer,
     products: productReducer,
     brands: brandReducer, 
+    departments: departmentReducer,
     categories: categoriesReducer,
     vehicle: vehicleReducer,
     wishlist: wishlistReducer,

@@ -1,4 +1,3 @@
-// src/services/products/types.ts
 export interface Product {
   categoryName: any;
   regularPrice: any;
@@ -17,6 +16,9 @@ export interface Product {
   rating: number;
   discount: number;
   favorite: boolean;
+  brandName?: string;
+  stock?: number;
+  quantity?: number;
 }
 
 export interface PaginationMeta {
@@ -29,12 +31,20 @@ export interface PaginationMeta {
 
 export interface ProductsResponse {
   products: Product[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-    totalPages: number;
+  pagination: PaginationMeta;
+  filter_data?: {
+    categories: string[];
+    brands: string[];
+    departments: string[];
+    models: string[];
+    vehicleTypes: string[];
+    years: string[];
+  };
+  sorting_options?: {
+    name_asc: string;
+    price_asc: string;
+    price_desc: string;
+    rating_desc: string;
   };
 }
 
@@ -58,6 +68,7 @@ export interface ProductState {
     maxPrice: number;
   };
   sortBy: string;
+
 }
 
 export interface NewProduct {
