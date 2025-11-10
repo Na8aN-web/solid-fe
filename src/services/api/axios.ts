@@ -15,6 +15,17 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    if (config.method?.toLowerCase() === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now(),
+      };
+    }
+
+    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    config.headers['Pragma'] = 'no-cache';
+    config.headers['Expires'] = '0';
+    
     return config;
   },
   (error) => {

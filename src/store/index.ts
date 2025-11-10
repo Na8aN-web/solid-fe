@@ -11,6 +11,7 @@ import kycReducer from './slices/kycSlice'
 import departmentReducer from './slices/departmentSlice'
 import adminDashboardReducer from './slices/adminDashboardSlice'
 import { deprecate } from 'util';
+import addressReducer from './slices/addressSlice'
 
 
 export const store = configureStore({
@@ -24,7 +25,8 @@ export const store = configureStore({
     wishlist: wishlistReducer,
     cart: cartReducer,
     kyc: kycReducer,
-    adminDashboard: adminDashboardReducer
+    adminDashboard: adminDashboardReducer,
+    address: addressReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

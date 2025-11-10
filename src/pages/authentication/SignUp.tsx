@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { registerUser, prepareSignupData, clearError, initiateGoogleLogin } from '../../store/slices/authSlice';
+import { syncGuestCartToBackend } from '../../store/slices/cartSlice';
 
 interface SignupFormData {
     // Personal/Individual fields
@@ -11,7 +12,7 @@ interface SignupFormData {
     phoneNumber?: string;
     email?: string;
     companyName?: string;
-    
+
     // Business-specific fields
     businessOwnerName?: string;
     businessPhoneNumber?: string;
@@ -20,7 +21,7 @@ interface SignupFormData {
     businessAddress?: string;
     businessRCNumber?: string;
     businessWebsite?: string;
-    
+
     password: string;
     termsAccepted: boolean;
 }
@@ -46,16 +47,16 @@ const SignupScreen: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
-    
+
     const dispatch = useAppDispatch();
-    const { 
-        selectedAccountType, 
-        isLoading, 
-        error, 
+    const {
+        selectedAccountType,
+        isLoading,
+        error,
         isAuthenticated,
-        emailVerification 
+        emailVerification
     } = useAppSelector(state => state.auth);
-    
+
     const [passwordRequirements, setPasswordRequirements] = useState({
         minLength: false,
         hasNumber: false,
@@ -66,7 +67,7 @@ const SignupScreen: React.FC = () => {
     useEffect(() => {
         // Clear previous errors when component mounts
         dispatch(clearError());
-        
+
         // Redirect if no account type is selected
         if (!selectedAccountType) {
             navigate('/account-type');
@@ -104,51 +105,70 @@ const SignupScreen: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!selectedAccountType) {
             navigate('/account-type');
             return;
         }
-        
-        // Prepare the data for submission
-        const signupData = prepareSignupData(selectedAccountType, formData);
-        
-        // Dispatch the register action
-        dispatch(registerUser(signupData));
-    };
 
+        try {
+            // Prepare the data for submission
+            const signupData = prepareSignupData(selectedAccountType, formData);
+
+            // Dispatch the register action and wait for it
+            await dispatch(registerUser(signupData)).unwrap();
+
+            // After successful registration, sync guest cart
+            // Note: Only sync if not requiring email verification
+            if (!emailVerification.isRequired) {
+                await dispatch(syncGuestCartToBackend()).unwrap();
+
+                // Check if user came from checkout
+                const shouldRedirectToCheckout = sessionStorage.getItem('checkout_redirect');
+
+                if (shouldRedirectToCheckout) {
+                    sessionStorage.removeItem('checkout_redirect');
+                    navigate('/checkout');
+                }
+            }
+            // If email verification is required, the useEffect will handle navigation
+        } catch (error) {
+            console.error('Signup or cart sync failed:', error);
+            // Error is already handled by Redux
+        }
+    };
     const handleGoogleSignup = () => {
         dispatch(initiateGoogleLogin());
     };
 
     const isFormValid = () => {
-    const passwordValid = Object.values(passwordRequirements).every(Boolean);
-    const termsAccepted = formData.termsAccepted;
-    const passwordFilled = formData.password;
+        const passwordValid = Object.values(passwordRequirements).every(Boolean);
+        const termsAccepted = formData.termsAccepted;
+        const passwordFilled = formData.password;
 
-    if (selectedAccountType === 'sub-distributors') {
-        // Business form validation - required fields only
-        return (
-            formData.businessOwnerName &&
-            formData.businessPhoneNumber &&
-            formData.businessEmail &&
-            passwordFilled &&
-            termsAccepted &&
-            passwordValid
-        );
-    } else {
-        // Individual/Mechanic form validation
-        return (
-            formData.firstName &&
-            formData.lastName &&
-            formData.phoneNumber &&
-            formData.email &&
-            passwordFilled &&
-            termsAccepted &&
-            passwordValid
-        );
-    }
-};
+        if (selectedAccountType === 'sub-distributors') {
+            // Business form validation - required fields only
+            return (
+                formData.businessOwnerName &&
+                formData.businessPhoneNumber &&
+                formData.businessEmail &&
+                passwordFilled &&
+                termsAccepted &&
+                passwordValid
+            );
+        } else {
+            // Individual/Mechanic form validation
+            return (
+                formData.firstName &&
+                formData.lastName &&
+                formData.phoneNumber &&
+                formData.email &&
+                passwordFilled &&
+                termsAccepted &&
+                passwordValid
+            );
+        }
+    };
 
     const renderBusinessForm = () => (
         <>
@@ -352,7 +372,7 @@ const SignupScreen: React.FC = () => {
             <div className="min-h-screen bg-white flex items-center justify-center p-0 md:p-4 font-roboto">
                 <div className="w-full max-w-[600px] bg-white rounded-lg md:border border-[#D9D9D9] shadow-md p-[20px] md:p-[60px]">
                     <div className="flex items-center mb-6">
-                        <button 
+                        <button
                             className="mr-4 text-gray-600 hover:text-gray-800"
                             onClick={() => navigate('/account-type')}
                         >
@@ -374,8 +394,8 @@ const SignupScreen: React.FC = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Render different forms based on account type */}
-                        {selectedAccountType === 'sub-distributors' 
-                            ? renderBusinessForm() 
+                        {selectedAccountType === 'sub-distributors'
+                            ? renderBusinessForm()
                             : renderIndividualForm()
                         }
 
@@ -471,7 +491,7 @@ const SignupScreen: React.FC = () => {
                             <hr className="flex-grow border-t border-gray-300" />
                         </div>
                         <div className="mt-4 flex flex-col md:flex-row items-center justify-center gap-4">
-                            <button 
+                            <button
                                 type="button"
                                 onClick={handleGoogleSignup}
                                 disabled={isLoading}

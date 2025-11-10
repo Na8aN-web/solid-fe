@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { syncGuestCartToBackend } from "../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { loginUser, clearError, initiateGoogleLogin } from "../../store/slices/authSlice";
 
@@ -18,6 +19,7 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
@@ -31,10 +33,11 @@ const Login = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isSyncing) {
+      // Don't navigate yet if we're still syncing cart
       navigate("/home");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isSyncing, navigate]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,12 +50,53 @@ const Login = () => {
     handleLogin(email, password);
   };
 
-  const handleLogin = (emailOrPhone: string, password: string) => {
-    dispatch(loginUser({ email: emailOrPhone, password }));
+  const handleLogin = async (emailOrPhone: string, password: string) => {
+    try {
+      setIsSyncing(true);
+      
+      // Dispatch login and wait for it to complete
+      await dispatch(loginUser({ email: emailOrPhone, password })).unwrap();
+      
+      // After successful login, sync guest cart to backend
+      console.log('Login successful, syncing guest cart...');
+      await dispatch(syncGuestCartToBackend()).unwrap();
+      console.log('Guest cart synced successfully');
+      
+      // Check if user came from checkout
+      const shouldRedirectToCheckout = sessionStorage.getItem('checkout_redirect');
+      
+      if (shouldRedirectToCheckout) {
+        sessionStorage.removeItem('checkout_redirect');
+        navigate('/checkout');
+      } else {
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error('Login or cart sync failed:', error);
+      // Error is already handled by Redux
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    dispatch(initiateGoogleLogin());
+  const handleGoogleLogin = async () => {
+    try {
+      setIsSyncing(true);
+      await dispatch(initiateGoogleLogin()).unwrap();
+      
+      // Sync cart after Google login
+      await dispatch(syncGuestCartToBackend()).unwrap();
+      
+      const shouldRedirectToCheckout = sessionStorage.getItem('checkout_redirect');
+      if (shouldRedirectToCheckout) {
+        sessionStorage.removeItem('checkout_redirect');
+        navigate('/checkout');
+      }
+    } catch (error) {
+      console.error('Google login or cart sync failed:', error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -116,10 +160,10 @@ const Login = () => {
             </div>
             <button
               type="submit"
-              className="bg-primary rounded-lg p-4 w-full text-base text-white"
-              disabled={isLoading}
+              className="bg-primary rounded-lg p-4 w-full text-base text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || isSyncing}
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? "Logging in..." : isSyncing ? "Syncing cart..." : "Login"}
             </button>
           </form>
           <p className="text-center text-sm text-black py-4">
@@ -136,12 +180,12 @@ const Login = () => {
           <div className="flex flex-col gap-4 lg:flex-row">
             <button
               onClick={handleGoogleLogin}
-              disabled={isLoading}
+              disabled={isLoading || isSyncing}
               type="button"
               className="flex items-center justify-center gap-3 border border-[#6558F5] rounded-xl py-5 lg:py-4 w-full hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <img src="/google.svg" alt="Google" />
-              <p>Continue with Google</p>
+              <p>{isSyncing ? "Syncing cart..." : "Continue with Google"}</p>
             </button>
           </div>
         </div>

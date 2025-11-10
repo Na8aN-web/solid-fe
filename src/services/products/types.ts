@@ -53,6 +53,7 @@ export interface ProductState {
   newArrivals: NewProduct[];
   featuredProducts: NewProduct[];
   dealsOfTheDay: NewProduct[];
+  relatedProducts: Product[],
   product: Product | null;
   loading: boolean;
   error: string | null;

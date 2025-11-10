@@ -1,29 +1,44 @@
 // src/services/cart/types.ts
 export interface CartItem {
-  _id: string;
-  productId: {
+  product: {
     _id: string;
     name: string;
-    price: number;
-    image?: string;
-    inStock?: boolean;
+    briefDescription?: string;
+    images: string[];
+    partNumber?: string;
+    brand: {
+      _id: string;
+      name: string;
+    };
+    stockStatus: string;
+    salesPrice: number;
+    id: string;
   };
   quantity: number;
-  price: number;
+  totalPrice: number;
+}
+
+export interface CartResponse {
+  products: CartItem[];
 }
 
 export interface Cart {
-  _id: string;
-  user: string;
-  total: number;
-  items: CartItem[];
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  products: CartItem[];
+  total?: number;
+  _id?: string;
+  user?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
 export interface cartState {
   cart: Cart | null;
   loading: boolean;
   error: string | null;
+}
+
+export interface CartProduct {
+  product: string; 
+  quantity: number;
 }
