@@ -66,7 +66,7 @@ const Products: React.FC = () => {
     ],
     [brands]
   );
-  const statusOptions = ["All Status", "In Stock", "Low Stock", "Out of Stock"];
+  const statusOptions = ["All Status", "In Stock", "Out of Stock"];
 
   const filterOptions = [
     {
