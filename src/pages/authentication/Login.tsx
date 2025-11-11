@@ -60,7 +60,6 @@ const Login = () => {
       // After successful login, sync guest cart to backend
       console.log('Login successful, syncing guest cart...');
       await dispatch(syncGuestCartToBackend()).unwrap();
-      console.log('Guest cart synced successfully');
       
       // Check if user came from checkout
       const shouldRedirectToCheckout = sessionStorage.getItem('checkout_redirect');
@@ -71,9 +70,6 @@ const Login = () => {
       } else {
         navigate('/home');
       }
-    } catch (error) {
-      console.error('Login or cart sync failed:', error);
-      // Error is already handled by Redux
     } finally {
       setIsSyncing(false);
     }
@@ -92,8 +88,6 @@ const Login = () => {
         sessionStorage.removeItem('checkout_redirect');
         navigate('/checkout');
       }
-    } catch (error) {
-      console.error('Google login or cart sync failed:', error);
     } finally {
       setIsSyncing(false);
     }
