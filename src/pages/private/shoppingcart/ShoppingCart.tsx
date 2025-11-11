@@ -1,110 +1,200 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Minus, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchUserCart,
   removeProductFromCart,
   updateCartItemQuantity,
   removeAllProductFromCart,
-  clearCartError
-} from "../../../store/slices/cartSlice"; 
+  clearCartError,
+} from "../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { Cart, CartItem } from "../../../services/cart/types"; // Import your types
+import { CartItem } from "../../../services/cart/types";
+import CheckoutAuthModal from "./CheckoutAuthModal";
 
 const ShoppingCart = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  useEffect(() => {
-    dispatch(fetchUserCart());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        dispatch(clearCartError());
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, dispatch]);
-
-  const handleQuantityUpdate = async (productId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    try {
-      await dispatch(updateCartItemQuantity({ productId, quantity: newQuantity })).unwrap();
-    } catch (err) {
-      console.error('Failed to update quantity:', err);
-    }
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    return !!token;
   };
 
+  useEffect(() => {
+    console.log('ShoppingCart mounted, fetching cart...');
+
+    // For guest users, try to load from session storage first
+    if (!isAuthenticated()) {
+      const guestCart = sessionStorage.getItem('guest_cart');
+      if (guestCart) {
+        try {
+          const parsedCart = JSON.parse(guestCart);
+          // Dispatch an action to set the cart directly
+          dispatch({ type: 'cart/setCart', payload: parsedCart });
+          setInitialLoad(false);
+          return;
+        } catch (error) {
+          console.error('Error parsing guest cart:', error);
+        }
+      }
+    }
+
+    // For authenticated users or if no guest cart exists, fetch normally
+    dispatch(fetchUserCart())
+      .unwrap()
+      .then(() => {
+        setInitialLoad(false);
+      })
+      .catch(() => {
+        setInitialLoad(false);
+      });
+  }, [dispatch]);
+
+  // Debug cart changes
+  useEffect(() => {
+    console.log('Cart state updated:', {
+      cart,
+      loading,
+      hasProducts: cart?.products?.length,
+      products: cart?.products,
+      isAuthenticated: isAuthenticated()
+    });
+  }, [cart, loading]);
+
+  // Update loading logic to be more specific
+  const isLoading = loading && initialLoad;
+
+  // More robust empty cart check
+  const hasProducts = React.useMemo(() => {
+    return cart?.products && Array.isArray(cart.products) && cart.products.length > 0;
+  }, [cart?.products]);
+
+  // Calculate totals safely
+  const calculateTotals = React.useMemo(() => {
+    if (!hasProducts || !cart?.products) {
+      return {
+        subtotal: 0,
+        discount: 0,
+        deliveryFee: 2000,
+        totalAmount: 2000,
+        totalItems: 0
+      };
+    }
+
+    const subtotal = cart.products.reduce((total: number, item: CartItem) =>
+      total + (item.product.salesPrice * item.quantity), 0
+    );
+    const discount = subtotal * 0.2;
+    const deliveryFee = 2000;
+    const totalAmount = subtotal - discount + deliveryFee;
+    const totalItems = cart.products.reduce((total: number, item: CartItem) =>
+      total + item.quantity, 0
+    );
+
+    return {
+      subtotal,
+      discount,
+      deliveryFee,
+      totalAmount,
+      totalItems
+    };
+  }, [cart?.products, hasProducts]);
+
+  const { subtotal, discount, deliveryFee, totalAmount, totalItems } = calculateTotals;
+
+  // Remove item from cart
   const handleRemoveItem = async (productId: string) => {
     try {
       await dispatch(removeProductFromCart({ productId })).unwrap();
-    } catch (err) {
-      console.error('Failed to remove item:', err);
+      console.log('Item removed successfully');
+    } catch (error) {
+      console.error('Failed to remove item:', error);
     }
   };
 
-  const handleClearCart = async () => {
+  // Update item quantity
+  const handleQuantityUpdate = async (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
     try {
-      await dispatch(removeAllProductFromCart()).unwrap();
-    } catch (err) {
-      console.error('Failed to clear cart:', err);
+      await dispatch(updateCartItemQuantity({ productId, quantity: newQuantity })).unwrap();
+      console.log('Quantity updated successfully');
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    }
+  };
+
+  // Clear entire cart
+  const handleClearCart = async () => {
+    if (window.confirm('Are you sure you want to clear your cart?')) {
+      try {
+        await dispatch(removeAllProductFromCart()).unwrap();
+        console.log('Cart cleared successfully');
+      } catch (error) {
+        console.error('Failed to clear cart:', error);
+      }
+    }
+  };
+
+  // Handle checkout - check authentication first
+  const handleCheckout = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!isAuthenticated()) {
+      // Show authentication modal for guest users
+      setShowAuthModal(true);
+    } else {
+      // Proceed to checkout for authenticated users
+      navigate('/checkout');
     }
   };
 
   // Loading state
-  if (loading && !cart) {
+  if (isLoading) {
     return (
-      <div className="bg-[#F5F5F5] min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-customGray3">Loading your cart...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-customGray3">Loading your cart...</p>
         </div>
       </div>
     );
   }
 
-  // Empty cart state - Check if cart exists AND has no items
-  if (!cart || !cart.items || cart.items.length === 0) {
+  // Empty cart state
+  if (!hasProducts) {
     return (
-      <div className="bg-[#F5F5F5] min-h-screen">
+      <div className="min-h-screen bg-[#F5F5F5]">
         <div className="px-5 py-6 bg-white lg:bg-[#F5F5F5] w-full">
           <h2 className="text-xl font-semibold">Shopping Cart</h2>
         </div>
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-customBrown mb-2">Your cart is empty</h3>
-            <p className="text-customGray3 mb-6">Add some items to get started</p>
-            <Link 
-              to="/products" 
-              className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Continue Shopping
-            </Link>
-          </div>
+        <div className="flex flex-col items-center justify-center py-16 px-5">
+          <h3 className="text-xl font-semibold text-customBrown mb-2">Your cart is empty</h3>
+          <p className="text-customGray3 mb-6 text-center">
+            Looks like you haven't added any items to your cart yet.
+          </p>
+          <Link to="/products">
+            <button className="bg-primary text-white py-3 px-8 rounded-lg hover:bg-primary/90 transition-colors">
+              Start Shopping
+            </button>
+          </Link>
         </div>
       </div>
     );
   }
 
-  // Calculate totals using cart items
-  const subtotal = cart.items.reduce((total: number, item: CartItem) => 
-    total + (item.price * item.quantity), 0
-  );
-  const discount = subtotal * 0.2;
-  const deliveryFee = 2000;
-  const totalAmount = subtotal - discount + deliveryFee;
-  const totalItems = cart.items.reduce((total: number, item: CartItem) => 
-    total + item.quantity, 0
-  );
-
   return (
-    <div>
+    <div className="min-h-screen bg-[#F5F5F5]">
+      {/* Error Display */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-5">
           <span className="block sm:inline">{error}</span>
-          <button 
+          <button
             onClick={() => dispatch(clearCartError())}
             className="absolute top-0 bottom-0 right-0 px-4 py-3"
           >
@@ -113,238 +203,238 @@ const ShoppingCart = () => {
         </div>
       )}
 
+      {/* Guest User Notice */}
+      {!isAuthenticated() && hasProducts && (
+        <div className="bg-amber-50 border border-amber-200 px-4 py-3 mx-5 mt-4 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-amber-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <p className="text-sm text-amber-800 font-medium">Shopping as guest</p>
+              <p className="text-xs text-amber-700 mt-1">
+                Your cart is saved locally. Create an account to proceed with checkout.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="bg-[#F5F5F5]">
         <div className="px-5 py-6 bg-white lg:bg-[#F5F5F5] w-full">
           <h2 className="text-xl font-semibold">Shopping Cart</h2>
         </div>
-        <div className="lg:flex lg:gap-5 lg:px-5 lg:pb-12">
-          <div className="bg-white w-full lg:w-2/3 lg:p-5 self-start px-5 lg:rounded-lg lg:border lg:border-[#D9D9D9]">
-            <table className="w-full">
-              <thead>
-                <tr className="w-full bg-[#F5F5F5]">
-                  <td className="pl-3 py-4 text-sm text-customGray1 font-normal lg:hidden">
-                    subtotal: <span className="font-bold">{totalItems} items</span>
-                  </td>
-                  <td className="text-sm font-medium pr-3 py-4 lg:hidden">
-                    ₦{subtotal.toLocaleString()}
-                  </td>
-                  <td className="pl-5 py-4 text-sm text-customGray1 font-normal hidden lg:table-cell">
-                    Item details
-                  </td>
-                  <td className="text-sm font-medium pr-5 py-4 hidden lg:table-cell">
-                    Item price total
-                  </td>
-                  <td className="text-sm font-medium pr-5 py-4 hidden lg:table-cell">
-                    Action
-                  </td>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.items.map((item: CartItem) => (
-                  <tr key={item._id} className="border-t">
-                    <td>
-                      <div className="flex gap-8 py-5 px-2 w-full">
-                        <div className="flex flex-col gap-4">
-                          <img
-                            src={item.productId.image || "/tyres.svg"}
-                            alt={item.productId.name}
-                            className="w-[80px] h-[80px] object-cover"
-                          />
 
-                          <div className="flex items-center justify-center border rounded-[2px] max-w-[106px] h-[28px] lg:hidden">
-                            <button
-                              className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                              onClick={() => handleQuantityUpdate(item.productId._id, item.quantity - 1)}
-                              disabled={loading || item.quantity <= 1}
-                            >
-                              <Minus className="w-4" />
-                            </button>
-                            <span className="flex-[2] w-full text-center border-l border-r text-customBrown text-base font-medium">
-                              {item.quantity}
-                            </span>
-                            <button
-                              className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                              onClick={() => handleQuantityUpdate(item.productId._id, item.quantity + 1)}
-                              disabled={loading}
-                            >
-                              <Plus className="w-4" />
-                            </button>
-                          </div>
-                        </div>
+        <div className="lg:flex lg:gap-6 lg:px-5 lg:pb-12">
+          {/* Products Section */}
+          <div className="bg-white w-full lg:w-2/3 lg:p-6 self-start px-5 lg:rounded-xl lg:border lg:border-[#D9D9D9] lg:shadow-sm">
+            {/* Mobile Summary */}
+            <div className="lg:hidden bg-[#F5F5F5] px-4 py-3 rounded-lg mb-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-customGray1">
+                  Subtotal: <span className="font-bold">{totalItems} items</span>
+                </span>
+                <span className="text-sm font-medium">
+                  ₦{subtotal.toLocaleString()}
+                </span>
+              </div>
+            </div>
 
-                        <div className="flex flex-col justify-between">
-                          <div className="space-y-1/2 block">
-                            <p className="text-sm text-customBrown">
-                              {item.productId.name}
-                            </p>
-                            <p className="text-base text-customBrown">
-                              ₦{item.productId.price.toLocaleString()}
-                            </p>
+            {/* Products List */}
+            <div className="space-y-4">
+              {cart!.products.map((item: CartItem) => (
+                <div key={item.product._id} className="border-b border-gray-100 pb-4 last:border-b-0">
+                  <div className="flex gap-4 items-start">
+                    {/* Product Image */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={item.product.images[0] || "/tyres.svg"}
+                        alt={item.product.name}
+                        className="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-lg"
+                      />
+                    </div>
 
-                            <div className="flex flex-col gap-1">
-                              <span className={`text-xs ${item.productId.inStock !== false ? 'text-[#15B70D]' : 'text-red-500'}`}>
-                                {item.productId.inStock !== false ? 'In Stock' : 'Out of Stock'}
-                              </span>
+                    {/* Product Details */}
+                    <div className="flex-1 min-w-0">
+                      {/* Product Name and Price */}
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <h3 className="text-sm lg:text-base font-medium text-customBrown line-clamp-2 flex-1">
+                          {item.product.name}
+                        </h3>
+                        <p className="text-base lg:text-lg font-semibold text-customBrown whitespace-nowrap ml-2">
+                          ₦{(item.product.salesPrice * item.quantity).toLocaleString()}
+                        </p>
+                      </div>
 
-                              <div className="hidden lg:flex items-center justify-center border rounded-[2px] max-w-[106px] h-[28px]">
-                                <button
-                                  className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                                  onClick={() => handleQuantityUpdate(item.productId._id, item.quantity - 1)}
-                                  disabled={loading || item.quantity <= 1}
-                                >
-                                  <Minus className="w-4" />
-                                </button>
-                                <span className="flex-[2] w-full text-center border-l border-r text-customBrown text-base font-medium">
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  className="flex-1 w-full text-center active:bg-[#b5b4b4] disabled:opacity-50"
-                                  onClick={() => handleQuantityUpdate(item.productId._id, item.quantity + 1)}
-                                  disabled={loading}
-                                >
-                                  <Plus className="w-4" />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
+                      {/* Unit Price */}
+                      <p className="text-sm text-customGray3 mb-2">
+                        ₦{item.product.salesPrice.toLocaleString()} each
+                      </p>
 
-                          <div 
-                            className="flex gap-2 items-center lg:hidden cursor-pointer hover:opacity-70"
-                            onClick={() => handleRemoveItem(item.productId._id)}
+                      {/* Stock Status */}
+                      <div className="mb-3">
+                        <span className={`text-xs px-2 py-1 rounded ${item.product.stockStatus === 'In Stock' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {item.product.stockStatus}
+                        </span>
+                      </div>
+
+                      {/* Quantity Controls and Remove Button */}
+                      <div className="flex justify-between items-center">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center border rounded-lg">
+                          <button
+                            className="p-2 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            onClick={() => handleQuantityUpdate(item.product._id, item.quantity - 1)}
+                            disabled={loading || item.quantity <= 1}
                           >
-                            <X className="w-4" />
-                            <p className="text-sm text-customGray3">Remove</p>
-                          </div>
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-4 py-2 text-customBrown font-medium min-w-12 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            className="p-2 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            onClick={() => handleQuantityUpdate(item.product._id, item.quantity + 1)}
+                            disabled={loading}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
+
+                        {/* Remove Button */}
+                        <button
+                          onClick={() => handleRemoveItem(item.product._id)}
+                          className="flex items-center gap-1 text-customGray3 hover:text-red-600 transition-colors p-2 disabled:opacity-50"
+                          disabled={loading}
+                        >
+                          <X className="w-4 h-4" />
+                          <span className="text-sm hidden sm:inline">Remove</span>
+                        </button>
                       </div>
-                    </td>
-                    <td className="hidden lg:table-cell">
-                      ₦{(item.price * item.quantity).toLocaleString()}
-                    </td>
-                    <td className="hidden lg:table-cell">
-                      <div 
-                        className="flex gap-2 items-center cursor-pointer hover:opacity-70"
-                        onClick={() => handleRemoveItem(item.productId._id)}
-                      >
-                        <X className="w-4" />
-                        <p className="text-sm text-customGray3">Remove</p>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <div className="flex justify-between items-center py-4">
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 mt-4 border-t">
               <Link
                 to="/products"
-                className="flex items-center gap-2 py-8 lg:pt-12 lg:pb-0"
+                className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors w-full sm:w-auto justify-center sm:justify-start"
               >
-                <img src="/arrowleft.svg" alt="" />
-                <p className="text-sm text-primary">Continue Shopping</p>
+                <img src="/arrowleft.svg" alt="Back to shopping" className="w-5 h-5" />
+                <span className="text-sm font-medium">Continue Shopping</span>
               </Link>
-              
-              <button
-                onClick={handleClearCart}
-                className="text-sm text-red-500 hover:text-red-700 underline"
-                disabled={loading}
-              >
-                Clear Cart
-              </button>
-            </div>
-            
-            <Link to="/checkout">
-              <button 
-                className="bg-primary py-4 text-white text-sm rounded w-full lg:hidden disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? 'Processing...' : 'Proceed to checkout'}
-              </button>
-            </Link>
-          </div>
-          
-          <div className="lg:w-1/3 bg-white p-5 lg:rounded-lg">
-            <div className="hidden lg:block">
-              <div>
-                <form action="" className="">
-                  <label
-                    htmlFor="instruction"
-                    className="text-sm font-semibold text-customBrown"
-                  >
-                    Instruction on Delivery
-                  </label>
-                  <textarea
-                    name="instruction"
-                    id=""
-                    className="w-full border p-4 h-[100px] rounded-lg mt-3"
-                    placeholder="e.g. Please ensure the part is compatible with a 2016 Toyota Corolla, model LE"
-                  ></textarea>
-                  <div className="relative pt-3 pb-5 border-b">
-                    <img
-                      src="/address-marker-outline.svg"
-                      alt=""
-                      className="w-4 absolute left-4 top-7"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Enter Code Here"
-                      className="border h-12 px-10 w-full rounded-lg bg-[#FFF8EE] text-base"
-                    />
-                    <span className="absolute right-4 bottom-9 text-xs text-customGold">
-                      APPLY COUPON
-                    </span>
-                  </div>
-                  <div className="space-y-2 pt-6">
-                    <div className="flex justify-between text-sm font-semibold text-customBrown pb-1 border-b">
-                      <h3>Order Summary</h3>
-                      <p>{totalItems} Items</p>
-                    </div>
-                    <div className="flex justify-between pt-2">
-                      <p className="text-sm text-customGray3">Subtotal:</p>
-                      <span className="text-sm font-semibold text-customBrown">
-                        ₦{subtotal.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customGray3">Discount:</p>
-                      <span className="text-xs text-customBrown font-medium">
-                        (20%) -₦{discount.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customGray3 flex gap-2 items-center">
-                        Delivery
-                        <span className="text-[10px] text-primary font-medium flex gap-2 bg-[#BFCCD8] px-3 py-[2px] rounded-2xl">
-                          standard
-                          <img
-                            src="/standardarrow.svg"
-                            alt="Delivery Type Arrow"
-                          />
-                        </span>
-                      </p>
-                      <span className="text-xs text-customBrown font-medium">
-                        ₦{deliveryFee.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm font-semibold text-customBrown pb-2 border-b">
-                      <h3>Total</h3>
-                      <p>₦{totalAmount.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <Link to="/checkout">
-                    <button 
-                      className="bg-primary py-4 text-white text-sm rounded w-full mt-4 disabled:opacity-50"
-                      disabled={loading}
-                    >
-                      {loading ? 'Processing...' : 'Proceed to checkout'}
-                    </button>
-                  </Link>
-                </form>
+
+              <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                <button
+                  onClick={handleClearCart}
+                  className="text-sm text-red-500 hover:text-red-700 underline transition-colors px-4 py-2 disabled:opacity-50"
+                  disabled={loading}
+                >
+                  Clear Cart
+                </button>
+
+                <button
+                  onClick={handleCheckout}
+                  className="sm:hidden bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary/90 transition-colors w-full disabled:opacity-50"
+                  disabled={loading || !hasProducts}
+                >
+                  {loading ? 'Processing...' : 'Checkout'}
+                </button>
               </div>
             </div>
           </div>
+
+          {/* Order Summary Section */}
+          <div className="lg:w-1/3 bg-white p-6 lg:rounded-xl lg:border lg:border-[#D9D9D9] lg:shadow-sm lg:sticky lg:top-6 h-fit">
+            {/* Delivery Instructions */}
+            <div className="mb-6">
+              <label htmlFor="instruction" className="block text-sm font-semibold text-customBrown mb-3">
+                Delivery Instructions
+              </label>
+              <textarea
+                id="instruction"
+                className="w-full border border-gray-300 p-3 h-24 rounded-lg resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                placeholder="e.g. Please ensure the part is compatible with a 2016 Toyota Corolla, model LE"
+              />
+            </div>
+
+            {/* Coupon Code */}
+            <div className="mb-6 pb-6 border-b">
+              <div className="relative">
+                <img
+                  src="/address-marker-outline.svg"
+                  alt="Coupon"
+                  className="w-4 absolute left-3 top-1/2 transform -translate-y-1/2"
+                />
+                <input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  className="w-full border border-gray-300 h-12 pl-10 pr-24 rounded-lg bg-[#FFF8EE] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                />
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-customGold font-medium hover:text-amber-600 transition-colors px-3 py-1">
+                  APPLY COUPON
+                </button>
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center pb-3 border-b">
+                <h3 className="text-lg font-semibold text-customBrown">Order Summary</h3>
+                <p className="text-sm text-customGray3">{totalItems} {totalItems === 1 ? 'Item' : 'Items'}</p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-customGray3">Subtotal:</span>
+                  <span className="font-semibold text-customBrown">₦{subtotal.toLocaleString()}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-customGray3">Discount:</span>
+                  <span className="text-customBrown font-medium">
+                    (20%) -₦{discount.toLocaleString()}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-customGray3 flex items-center gap-2">
+                    Delivery
+                    <span className="text-[10px] text-primary font-medium bg-[#BFCCD8] px-2 py-1 rounded-full">
+                      standard
+                    </span>
+                  </span>
+                  <span className="text-customBrown font-medium">₦{deliveryFee.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                <span className="text-lg font-semibold text-customBrown">Total</span>
+                <span className="text-lg font-bold text-customBrown">₦{totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Checkout Button - Desktop */}
+            <button
+              onClick={handleCheckout}
+              className="hidden lg:block mt-6 bg-primary text-white py-4 px-6 rounded-lg hover:bg-primary/90 transition-colors w-full disabled:opacity-50 font-medium"
+              disabled={loading || !hasProducts}
+            >
+              {loading ? 'Processing...' : 'Proceed to Checkout'}
+            </button>
+          </div>
         </div>
       </section>
+
+      {/* Authentication Modal */}
+      <CheckoutAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 };

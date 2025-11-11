@@ -189,6 +189,7 @@ function App() {
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/store" element={<Store />} />
         </Route>
 
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
@@ -220,30 +221,16 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/cart"
-            element={
-              <PrivateRoute>
-                <ShoppingCart />
-              </PrivateRoute>
-            }
-          />
         </Route>
+
 
         {/* Private layout with brands nav */}
         <Route element={<PrivateLayoutBrand />}>
           {/* Private Routes: This component is only accessible to authenticated users */}
           <Route path="/home" element={<HomeGuest />} />
+          <Route path="/cart" element={<ShoppingCart />} />
           <Route path="/products" element={<Product />} />
-          <Route path="/store" element={<Store />} />
-          <Route
-            path="/product/:id"
-            element={
-              <PrivateRoute>
-                <ProductDetails />
-              </PrivateRoute>
-            }
-          />
+          <Route path="/product/:id" element={<ProductDetails />} />
         </Route>
 
         {/* Private layout with brands nav */}
@@ -271,6 +258,7 @@ function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/store" element={<Store />} />
+
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />
@@ -404,10 +392,10 @@ function App() {
             </AdminRoute>
           }
         />
-        
+
         <Route path="/help" element={<HelpCenter />} />
         <Route path="/help" element={<HelpCenter />} />
-        
+
         {/* Admin-Only Routes - Restricted from SubDistributors */}
         <Route
           path="/admin/manufacturers"
