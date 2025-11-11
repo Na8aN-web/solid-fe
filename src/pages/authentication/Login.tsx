@@ -56,9 +56,6 @@ const Login = () => {
       
       // Dispatch login and wait for it to complete
       await dispatch(loginUser({ email: emailOrPhone, password })).unwrap();
-      
-      // After successful login, sync guest cart to backend
-      console.log('Login successful, syncing guest cart...');
       await dispatch(syncGuestCartToBackend()).unwrap();
       
       // Check if user came from checkout
