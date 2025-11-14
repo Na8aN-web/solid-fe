@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Search, ChevronDown, ArrowUpDown, Upload } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";
+import Pagination from "../components/Pagination";
 
 interface Transaction {
   id: string;
@@ -16,95 +17,96 @@ interface Transaction {
 }
 
 const Transactions: React.FC = () => {
-  const transactions: Transaction[] = [
-    {
-      id: "1",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Individual",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Success",
-      paymentMethod: "Bank Transfer",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-    {
-      id: "2",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Importer",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Success",
-      paymentMethod: "Mastercard",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-    {
-      id: "3",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Wholesaler",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Failed",
-      paymentMethod: "Bank Transfer",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-    {
-      id: "4",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Wholesaler",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Pending",
-      paymentMethod: "Mastercard",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-    {
-      id: "5",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Individual",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Failed",
-      paymentMethod: "Visa",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-    {
-      id: "6",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Individual",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Pending",
-      paymentMethod: "Mastercard",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-    {
-      id: "7",
-      transactionId: "288725776GH",
-      userName: "Marvellous Calebs",
-      userType: "Importer",
-      orderId: "435682",
-      paymentAmount: "₦250,000.00",
-      status: "Success",
-      paymentMethod: "Visa",
-      dateTime: "25th July, 2024\n@ 3:14 PM",
-    },
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("All Status");
+ const [selectedUserType, setSelectedUserType] = useState("All Types");
+ const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("All Methods");
+  const itemsPerPage = 10;
+
+  const allTransactions: Transaction[] = Array.from({ length: 48 }, (_, i) => {
+    const statuses: Transaction["status"][] = ["Success", "Failed", "Pending"];
+    const paymentMethods: Transaction["paymentMethod"][] = [
+      "Bank Transfer",
+      "Mastercard",
+      "Visa",
+    ];
+    const userTypes: Transaction["userType"][] = [
+      "Individual",
+      "Importer",
+      "Wholesaler",
+    ];
+
+    // generate random date/time for realism
+    const randomDate = new Date();
+    randomDate.setDate(randomDate.getDate() - i);
+    const dateTime = randomDate.toLocaleString("en-NG", {
+      timeZone: "Africa/Lagos",
+    });
+
+    return {
+      id: `${i + 1}`,
+      transactionId: `TXN${1000 + i}`,
+      userName: `User ${i + 1}`,
+      userType: userTypes[i % userTypes.length],
+      orderId: `ORD${5000 + i}`,
+      paymentAmount: `₦${(50000 + i * 1200).toLocaleString()}`,
+      status: statuses[i % statuses.length],
+      paymentMethod: paymentMethods[i % paymentMethods.length],
+      dateTime,
+    };
+  });
 
   const filterOptions = [
-    { label: "Category", options: ["All Category", "Engine", "Brakes"] },
-    { label: "Store", options: ["Solid Spare Parts", "AutoHub"] },
-    { label: "Price", options: ["₦250K - ₦5M", "₦5M - ₦10M"] },
     {
       label: "Status",
       options: ["All Status", "Success", "Failed", "Pending"],
+      value: selectedStatus,
+      onChange: setSelectedStatus,
+    },
+    {
+      label: "User Type",
+      options: ["All Types", "Individual", "Importer", "Wholesaler"],
+      value: selectedUserType,
+      onChange: setSelectedUserType,
+    },
+    {
+      label: "Payment Method",
+      options: ["All Methods", "Bank Transfer", "Mastercard", "Visa"],
+      value: selectedPaymentMethod,
+      onChange: setSelectedPaymentMethod,
     },
   ];
+
+  // Filter transactions based on search and status
+  const filteredTransaction = useMemo(() => {
+    return allTransactions.filter((item) => {
+      const matchesSearch =
+        item.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.id.includes(searchTerm);
+
+      const matchesStatus =
+        selectedStatus === "All Status" || item.status === selectedStatus;
+
+      const matchesUserType =
+        selectedUserType === "All Types" || item.userType === selectedUserType;
+
+      const matchesPaymentMethod =
+        selectedPaymentMethod === "All Methods" ||
+        item.paymentMethod === selectedPaymentMethod; 
+
+      return matchesSearch && matchesStatus && matchesUserType && matchesPaymentMethod;
+    });
+  }, [allTransactions, searchTerm, selectedStatus]);
+
+  // Paginate filtered transaction
+  const paginatedTransaction = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredTransaction.slice(startIndex, endIndex);
+  }, [filteredTransaction, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredTransaction.length / itemsPerPage);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -117,6 +119,16 @@ const Transactions: React.FC = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on new search
   };
 
   return (
@@ -132,6 +144,8 @@ const Transactions: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Search for transactions..."
+                  value={searchTerm}
+                  onChange={handleSearch}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[10px] h-[50px] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
@@ -146,10 +160,30 @@ const Transactions: React.FC = () => {
             </div>
           </div>
         </section>
+
         {/* Filter section */}
-        <div>
-          <FilterSection filters={filterOptions} />
+        <div className="mb-4">
+          <FilterSection
+            filters={filterOptions}
+            // sortOptions={sortOptions}
+            showFilterButton={false}
+          />
         </div>
+
+        {/* Active Filters */}
+        {selectedStatus !== "All Status" && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+              Status: {selectedStatus}
+              <button
+                onClick={() => setSelectedStatus("All Status")}
+                className="hover:text-blue-900 text-lg leading-none"
+              >
+                ×
+              </button>
+            </span>
+          </div>
+        )}
 
         <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
           <table className="w-full">
@@ -169,68 +203,74 @@ const Transactions: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((transaction) => (
-                <tr
-                  key={transaction.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="p-4">
-                    <div className="w-4 h-4 border border-gray-300 bg-white rounded"></div>
-                  </td>
-                  <td className="p-4 text-sm text-gray-700">
-                    {transaction.transactionId}
-                  </td>
-                  <td className="p-4 text-sm font-medium text-gray-900">
-                    {transaction.userName}
-                  </td>
-                  <td className="p-4 text-sm text-gray-700">
-                    {transaction.userType}
-                  </td>
-                  <td className="p-4 text-sm text-gray-700">
-                    {transaction.orderId}
-                  </td>
-                  <td className="p-4 text-sm font-medium text-gray-900">
-                    {transaction.paymentAmount}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}
-                    >
-                      {transaction.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-sm text-gray-700">
-                    {transaction.paymentMethod}
-                  </td>
-                  <td className="p-4 text-sm text-gray-700">
-                    <div className="whitespace-pre-line">
-                      {transaction.dateTime}
-                    </div>
+              {paginatedTransaction.length > 0 ? (
+                paginatedTransaction.map((transaction) => (
+                  <tr
+                    key={transaction.id}
+                    className="border-b border-gray-100 hover:bg-gray-50"
+                  >
+                    <td className="p-4">
+                      <div className="w-4 h-4 border border-gray-300 bg-white rounded"></div>
+                    </td>
+                    <td className="p-4 text-sm text-gray-700">
+                      {transaction.transactionId}
+                    </td>
+                    <td className="p-4 text-sm font-medium text-gray-900">
+                      {transaction.userName}
+                    </td>
+                    <td className="p-4 text-sm text-gray-700">
+                      {transaction.userType}
+                    </td>
+                    <td className="p-4 text-sm text-gray-700">
+                      {transaction.orderId}
+                    </td>
+                    <td className="p-4 text-sm font-medium text-gray-900">
+                      {transaction.paymentAmount}
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}
+                      >
+                        {transaction.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-gray-700">
+                      {transaction.paymentMethod}
+                    </td>
+                    <td className="p-4 text-sm text-gray-700">
+                      <div className="whitespace-pre-line">
+                        {transaction.dateTime}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="text-center py-12 text-gray-500">
+                    <p className="text-lg font-medium mb-1">
+                      No inventory found
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      {searchTerm || selectedStatus !== "All Status"
+                        ? "Try adjusting your filters"
+                        : "No inventory items available"}
+                    </p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
-            &lt;
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center bg-[#003366] text-white rounded text-sm font-medium">
-            1
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
-            2
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
-            &gt;
-          </button>
-        </div>
-        <div className="text-center mt-2 text-sm text-gray-600">
-          1-12 of 18 Products
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredTransaction.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          itemLabel="Items"
+        />
       </div>
     </AdminLayout>
   );

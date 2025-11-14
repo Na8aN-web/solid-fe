@@ -7,9 +7,12 @@ import {
   fetchAllUsers,
   fetchUserById,
 } from "../../../store/slices/adminDashboardSlice";
+import LoaderSpinner from "../../../components/LoaderSpinner";
 
 // Backend model (export this type from your slice)
 import type { User as ApiUser } from "../../../store/slices/adminDashboardSlice";
+import ErrorButton from "../../../components/ErrorButton";
+
 
 // view-model for the table to keep UI stable
 type TableUser = {
@@ -23,6 +26,10 @@ type TableUser = {
 };
 
 const Users: React.FC = () => {
+    // const [currentPage, setCurrentPage] = useState(1);
+    // const [searchTerm, setSearchTerm] = useState("");
+    // const [selectedStatus, setSelectedStatus] = useState("All Status");
+    const itemsPerPage = 10;
   const dispatch = useAppDispatch();
 
   // --- UI state
@@ -201,10 +208,10 @@ const Users: React.FC = () => {
           </thead>
           <tbody>
             {usersLoading && (
-              <tr><td colSpan={8} className="p-4">Loading…</td></tr>
+              <tr><td colSpan={8} className="p-4"><LoaderSpinner txt="Users"/></td></tr>
             )}
             {usersError && !usersLoading && (
-              <tr><td colSpan={8} className="p-4 text-red-600">{usersError}</td></tr>
+              <tr><td colSpan={8} className="p-4 text-red-600">{usersError}<ErrorButton fetch={fetchAllUsers} error={usersError}/></td></tr>
             )}
             {!usersLoading && !usersError && filteredUsers.map((user) => (
               <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">

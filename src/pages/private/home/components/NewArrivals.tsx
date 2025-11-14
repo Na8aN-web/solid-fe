@@ -98,7 +98,7 @@ const NewArrivals = () => {
         <div>
           {loading ? (
             <div className="flex justify-center items-center h-[400px]">
-              <LoaderSpinner />
+              <LoaderSpinner txt="New Arivals"/>
             </div>
           ) : (
             <Swiper

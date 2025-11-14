@@ -104,7 +104,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               <p className="text-primary font-semibold text-sm">Filter</p>
             </div>
           )} */}
-          {showSort && !sortOptions && (
+          {/* {showSort && !sortOptions && (
             <button
               onClick={onSortClick}
               className="w-[75px] h-[44px] bg-gray-100 flex items-center justify-center gap-1 rounded-[6px] hover:bg-gray-200 transition-colors"
@@ -112,7 +112,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               <ArrowUpDown className="text-primary w-[19px]" />
               <p className="text-primary font-semibold text-sm">Sort</p>
             </button>
-          )}
+          )} */}
           {showFilterButton && (
             <button
               onClick={onFilterClick}

@@ -332,24 +332,6 @@ const Orders: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {/* <div className="flex items-center justify-center gap-2 mt-6">
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
-            &lt;
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center bg-[#003366] text-white rounded text-sm font-medium">
-            1
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
-            2
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">
-            &gt;
-          </button>
-        </div>
-        <div className="text-center mt-2 text-sm text-gray-600">
-          1-12 of 18 Products
-        </div> */}
-           {/* Pagination Component */}
            <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

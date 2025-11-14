@@ -438,7 +438,7 @@ const ProductDetails = () => {
     <div className="bg-[#F5F5F5] pb-10">
       {loading ? (
         <div className="flex justify-center items-center h-[400px]">
-          <LoaderSpinner />
+          <LoaderSpinner txt="Product"/>
         </div>
       ) : (
         <div>
