@@ -17,6 +17,8 @@ import {
   fetchAllBrands,
   fetchAllCategories,
 } from "../../../store/slices/adminDashboardSlice";
+import ErrorButton from "../../../components/ErrorButton";
+import LoaderSpinner from "../../../components/LoaderSpinner";
 
 const Products: React.FC = () => {
   const navigate = useNavigate();
@@ -44,10 +46,10 @@ const Products: React.FC = () => {
   const sortOptions = [
     { label: "Newest First", value: "-createdAt" },
     { label: "Oldest First", value: "createdAt" },
-    { label: "Name Ascending", value: "name_asc" },
-    { label: "Price Low to High", value: "price_asc" },
-    { label: "Price High to Low", value: "price_desc" },
-    { label: "Rating Descending", value: "rating_desc" },
+    { label: "Name Ascending", value: "name-asc" },
+    { label: "Price Low to High", value: "price-asc" },
+    { label: "Price High to Low", value: "price-desc" },
+    { label: "Rating Descending", value: "rating-desc" },
   ];
 
   // filter options
@@ -66,7 +68,7 @@ const Products: React.FC = () => {
     ],
     [brands]
   );
-  const statusOptions = ["All Status", "In Stock", "Low Stock", "Out of Stock"];
+  const statusOptions = ["All Status", "In Stock", "Out of Stock"];
 
   const filterOptions = [
     {
@@ -260,39 +262,6 @@ const Products: React.FC = () => {
     });
   }, [productsList, selectedStatus]);
 
-  // Show loading state
-  if (loading && filteredProducts.length === 0) {
-    return (
-      <AdminLayout pageTitle="">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003366] mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading products...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  // Show error state
-  if (error && filteredProducts.length === 0) {
-    return (
-      <AdminLayout pageTitle="">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center text-red-600">
-            <p className="text-lg font-medium mb-2">Error loading products</p>
-            <p className="text-sm">{error}</p>
-            <button
-              onClick={fetchProductsWithFilters}
-              className="mt-4 px-4 py-2 bg-[#003366] text-white rounded-lg hover:bg-[#002244]"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
 
   // Calculate display range
   const startItem = (currentPage - 1) * itemsPerPage + 1;
@@ -427,6 +396,13 @@ const Products: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
+                {loading && filteredProducts.length === 0 && (
+                    <tr><td colSpan={8} className="p-4"><LoaderSpinner txt="Pruducts"/></td></tr>
+                )}
+                  {error && filteredProducts.length === 0 && (
+                    <tr><td colSpan={8} className="p-4"><ErrorButton  error={error} fetch={fetchProductsWithFilters}/></td></tr>
+                    // <ErrorButton />
+                )}
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => {
                     const currentStock = product.stock || product.quantity || 0;

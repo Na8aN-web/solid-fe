@@ -89,7 +89,7 @@ const FeaturedProducts = () => {
         <div>
           {loading ? (
             <div className="flex justify-center items-center h-[400px]">
-              <LoaderSpinner />
+              <LoaderSpinner txt="Featured Products"/>
             </div>
           ) : (
             <Swiper

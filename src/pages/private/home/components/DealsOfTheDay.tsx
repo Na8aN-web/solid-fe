@@ -48,7 +48,7 @@ const DealsOfTheDay = () => {
         <div>
           {loading ? (
             <div className="flex justify-center items-center h-[400px]">
-              <LoaderSpinner />
+              <LoaderSpinner txt="Deals of the day"/>
             </div>
           ) : (
             <Swiper
