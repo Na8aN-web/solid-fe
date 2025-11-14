@@ -71,8 +71,7 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
   
     if (q) qs.set("name", q);
     qs.set("page", "1");
-  
-    console.log("Search Query:", qs.toString());
+
     navigate(`/products?${qs.toString()}`);
     onSearchDone?.();
   };

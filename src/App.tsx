@@ -171,7 +171,6 @@ function App() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("authToken");
-    console.log(storedToken);
 
     if (storedUser && storedToken) {
       dispatch(setUser(JSON.parse(storedUser)));

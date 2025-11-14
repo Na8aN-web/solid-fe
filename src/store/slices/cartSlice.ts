@@ -82,16 +82,13 @@ export const fetchUserCart = createAsyncThunk(
     // If not authenticated, return guest cart from session storage
     if (!isAuthenticated()) {
       const guestCart = getGuestCart();
-      console.log("Loading guest cart:", guestCart);
       return guestCart || createEmptyCart();
     }
 
     // Authenticated: fetch from backend
     try {
       const response = await axiosInstance.get<any>("/cart");
-      console.log("Raw cart response:", response.data);
       const normalizedCart = normalizeCartResponse(response.data);
-      console.log("Normalized cart:", normalizedCart);
       return normalizedCart;
     } catch (error: any) {
       return rejectWithValue(
@@ -164,7 +161,6 @@ export const addProductToCart = createAsyncThunk(
 
         // Save to session storage
         saveGuestCart(updatedCart);
-        console.log("Guest cart updated:", updatedCart);
         return updatedCart;
       } catch (error: any) {
         console.error('Error adding to guest cart:', error);
@@ -178,7 +174,6 @@ export const addProductToCart = createAsyncThunk(
         productId,
         quantity,
       });
-      console.log("Add to cart response:", response.data);
       const normalizedCart = normalizeCartResponse(response.data);
       return normalizedCart;
     } catch (error: any) {
@@ -227,7 +222,6 @@ export const removeProductFromCart = createAsyncThunk(
         // );
 
         saveGuestCart(updatedCart);
-        console.log("Product removed from guest cart:", updatedCart);
         return updatedCart;
       } catch (error: any) {
         console.error('Error removing from guest cart:', error);
@@ -240,7 +234,6 @@ export const removeProductFromCart = createAsyncThunk(
       const response = await axiosInstance.delete<any>(
         `/cart/remove/${productId}`
       );
-      console.log("Remove from cart response:", response.data);
       const normalizedCart = normalizeCartResponse(response.data);
       return normalizedCart;
     } catch (error: any) {
@@ -288,7 +281,6 @@ export const updateCartItemQuantity = createAsyncThunk(
         );
 
         saveGuestCart(currentCart);
-        console.log("Quantity updated in guest cart:", currentCart);
         return currentCart;
       } catch (error: any) {
         return rejectWithValue("Failed to update quantity in guest cart");
@@ -301,7 +293,6 @@ export const updateCartItemQuantity = createAsyncThunk(
         productId,
         quantity,
       });
-      console.log("Update quantity response:", response.data);
       const normalizedCart = normalizeCartResponse(response.data);
       return normalizedCart;
     } catch (error: any) {
@@ -319,7 +310,6 @@ export const removeAllProductFromCart = createAsyncThunk(
     // Guest user: clear local cart only
     if (!isAuthenticated()) {
       clearGuestCart();
-      console.log("Guest cart cleared");
       return null;
     }
 
@@ -370,7 +360,6 @@ export const syncGuestCartToBackend = createAsyncThunk(
 
       // Clear guest cart after successful sync
       clearGuestCart();
-      console.log("Guest cart synced to backend:", normalizedCart);
 
       return normalizedCart;
     } catch (error: any) {
@@ -441,9 +430,6 @@ const cartSlice = createSlice({
 
     // Debug action to check current state
     debugCartState: (state) => {
-      console.log("Current Redux Cart State:", JSON.stringify(state.cart, null, 2));
-      console.log("Has products:", state.cart?.products?.length);
-      console.log("Is authenticated:", isAuthenticated());
     },
   },
   extraReducers: (builder) => {
@@ -456,7 +442,6 @@ const cartSlice = createSlice({
       .addCase(fetchUserCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
-        console.log("Cart fetched and stored:", action.payload);
       })
       .addCase(fetchUserCart.rejected, (state, action) => {
         state.loading = false;
@@ -474,7 +459,6 @@ const cartSlice = createSlice({
         state.loading = false;
         state.cart = action.payload;
         state.error = null;
-        console.log("Product added, cart updated:", action.payload);
       })
       .addCase(addProductToCart.rejected, (state, action) => {
         state.loading = false;
@@ -491,7 +475,6 @@ const cartSlice = createSlice({
       .addCase(removeProductFromCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
-        console.log("Product removed, cart updated:", action.payload);
       })
       .addCase(removeProductFromCart.rejected, (state, action) => {
         state.loading = false;
@@ -508,7 +491,6 @@ const cartSlice = createSlice({
       .addCase(updateCartItemQuantity.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
-        console.log("Quantity updated, cart updated:", action.payload);
       })
       .addCase(updateCartItemQuantity.rejected, (state, action) => {
         state.loading = false;
@@ -525,7 +507,6 @@ const cartSlice = createSlice({
       .addCase(removeAllProductFromCart.fulfilled, (state) => {
         state.loading = false;
         state.cart = null;
-        console.log("Cart cleared successfully");
       })
       .addCase(removeAllProductFromCart.rejected, (state, action) => {
         state.loading = false;
@@ -542,7 +523,6 @@ const cartSlice = createSlice({
       .addCase(syncGuestCartToBackend.fulfilled, (state, action) => {
         state.loading = false;
         state.cart = action.payload;
-        console.log("Guest cart synced to backend:", action.payload);
       })
       .addCase(syncGuestCartToBackend.rejected, (state, action) => {
         state.loading = false;

@@ -53,12 +53,12 @@ const AdminAccounts = () => {
     },
   ];
   const handleEdit = (id: string) => {
-    console.log("Editing product with ID:", id);
+    // console.log("Editing product with ID:", id);
     // Navigate to edit form or open modal
   };
 
   const handleDelete = (id: string) => {
-    console.log("Deleting product with ID:", id);
+    // console.log("Deleting product with ID:", id);
     // Show confirm dialog or call API
   };
 

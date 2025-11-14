@@ -89,7 +89,6 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
   const { brands, loading, error } = useSelector((state: RootState) => state.brands);
   const { vehicleTypes, totalVehicleTypes, loading: vehicleLoading, error: vehicleError } = useSelector((state: RootState) => state.vehicle);
   const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
-  console.log(categories)
 
   useEffect(() => {
     dispatch(fetchBrands());

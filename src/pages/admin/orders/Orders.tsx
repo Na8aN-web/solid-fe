@@ -164,11 +164,11 @@ const Orders: React.FC = () => {
   };
 
   const handleUpdate = (id: string) => {
-    console.log("Updating order with ID:", id);
+    // console.log("Updating order with ID:", id);
   };
 
   const handleNotify = (id: string) => {
-    console.log("Notifying order with ID:", id);
+    // console.log("Notifying order with ID:", id);
   };
 
   const handlePageChange = (page: number) => {

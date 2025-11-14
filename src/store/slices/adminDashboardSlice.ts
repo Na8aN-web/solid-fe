@@ -668,7 +668,6 @@ export const fetchAllDepartments = createAsyncThunk(
       if (!Array.isArray(departments)) {
         throw new Error("Invalid departments data received");
       }
-      console.log(departments);
       return departments;
     } catch (error: any) {
       if (error.response?.data?.message)
@@ -995,9 +994,6 @@ export const addProduct = createAsyncThunk(
           }),
         }
       );
-
-      // The API returns { product: {...} }
-      console.log("Add product response:", res.data.product);
       
       return res.data.product;
     } catch (error: any) {

@@ -91,9 +91,7 @@ const ProductDetails = () => {
         quantity: quantityCount,
         productData
       })
-    ).then(() => {
-      console.log("Product added to cart");
-    });
+    );
   }
 };
 

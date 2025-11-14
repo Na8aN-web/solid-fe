@@ -19,7 +19,6 @@ const EnterCode = () => {
   useEffect(() => {
     // Get email from session storage
     const email = sessionStorage.getItem("resetEmail");
-    console.log(email)
     if (!email) {
       // If no email is found, redirect back to recovery page
       navigate("/recover-password");

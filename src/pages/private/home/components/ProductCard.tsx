@@ -1,10 +1,6 @@
 import React from "react";
 import { FaStar } from "react-icons/fa";
 import { MdFavoriteBorder } from "react-icons/md";
-import { addProductToCart } from "../../../../store/slices/cartSlice";
-import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-
-
 
 interface ProductCardProps {
   productId: string;
@@ -16,6 +12,9 @@ interface ProductCardProps {
   discount?: string;
   rating?: number;
   numReviews?: number;
+  onAddToCart?: (productId: string, productName: string) => void; // Add callback
+  cartLoading?: boolean; // Add loading state
+  addingProductId?: string | null; // Track which product is being added
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -28,16 +27,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   rating,
   numReviews,
+  onAddToCart,
+  cartLoading = false,
+  addingProductId = null,
 }) => {
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
   const Favourite = MdFavoriteBorder as unknown as React.FC<
     React.SVGProps<SVGSVGElement>
   >;
 
-  const dispatch = useAppDispatch();
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(productId, title);
+    }
+  };
 
-  const handleAddToCart = () => {
-    dispatch(addProductToCart({ productId, quantity: 1 }));
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Add favorite functionality here if needed
+    // console.log("Add to favorite:", productId);
   };
 
   return (
@@ -83,24 +94,51 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       <div className="flex gap-3 pt-4">
-        <button
-          className="flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAddToCart();
-          }}
+        <button 
+          onClick={handleAddToCart}
+          disabled={cartLoading && addingProductId === productId}
+          className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full ${
+            cartLoading && addingProductId === productId
+              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+              : "hover:border-2 hover:border-primary hover:text-white transition-colors"
+          }`}
         >
-          <img src="/blue-cart.svg" alt="cart" />
-          <span className="text-[10px] text-primary font-normal">
-            Add to cart
-          </span>
+          {cartLoading && addingProductId === productId ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span className="text-[10px]">Adding...</span>
+            </>
+          ) : (
+            <>
+              <img src="/blue-cart.svg" alt="cart" />
+              <span className="text-[10px] text-primary font-normal ">
+                Add to cart
+              </span>
+            </>
+          )}
         </button>
         <button
-          className="border rounded border-primary py-2 px-3"
-          onClick={(e) => {
-            e.stopPropagation();
-            // handle add to wishlist logic
-          }}
+          className="border rounded border-primary py-2 px-3 hover:bg-primary transition-colors"
+          onClick={handleFavorite}
         >
           <Favourite />
         </button>

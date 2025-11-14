@@ -33,8 +33,6 @@ const Header = () => {
     error: vehicleTypesError,
   } = useSelector((state: RootState) => state.vehicle);
 
-  console.log(categories);
-
   // Fetch categories and vehicle types on component mount
   useEffect(() => {
     dispatch(fetchCategories());
@@ -53,12 +51,12 @@ const Header = () => {
   // Handle navigation for carousel buttons (optional functionality)
   const handleNext = () => {
     // You can implement carousel navigation logic here if needed
-    console.log("Next vehicle types");
+    // console.log("Next vehicle types");
   };
 
   const handlePrev = () => {
     // You can implement carousel navigation logic here if needed
-    console.log("Previous vehicle types");
+    // console.log("Previous vehicle types");
   };
 
   return (

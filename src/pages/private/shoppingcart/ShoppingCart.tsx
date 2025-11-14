@@ -21,13 +21,11 @@ const ShoppingCart = () => {
 
   // Check if user is authenticated
   const isAuthenticated = () => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     return !!token;
   };
 
   useEffect(() => {
-    console.log('ShoppingCart mounted, fetching cart...');
-
     // For guest users, try to load from session storage first
     if (!isAuthenticated()) {
       const guestCart = sessionStorage.getItem('guest_cart');
@@ -54,17 +52,6 @@ const ShoppingCart = () => {
         setInitialLoad(false);
       });
   }, [dispatch]);
-
-  // Debug cart changes
-  useEffect(() => {
-    console.log('Cart state updated:', {
-      cart,
-      loading,
-      hasProducts: cart?.products?.length,
-      products: cart?.products,
-      isAuthenticated: isAuthenticated()
-    });
-  }, [cart, loading]);
 
   // Update loading logic to be more specific
   const isLoading = loading && initialLoad;
@@ -111,7 +98,6 @@ const ShoppingCart = () => {
   const handleRemoveItem = async (productId: string) => {
     try {
       await dispatch(removeProductFromCart({ productId })).unwrap();
-      console.log('Item removed successfully');
     } catch (error) {
       console.error('Failed to remove item:', error);
     }
@@ -123,7 +109,6 @@ const ShoppingCart = () => {
 
     try {
       await dispatch(updateCartItemQuantity({ productId, quantity: newQuantity })).unwrap();
-      console.log('Quantity updated successfully');
     } catch (error) {
       console.error('Failed to update quantity:', error);
     }
@@ -134,7 +119,6 @@ const ShoppingCart = () => {
     if (window.confirm('Are you sure you want to clear your cart?')) {
       try {
         await dispatch(removeAllProductFromCart()).unwrap();
-        console.log('Cart cleared successfully');
       } catch (error) {
         console.error('Failed to clear cart:', error);
       }

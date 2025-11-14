@@ -26,11 +26,11 @@ import {
 
 
 const handleEdit = (id: string) => {
-  console.log("Editing product with ID:", id);
+  // console.log("Editing product with ID:", id);
 };
 
 const handleDelete = (id: string) => {
-  console.log("Deleting product with ID:", id);
+  // console.log("Deleting product with ID:", id);
 };
 
 // product categories table

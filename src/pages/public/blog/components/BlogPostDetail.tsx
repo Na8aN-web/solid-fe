@@ -37,8 +37,7 @@ const BlogPostDetail = ({ post, onBack }: BlogPostDetailProps) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Comment submitted:', commentData);
-        // Here you would normally send the comment to your backend
+        // console.log('Comment submitted:', commentData);
     };
 
     return (

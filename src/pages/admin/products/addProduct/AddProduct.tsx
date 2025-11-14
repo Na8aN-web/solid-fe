@@ -463,7 +463,6 @@ const AddProduct: React.FC = () => {
         await dispatch(
           updateProduct({ id: productId!, data: jsonPayload as any })
         ).unwrap();
-        console.log("✅ Update Response:", Response);
       
         // Refresh products list before navigating
         await dispatch(fetchProducts());  
@@ -570,8 +569,6 @@ const AddProduct: React.FC = () => {
       });
     }
 
-    // DEBUG: inspect payload
-    console.log("=== FormData Contents ===");
     for (const [k, v] of (fd as any).entries()) {
       console.log(`${k}:`, v instanceof File ? `File(${v.name})` : v);
     }

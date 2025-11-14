@@ -132,11 +132,11 @@ const Inventory: React.FC = () => {
   };
 
   const handleRestock = (id: string) => {
-    console.log("Restocking item with ID:", id);
+    // console.log("Restocking item with ID:", id);
   };
 
   const handleNotify = (id: string) => {
-    console.log("Notifying about item with ID:", id);
+    // console.log("Notifying about item with ID:", id);
   };
 
   const handlePageChange = (page: number) => {

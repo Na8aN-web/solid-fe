@@ -57,7 +57,6 @@ const Profile = () => {
   }, [dispatch]);
 
   const latestKYC = Array.isArray(userKYC) ? userKYC[0] : userKYC;
-  console.log(userKYC)
 
   const isKYCCompleted = latestKYC?.status === 'Approved';
   const isKYCPending = latestKYC?.status === 'Pending' || latestKYC?.status === 'Flagged';

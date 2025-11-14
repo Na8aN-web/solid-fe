@@ -13,12 +13,16 @@ import { featuredProducts } from "../../../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
 import { Link } from "react-router-dom";
+import { addProductToCart } from "../../../../store/slices/cartSlice";
+import SuccessModal from "../../../../components/SuccessModal";
 
 const FeaturedProducts = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
 
   const featProducts = useAppSelector(
     (state) => state.products.featuredProducts ?? []
@@ -40,6 +44,59 @@ const FeaturedProducts = () => {
   const filteredProducts = activeCategory
     ? featProducts.filter((product) => product.categoryName === activeCategory)
     : featProducts;
+
+  const handleAddToCart = async (productId: string, productName: string) => {
+    const product = featProducts.find(p => p._id === productId);
+
+    if (!product) {
+      console.error('Product not found');
+      return;
+    }
+
+    // Prepare product data for cart
+    const productData = {
+      _id: product._id,
+      name: product.name,
+      images: [product.image],
+      salesPrice: product.displayPrice,
+      displayPrice: product.displayPrice,
+      regularPrice: product.regularPrice,
+      stockStatus: 'In Stock',
+      brand: {
+        _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, '-')}`,
+        name: product.brandName
+      },
+      maker: product.brandName
+    };
+
+    try {
+      setAddingProductId(productId);
+      await dispatch(addProductToCart({
+        productId,
+        quantity: 1,
+        productData
+      })).unwrap();
+
+      // Show success modal
+      setLastAddedProduct({ id: productId, name: productName });
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+    } finally {
+      setAddingProductId(null);
+    }
+  };
+
+  const handleViewCart = () => {
+    setShowSuccessModal(false);
+    // Navigate to cart page
+    window.location.href = '/cart';
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    setLastAddedProduct(null);
+  };
 
   return (
     <div>
@@ -115,17 +172,20 @@ const FeaturedProducts = () => {
                 return (
                   <SwiperSlide key={product._id}>
                     <Link to={`/product/${product._id}`}>
-                    <ProductCard
-                      productId={product._id}
-                      image={product.image}
-                      title={product.name}
-                      category={product.category}
-                      rating={product.rating}
-                      price={`₦${Math.floor(product.displayPrice)}.00`}
-                      oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
-                      discount={formattedDiscount}
-                      numReviews={product.numReviews}
-                    />
+                      <ProductCard
+                        productId={product._id}
+                        image={product.image}
+                        title={product.name}
+                        category={product.category}
+                        rating={product.rating}
+                        price={`₦${Math.floor(product.displayPrice)}.00`}
+                        oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                        discount={formattedDiscount}
+                        numReviews={product.numReviews}
+                        onAddToCart={handleAddToCart}
+                        cartLoading={addingProductId !== null}
+                        addingProductId={addingProductId}
+                      />
                     </Link>
                   </SwiperSlide>
                 );
@@ -134,6 +194,13 @@ const FeaturedProducts = () => {
           )}
         </div>
       </section>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleCloseModal}
+        onViewCart={handleViewCart}
+        productName={lastAddedProduct?.name}
+      />
     </div>
   );
 };
