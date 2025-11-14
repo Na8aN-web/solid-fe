@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Pagination from "./Pagination";
 import SortSidebar from "./SortSidebar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Add useNavigate import
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { addProductToCart, updateCartProductData } from "../../../../store/slices/cartSlice";
 
 interface Product {
   _id: string;
@@ -18,6 +20,13 @@ interface Product {
   rating: number;
   discount: number;
   favorite: boolean;
+}
+
+interface SuccessModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onViewCart: () => void;
+  productName?: string;
 }
 
 interface ProductGridProps {
@@ -69,6 +78,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
+  const dispatch = useAppDispatch();
+  const { cart } = useAppSelector(state => state.cart);
+  const navigate = useNavigate(); // Add useNavigate hook
 
   // Check if the screen is mobile size
   useEffect(() => {
@@ -88,14 +102,90 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     };
   }, [setIsMobile]);
 
-  const handleAddToCart = (productId: string) => {
-    setAddingProductId(productId);
-    addToCart(productId, 1); // Default quantity is 1
+  useEffect(() => {
+    // When products are loaded, update cart items with full product data
+    if (products.length > 0 && cart && cart.products) {
+      let hasUpdated = false;
 
-    // Reset the loading state after a short delay (you might want to handle this differently based on your actual implementation)
-    setTimeout(() => {
+      products.forEach(product => {
+        const cartItem = cart.products.find(item => item.product._id === product._id);
+        if (cartItem && (!cartItem.product.name || cartItem.product.name === 'Product' || !cartItem.product.salesPrice)) {
+          // Update cart item with full product data
+          dispatch(updateCartProductData({
+            productId: product._id,
+            productData: {
+              name: product.name,
+              images: [product.image],
+              salesPrice: product.displayPrice,
+              stockStatus: 'In Stock',
+              brand: {
+                _id: product.maker || 'unknown',
+                name: product.maker || 'Unknown'
+              }
+            }
+          }));
+          hasUpdated = true;
+        }
+      });
+
+      if (hasUpdated) {
+        console.log('Enhanced cart items with product data');
+      }
+    }
+  }, [products, cart, dispatch]);
+
+  const handleAddToCart = async (productId: string, productName: string) => {
+    // Find the complete product
+    const product = products.find(p => p._id === productId);
+
+    if (!product) {
+      console.error('Product not found');
+      return;
+    }
+
+    // Prepare full product data with consistent structure
+    const productData = {
+      _id: product._id,
+      name: product.name,
+      images: [product.image],
+      salesPrice: product.displayPrice || product.price,
+      displayPrice: product.displayPrice || product.price,
+      regularPrice: product.price,
+      stockStatus: 'In Stock',
+      brand: {
+        _id: product.maker || 'unknown',
+        name: product.maker || 'Unknown'
+      },
+      maker: product.maker || 'Unknown'
+    };
+
+    try {
+      setAddingProductId(productId);
+      await dispatch(addProductToCart({
+        productId,
+        quantity: 1,
+        productData
+      })).unwrap();
+
+      // Show success modal
+      setLastAddedProduct({ id: productId, name: productName });
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+    } finally {
       setAddingProductId(null);
-    }, 2000);
+    }
+  }
+
+  const handleViewCart = () => {
+    setShowSuccessModal(false);
+    // Use React Router navigation instead of window.location.href
+    navigate('/cart');
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    setLastAddedProduct(null);
   };
 
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -107,6 +197,49 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortOrder = e.target.value;
     setSortOrder(newSortOrder);
+  };
+
+  const SuccessModal: React.FC<SuccessModalProps> = ({
+    isOpen,
+    onClose,
+    onViewCart,
+    productName
+  }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="flex items-center mb-4">
+            <div className="bg-green-100 rounded-full p-2 mr-3">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Success!</h3>
+          </div>
+
+          <p className="text-gray-600 mb-2">
+            {productName ? `${productName} has been` : "Item has been"} successfully added to your cart.
+          </p>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={onViewCart}
+              className="flex-1 bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              View Cart
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderStars = (rating: number) => {
@@ -278,8 +411,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {activeFilterText && (
             <button
               onClick={() => {
-                // This will trigger a page reload to clear all filters
-                window.location.href = window.location.pathname;
+                // Use React Router navigation instead of window.location.href
+                navigate(window.location.pathname);
               }}
               className="bg-primary text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
@@ -380,14 +513,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleAddToCart(product._id);
+                        handleAddToCart(product._id, product.name);
                       }}
                       disabled={cartLoading && addingProductId === product._id}
-                      className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm mt-2 ${
-                        cartLoading && addingProductId === product._id
-                          ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                          : "bg-primary text-white hover:bg-blue-700"
-                      }`}
+                      className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm mt-2 ${cartLoading && addingProductId === product._id
+                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                        : "bg-primary text-white hover:bg-blue-700"
+                        }`}
                     >
                       {cartLoading && addingProductId === product._id ? (
                         <>
@@ -439,6 +571,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           ))}
         </div>
       )}
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleCloseModal}
+        onViewCart={handleViewCart}
+        productName={lastAddedProduct?.name}
+      />
 
       <Pagination
         currentPage={currentPage}

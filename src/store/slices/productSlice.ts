@@ -20,6 +20,7 @@ const initialState: ProductState = {
   newArrivals: [],
   featuredProducts: [],
   dealsOfTheDay: [],
+  relatedProducts: [],
   loading: false,
   error: null,
   currentPage: 1,
@@ -194,6 +195,26 @@ export const fetchProductById = createAsyncThunk<
     if (error.response) {
       return rejectWithValue(
         error.response.data.message || "Failed to fetch products"
+      );
+    }
+    return rejectWithValue("Network error. Please try again.");
+  }
+});
+
+export const fetchRelatedProducts = createAsyncThunk<
+  Product[], // This should still be Product[] since we'll extract the products array
+  string,
+  { rejectValue: string }
+>("products/fetchRelated", async (productId, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get<{ products: Product[] }>( // Update the response type
+      `/products/related/${productId}`
+    );
+    return response.data.products; // Extract the products array from the response
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(
+        error.response.data.message || "Failed to fetch related products"
       );
     }
     return rejectWithValue("Network error. Please try again.");
@@ -444,6 +465,19 @@ const productSlice = createSlice({
     });
 
     builder.addCase(featuredProducts.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    builder.addCase(fetchRelatedProducts.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchRelatedProducts.fulfilled, (state, action) => {
+      state.loading = false;
+      state.relatedProducts = action.payload;
+    });
+    builder.addCase(fetchRelatedProducts.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

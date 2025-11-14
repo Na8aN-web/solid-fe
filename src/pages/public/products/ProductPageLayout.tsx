@@ -147,9 +147,9 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
 
     fetchData();
   }, [
-    currentPage, 
-    itemsPerPage, 
-    sortOrder, 
+    currentPage,
+    itemsPerPage,
+    sortOrder,
     filters.categories,
     filters.brands,
     filters.vehicleTypes,
@@ -273,26 +273,16 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     indexOfLastProduct
   );
 
-  const addToCart = (productId: string) => {
-    console.log('Adding to cart, productId:', productId, 'Type:', typeof productId);
-
-    if (!productId) {
-      console.error('Product ID is undefined or empty');
-      return;
-    }
-
-    dispatch(
-      addProductToCart({
-        productId,
-        quantity: 1,
+  const addToCart = (productId: string, quantity: number) => {
+    dispatch(addProductToCart({ productId, quantity }))
+      .unwrap()
+      .then(() => {
+        // Optional: Show success message or update UI
+        console.log('Product added to cart successfully');
       })
-    ).then((result) => {
-      if (addProductToCart.fulfilled.match(result)) {
-        console.log(`Added product ${productId} to cart successfully`);
-      } else {
-        console.error('Failed to add to cart:', result.payload);
-      }
-    });
+      .catch((error) => {
+        console.error('Failed to add product to cart:', error);
+      });
   };
 
   const handlePriceChange = ({

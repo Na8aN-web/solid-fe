@@ -4,7 +4,7 @@ import { Minus } from "lucide-react";
 import RecommendedProduct from "../../../private/home/components/RecommendedProduct";
 import { Link, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-import { fetchProductById } from "../../../../store/slices/productSlice";
+import { fetchProductById, fetchRelatedProducts } from "../../../../store/slices/productSlice";
 import { Product } from "../types/product";
 import { useNavigate } from "react-router-dom";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
@@ -27,6 +27,7 @@ const ProductDetails = () => {
   const product = useAppSelector(
     (state) => state.products.product as Product | null
   );
+  const relatedProducts = useAppSelector((state) => state.products.relatedProducts);
   const loading = useAppSelector((state) => state.products.loading);
   const error = useAppSelector((state) => state.products.error);
   const { loading: cartLoading } = useAppSelector((state) => state.cart);
@@ -34,6 +35,7 @@ const ProductDetails = () => {
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
+      dispatch(fetchRelatedProducts(id));
     }
   }, [dispatch, id]);
 
@@ -41,7 +43,22 @@ const ProductDetails = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  console.log(product)
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <LoaderSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <div className="text-red-500">Error loading product: {error}</div>
+      </div>
+    );
+  }
+
 
   if (!product) {
     return (
@@ -53,19 +70,32 @@ const ProductDetails = () => {
     );
   }
 
-  const handleAddToCart = () => {
-    if (product) {
-      dispatch(
-        addProductToCart({
-          productId: product._id, // Make sure your product has an _id field
-          quantity: quantityCount,
-        })
-      ).then(() => {
-        // Optional: Show success message or navigate to cart
-        console.log("Product added to cart");
-      });
-    }
-  };
+ const handleAddToCart = () => {
+  if (product) {
+    const productData = {
+      _id: product._id,
+      name: product.name,
+      images: product.images || [],
+      salesPrice: product.salesPrice,
+      displayPrice: product.salesPrice, // Add this for consistency
+      regularPrice: product.regularPrice,
+      stockStatus: product.stockStatus,
+      brand: product.brand,
+      category: product.category,
+      maker: product.brand?.name || 'Unknown' // Add maker for consistency
+    };
+    
+    dispatch(
+      addProductToCart({
+        productId: product._id,
+        quantity: quantityCount,
+        productData
+      })
+    ).then(() => {
+      console.log("Product added to cart");
+    });
+  }
+};
 
   const handleBuyNow = () => {
     if (product) {
@@ -80,7 +110,6 @@ const ProductDetails = () => {
     }
   };
 
-  // Destructuring the product fields
   const {
     name = "Unknown Product",
     brand = { name: "Unknown Brand" },
@@ -218,7 +247,6 @@ const ProductDetails = () => {
               <tr>
                 <th className="border py-3 px-2 text-left">Dimensions</th>
                 <td className="border py-3 px-2 text-left">
-                  {/* {`${packageSize.length} cm x ${packageSize.breadth} cm x ${packageSize.width} cm`} */}
                   {`${packageSize?.length || 0} cm x ${packageSize?.breadth || 0} cm x ${packageSize?.width || 0} cm`}
                 </td>
               </tr>
@@ -232,7 +260,7 @@ const ProductDetails = () => {
               </tr>
               <tr>
                 <th className="border py-3 px-2 text-left">Product Type</th>
-                <td className="border py-3 px-2 text-left">{category.name}</td>
+                <td className="border py-3 px-2 text-left">{category?.name || "Unknown Category"}</td>
               </tr>
             </tbody>
           </table>
@@ -286,11 +314,11 @@ const ProductDetails = () => {
             <tbody>
               <tr className="divide-x">
                 <td className="w-1/4 py-3 px-2 text-center">
-                  {`${packageSize?.length} cm x ${packageSize?.breadth} cm x ${packageSize?.width} cm`}
+                  {`${packageSize?.length || 0} cm x ${packageSize?.breadth || 0} cm x ${packageSize?.width || 0} cm`}
                 </td>
-                <td className="w-1/4 py-3 px-2 text-center">{weight} kg</td>
-                <td className="w-1/4 py-3 px-2 text-center">{material}</td>
-                <td className="w-1/4 py-3 px-2 text-center">{category.name}</td>
+                <td className="w-1/4 py-3 px-2 text-center">{weight || 0} kg</td>
+                <td className="w-1/4 py-3 px-2 text-center">{material || "Unknown"}</td>
+                <td className="w-1/4 py-3 px-2 text-center">{category?.name || "Unknown Category"}</td>
               </tr>
             </tbody>
           </table>
@@ -516,7 +544,7 @@ const ProductDetails = () => {
                   {/* brand */}
                   <p className="text-sm text-customGray3">
                     Brand:{" "}
-                    <span className="text-customBrown">{brand.name}</span>
+                    <span className="text-customBrown">{brand?.name}</span>
                   </p>
                   {/* price */}
                   <p className="text-xl text-customBrown">
@@ -813,7 +841,7 @@ const ProductDetails = () => {
               <ReviewsSection />
             </div>
           </section>
-          <RecommendedProduct />
+          <RecommendedProduct relatedProducts={relatedProducts} />
         </div>
       )}
     </div>
