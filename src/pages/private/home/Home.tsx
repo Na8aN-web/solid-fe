@@ -8,7 +8,7 @@ import DealsOfTheDay from "./components/DealsOfTheDay";
 import { Link } from "react-router-dom";
 
 
-const HomeGuest = () => {
+const Home = () => {
   // const [isMenuOpen, setIsMenuOpen] = useState(false);
   const ShopNowButton = () => (
     <Link
@@ -74,8 +74,10 @@ const HomeGuest = () => {
               </div>
             </div>
           </section>
+
           {/* Popular Vehicle type */}
           <PopularVehicleTypes />
+
           <section className="flex justify-between gap-4 py-1">
             <div className="w-full bg-black py-4">
               <div className="flex justify-between items-center gap-4 pl-7">
@@ -149,8 +151,10 @@ const HomeGuest = () => {
             <ShopNowButton />
             </div>
           </section>
+
           {/* Featured Products */}
           <FeaturedProducts />
+          
           <section className="flex flex-col lg:flex-row justify-between items-center gap-6 py-6">
             <div
               className="w-full h-[158px] md:h-[273px] bg-cover bg-center flex items-center justify-center"
@@ -177,4 +181,4 @@ const HomeGuest = () => {
   );
 };
 
-export default HomeGuest;
+export default Home;
