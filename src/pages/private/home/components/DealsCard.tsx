@@ -1,12 +1,15 @@
-import React from "react";
-import { useAppDispatch } from "../../../../store/hooks";
+import React, { useState } from "react";
+import { FaStar } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
 
-interface ProductCardProps {
+interface DealsCardProps {
+  productId: string;
   image: string;
   title: string;
   category: string;
-  price: string;
+  price?: string;
   oldPrice?: string;
   discount?: string;
   reviews?: string;
@@ -16,11 +19,11 @@ interface ProductCardProps {
   addingProductId?: string | null; // Track which product is being added
 }
 
-const DealsCard: React.FC<ProductCardProps> = ({
+const DealsCard: React.FC<DealsCardProps> = ({
+  productId,
   image,
   title,
   category,
-  price,
   oldPrice,
   discount,
   reviews,

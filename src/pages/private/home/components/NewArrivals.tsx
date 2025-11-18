@@ -23,6 +23,7 @@ export interface Product {
   regularPrice: number;
   discount?: number;
   numReviews?: number;
+  displayPrice?: number;
 }
 
 const NewArrivals = () => {
@@ -180,7 +181,6 @@ const NewArrivals = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={product._id}>
-                    <Link to={`/product/${product._id}`}>
                       <ProductCard
                         productId={product._id}
                         image={product.image}
@@ -207,7 +207,6 @@ const NewArrivals = () => {
                         cartLoading={addingProductId !== null}
                         addingProductId={addingProductId}
                       />
-                    </Link>
                   </SwiperSlide>
                 );
               })}

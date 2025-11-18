@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { MdFavoriteBorder } from "react-icons/md";
 
@@ -31,10 +31,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
   cartLoading = false,
   addingProductId = null,
 }) => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
   const Favourite = MdFavoriteBorder as unknown as React.FC<
     React.SVGProps<SVGSVGElement>
   >;
+  const { cart } = useAppSelector((state) => state.cart);
+  const cartState = useAppSelector((state) => state.cart);
+  const cartLoading = cartState.loading || false;
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -53,18 +64,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div className="w-full text-left">
-      <div className="flex flex-col items-start justify-center border rounded-xl p-4 mb-3 w-full h-40 py-4 lg:h-52">
-        {discount && (
-          <span className="bg-primary text-white text-xs w-[38px] h-[26px] rounded-3xl flex justify-center items-center">
-            {discount}
-          </span>
-        )}
-        <img
-          src={image}
-          alt={title}
-          className="px-4 w-[100px] h-[100px] m-auto lg:w-[140px] lg:h-[130px]"
-        />
-      </div>
+      <Link to={`/product/${productId}`}>
+        <div className="flex flex-col items-start justify-center border rounded-xl p-4 mb-3 w-full h-40 py-4 lg:h-52">
+          {discount && (
+            <span className="bg-primary text-white text-xs w-[38px] h-[26px] rounded-3xl flex justify-center items-center">
+              {discount}
+            </span>
+          )}
+          <img
+            src={image}
+            alt={title}
+            className="px-4 w-[100px] h-[100px] m-auto lg:w-[140px] lg:h-[130px]"
+          />
+        </div>
+      </Link>
       <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal">
         {category}
       </p>
@@ -140,7 +153,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           className="border rounded border-primary py-2 px-3 hover:bg-primary transition-colors"
           onClick={handleFavorite}
         >
-          <Favourite />
+          <Favourite className="w-4 h-4"/>
         </button>
       </div>
     </div>

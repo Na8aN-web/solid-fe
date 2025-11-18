@@ -17,7 +17,6 @@ import { addProductToCart } from "../../../../store/slices/cartSlice";
 import SuccessModal from "../../../../components/SuccessModal";
 
 const FeaturedProducts = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
