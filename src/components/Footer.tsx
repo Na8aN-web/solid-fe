@@ -42,8 +42,8 @@ const Footer = () => {
                     placeholder="Enter your email address"
                   />
                 </div>
-                <button className="bg-primary text-white text-base font-normal rounded-lg w-24 h-14">
-                  Search
+                <button className="bg-primary text-white text-base font-normal rounded-lg w-24 h-14 px-2">
+                  Subscribe
                 </button>
               </div>
             </div>

@@ -12,10 +12,8 @@ import ProductCard from "./ProductCard";
 import { featuredProducts } from "../../../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
-import { Link } from "react-router-dom";
 
 const FeaturedProducts = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -114,7 +112,6 @@ const FeaturedProducts = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={product._id}>
-                    <Link to={`/product/${product._id}`}>
                     <ProductCard
                       productId={product._id}
                       image={product.image}
@@ -125,8 +122,9 @@ const FeaturedProducts = () => {
                       oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
                       discount={formattedDiscount}
                       numReviews={product.numReviews}
+                      displayPrice={product.displayPrice}
+                      regularPrice={product.regularPrice}
                     />
-                    </Link>
                   </SwiperSlide>
                 );
               })}

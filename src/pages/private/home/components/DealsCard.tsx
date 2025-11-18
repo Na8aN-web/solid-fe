@@ -1,28 +1,113 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { addProductToCart } from "../../../../store/slices/cartSlice";
 
-interface ProductCardProps {
+interface DealsCardProps {
+  productId: string;
   image: string;
   title: string;
   category: string;
-  price: string;
+  price?: string;
   oldPrice?: string;
   discount?: string;
-  reviews?: string;
   rating?: number;
+  reviews?: string;
+  maker?: string;
+  displayPrice?: number;
+  regularPrice?: number;
 }
 
-const DealsCard: React.FC<ProductCardProps> = ({
+const DealsCard: React.FC<DealsCardProps> = ({
+  productId,
   image,
   title,
   category,
-  price,
   oldPrice,
   discount,
-  reviews,
+  price,
   rating,
+  maker,
+  displayPrice,
+  regularPrice,
+  reviews
 }) => {
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    // const Favourite = MdFavoriteBorder as unknown as React.FC<
+    //   React.SVGProps<SVGSVGElement>
+    // >;
+    const { cart } = useAppSelector((state) => state.cart);
+    const cartState = useAppSelector((state) => state.cart);
+    const cartLoading = cartState.loading || false;
+    const [addingProductId, setAddingProductId] = useState<string | null>(null);
+    const [lastAddedProduct, setLastAddedProduct] = useState<{
+      id: string;
+      name: string;
+    } | null>(null);
+    const [addedToCart, setAddedToCart] = useState(false);
+  
+    // Check if this product is already in cart
+    const isInCart =
+      cart?.products?.some((item) => item.product._id === productId) || false;
+  
+    const handleAddToCart = async (productId: string, productName: string) => {
+      const productData = {
+        _id: productId,
+        name: title,
+        images: [image],
+        salesPrice:
+          displayPrice ||
+          parseFloat(price?.replace("₦", "").replace(",", "") || "0"),
+        displayPrice:
+          displayPrice ||
+          parseFloat(price?.replace("₦", "").replace(",", "") || "0"),
+        regularPrice:
+          regularPrice ||
+          parseFloat(oldPrice?.replace("₦", "").replace(",", "") || "0"),
+        stockStatus: "In Stock",
+        brand: {
+          _id: maker || "unknown",
+          name: maker || "Unknown",
+        },
+        maker: maker || "Unknown",
+      };
+  
+      try {
+        setAddingProductId(productId);
+  
+        await dispatch(
+          addProductToCart({
+            productId,
+            quantity: 1,
+            productData,
+          })
+        ).unwrap();
+  
+        setAddedToCart(true);
+        setLastAddedProduct({ id: productId, name: productName });
+      } catch (error) {
+        console.error("ProductCard - Failed to add product to cart:", error);
+      } finally {
+        setAddingProductId(null);
+      }
+    };
+  
+    const handleButtonClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+  
+      if (addedToCart || isInCart) {
+        // Navigate to cart
+        navigate("/cart");
+      } else {
+        // Add to cart
+        handleAddToCart(productId, title);
+      }
+    };
+    
   return (
     <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex w-full gap-4">
       <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16 w-full">
@@ -39,14 +124,14 @@ const DealsCard: React.FC<ProductCardProps> = ({
           />
         </div>
         <div className="flex justify-center lg:flex-col items-center gap-4 w-full pb-6">
-          <div className="border p-4 rounded-2xl flex justify-center items-center">
-            <img src={image} alt={title} className="w-12 h-12" />
+          <div className="border p-3 rounded-2xl flex justify-center items-center">
+            <img src={image} alt={title} className="w-14 h-12 md:w-28" />
           </div>
           <div className="border p-4 rounded-2xl flex justify-center items-center">
-            <img src={image} alt={title} className="w-12 h-12" />
+            <img src={image} alt={title} className="w-14 h-12 md:w-28" />
           </div>
           <div className="border p-4 rounded-2xl flex justify-center items-center">
-            <img src={image} alt={title} className="w-12 h-12" />
+            <img src={image} alt={title} className="w-14 h-12 md:w-28" />
           </div>
         </div>
       </div>
@@ -80,18 +165,77 @@ const DealsCard: React.FC<ProductCardProps> = ({
           )}
         </div>
         <div className="flex gap-3 pt-4">
-          <button
-            className="flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-full"
-            onClick={(e) => {
-              e.stopPropagation();
-              // handle add to cart logic
-            }}
-          >
-            <img src="/add-cart.svg" alt="cart" />
-            <span className="text-sm text-primary font-normal">
+        <button
+          onClick={handleButtonClick}
+          disabled={cartLoading && addingProductId === productId}
+          className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm ${
+            isInCart
+              ? "bg-customGray3 text-white hover:bg-blue-600"
+              : cartLoading && addingProductId === productId
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "bg-primary text-white hover:bg-blue-700"
+          }`}
+        >
+          {cartLoading && addingProductId === productId ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Adding...
+            </>
+          ) : isInCart ? (
+            <>
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              View Cart
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
               Add to cart
-            </span>
-          </button>
+            </>
+          )}
+        </button>
           <button
             className="border rounded border-primary py-2 px-3"
             onClick={(e) => {

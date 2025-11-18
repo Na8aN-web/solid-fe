@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Home from "./pages/public/home/Home";
-import HomeGuest from "./pages/private/home/HomeGuest";
+import HomeGuest from "./pages/private/home/Home";
 import AccountTypeSelection from "./pages/authentication/AccountType";
 import SignupScreen from "./pages/authentication/SignUp";
 import Login from "./pages/authentication/Login";

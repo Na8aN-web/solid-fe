@@ -74,6 +74,7 @@ const DealsOfTheDay = () => {
                   <SwiperSlide key={deal._id}>
                     <Link to={`/product/${deal._id}`}>
                       <DealsCard
+                        productId={deal._id}
                         image={deal.image}
                         title={deal.name}
                         category={deal.categoryName}
@@ -82,6 +83,8 @@ const DealsOfTheDay = () => {
                         rating={deal.rating}
                         discount={formattedDiscount}
                         reviews={deal.numReviews?.toString()}
+                        displayPrice={deal.displayPrice}
+                        regularPrice={deal.regularPrice}
                       />
                     </Link>
                   </SwiperSlide>
