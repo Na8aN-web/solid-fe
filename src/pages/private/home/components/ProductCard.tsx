@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { MdFavoriteBorder } from "react-icons/md";
-import { addProductToCart } from "../../../../store/slices/cartSlice";
-import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-import { Link, useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   productId: string;
@@ -15,9 +12,9 @@ interface ProductCardProps {
   discount?: string;
   rating?: number;
   numReviews?: number;
-  maker?: string;
-  displayPrice?: number;
-  regularPrice?: number;
+  onAddToCart?: (productId: string, productName: string) => void; // Add callback
+  cartLoading?: boolean; // Add loading state
+  addingProductId?: string | null; // Track which product is being added
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -30,9 +27,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   rating,
   numReviews,
-  maker,
-  displayPrice,
-  regularPrice,
+  onAddToCart,
+  cartLoading = false,
+  addingProductId = null,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -50,63 +47,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
   } | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  // Check if this product is already in cart
-  const isInCart =
-    cart?.products?.some((item) => item.product._id === productId) || false;
-
-  const handleAddToCart = async (productId: string, productName: string) => {
-    const productData = {
-      _id: productId,
-      name: title,
-      images: [image],
-      salesPrice:
-        displayPrice ||
-        parseFloat(price?.replace("₦", "").replace(",", "") || "0"),
-      displayPrice:
-        displayPrice ||
-        parseFloat(price?.replace("₦", "").replace(",", "") || "0"),
-      regularPrice:
-        regularPrice ||
-        parseFloat(oldPrice?.replace("₦", "").replace(",", "") || "0"),
-      stockStatus: "In Stock",
-      brand: {
-        _id: maker || "unknown",
-        name: maker || "Unknown",
-      },
-      maker: maker || "Unknown",
-    };
-
-    try {
-      setAddingProductId(productId);
-
-      await dispatch(
-        addProductToCart({
-          productId,
-          quantity: 1,
-          productData,
-        })
-      ).unwrap();
-
-      setAddedToCart(true);
-      setLastAddedProduct({ id: productId, name: productName });
-    } catch (error) {
-      console.error("ProductCard - Failed to add product to cart:", error);
-    } finally {
-      setAddingProductId(null);
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(productId, title);
     }
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
+  const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (addedToCart || isInCart) {
-      // Navigate to cart
-      navigate("/cart");
-    } else {
-      // Add to cart
-      handleAddToCart(productId, title);
-    }
+    // Add favorite functionality here if needed
+    // console.log("Add to favorite:", productId);
   };
 
   return (
@@ -154,21 +107,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       <div className="flex gap-3 pt-4">
-        <button
-          onClick={handleButtonClick}
+        <button 
+          onClick={handleAddToCart}
           disabled={cartLoading && addingProductId === productId}
-          className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm ${
-            isInCart
-              ? "bg-customGray3 text-white hover:bg-blue-600"
-              : cartLoading && addingProductId === productId
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-primary text-white hover:bg-blue-700"
+          className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full ${
+            cartLoading && addingProductId === productId
+              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+              : "hover:border-2 hover:border-primary hover:text-white transition-colors"
           }`}
         >
           {cartLoading && addingProductId === productId ? (
             <>
               <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                className="animate-spin -ml-1 mr-2 h-4 w-4"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -187,50 +138,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Adding...
-            </>
-          ) : isInCart ? (
-            <>
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              View Cart
+              <span className="text-[10px]">Adding...</span>
             </>
           ) : (
             <>
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              Add to cart
+              <img src="/blue-cart.svg" alt="cart" />
+              <span className="text-[10px] text-primary font-normal ">
+                Add to cart
+              </span>
             </>
           )}
         </button>
         <button
-          className="border rounded border-primary py-2 px-3"
-          onClick={(e) => {
-            e.stopPropagation();
-            // handle add to wishlist logic
-          }}
+          className="border rounded border-primary py-2 px-3 hover:bg-primary transition-colors"
+          onClick={handleFavorite}
         >
           <Favourite className="w-4 h-4"/>
         </button>

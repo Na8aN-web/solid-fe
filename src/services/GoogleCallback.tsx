@@ -33,16 +33,7 @@ const GoogleCallback = () => {
             setHasProcessed(true);
             dispatch(handleGoogleCallback({ code, state: state || undefined }))
                 .unwrap()
-                .then(() => {
-                    // Success is handled by the isAuthenticated useEffect
-                    console.log('Google authentication successful');
-                })
-                .catch((error) => {
-                    console.error('Google authentication failed:', error);
-                    // Error is handled by the error useEffect
-                });
         } else {
-            // No code means something went wrong
             setHasProcessed(true);
             navigate('/login', { 
                 state: { error: 'Invalid authentication response from Google' } 
@@ -53,7 +44,6 @@ const GoogleCallback = () => {
     // Redirect based on authentication status
     useEffect(() => {
         if (isAuthenticated) {
-            console.log('Authentication successful, redirecting to home');
             navigate('/home');
         }
     }, [isAuthenticated, navigate]);

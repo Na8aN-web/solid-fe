@@ -159,14 +159,10 @@ export const verifyEmailOTP = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log('Sending OTP verification request:', { otp, otpToken });
-
       const response = await axiosInstance.post<EmailVerificationResponse>(
         "/auth/verify-email-otp",
         { otp, otpToken }
       );
-
-      console.log('OTP verification response:', response.data);
       return response.data;
 
     } catch (error: any) {

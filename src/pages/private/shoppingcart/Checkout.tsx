@@ -102,15 +102,6 @@ const Checkout: React.FC = () => {
       return;
     }
 
-    // TODO: Implement payment processing
-    console.log("Checkout data:", {
-      address: selectedAddress,
-      deliveryType: selectedDeliveryType,
-      instructions: deliveryInstructions,
-      cart,
-      total,
-    });
-
     alert("Payment functionality coming soon!");
   };
 

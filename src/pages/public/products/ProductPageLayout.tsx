@@ -172,7 +172,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
 
   // FIXED: Updated to properly dispatch Redux action
   const handlePageChange = (page: number) => {
-    console.log('Page change requested:', page);
     dispatch(setCurrentPage(page));
   };
 
@@ -277,8 +276,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     dispatch(addProductToCart({ productId, quantity }))
       .unwrap()
       .then(() => {
-        // Optional: Show success message or update UI
-        console.log('Product added to cart successfully');
       })
       .catch((error) => {
         console.error('Failed to add product to cart:', error);
@@ -313,7 +310,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   };
 
   const applyFilters = async () => {
-    console.log("Applying filters:", filters);
     if (isMobile) {
       setIsFilterOpen(false);
     }

@@ -433,8 +433,6 @@ const KycVerification: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalSubmissions);
 
-  console.log(submissions)
-
   if (error) {
     return (
       <AdminLayout pageTitle="KYC Verification">

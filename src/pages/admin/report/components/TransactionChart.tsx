@@ -29,7 +29,7 @@ const TransactionChart: React.FC = () => {
 
   const handleExportReport = () => {
     // Export functionality would be implemented here
-    console.log('Exporting report...');
+    // console.log('Exporting report...');
   };
 
   return (

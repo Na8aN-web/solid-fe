@@ -102,16 +102,7 @@ export const fetchProducts = createAsyncThunk(
       const queryString = params.toString();
       const url = queryString ? `/products?${queryString}` : '/products';
 
-      console.log('API Request URL:', url);
-      console.log('Query params:', Object.fromEntries(params.entries()));
-
       const response = await axiosInstance.get<ProductsResponse>(url);
-      
-      console.log('API Response:', {
-        totalProducts: response.data.pagination?.total,
-        productsCount: response.data.products?.length,
-        filterData: response.data.filter_data,
-      });
 
       return response.data;
     } catch (error: any) {
@@ -168,7 +159,6 @@ export const searchProducts = createAsyncThunk<
     }
 
     const url = `/products/search?${requestParams.toString()}`;
-    console.log('Search URL:', url);
 
     const { data } = await axiosInstance.get<ProductsResponse>(url);
     return data;
@@ -189,7 +179,6 @@ export const fetchProductById = createAsyncThunk<
     const response = await axiosInstance.get<{ product: Product }>(
       `/products/${id}`
     );
-    console.log(response.data);
     return response.data;
   } catch (error: any) {
     if (error.response) {

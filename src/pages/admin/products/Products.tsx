@@ -100,7 +100,6 @@ const Products: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    console.log("Editing product with ID:", id);
     navigate(`/admin/edit-product/${id}`);
   };
 

@@ -11,6 +11,8 @@ import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { newProducts } from "../../../../store/slices/productSlice";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
 import { Link } from "react-router-dom";
+import { addProductToCart } from "../../../../store/slices/cartSlice";
+import SuccessModal from "../../../../components/SuccessModal";
 
 export interface Product {
   _id: string;
@@ -28,6 +30,9 @@ const NewArrivals = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
 
   const newArrivals = useAppSelector(
     (state) => state.products.newArrivals ?? []
@@ -50,6 +55,58 @@ const NewArrivals = () => {
     ? newArrivals.filter((product) => product.categoryName === activeCategory)
     : newArrivals;
 
+  const handleAddToCart = async (productId: string, productName: string) => {
+    const product = newArrivals.find(p => p._id === productId);
+
+    if (!product) {
+      console.error('Product not found');
+      return;
+    }
+
+    // Prepare product data for cart
+    const productData = {
+      _id: product._id,
+      name: product.name,
+      images: [product.image],
+      salesPrice: product.displayPrice,
+      displayPrice: product.displayPrice,
+      regularPrice: product.regularPrice,
+      stockStatus: 'In Stock',
+      brand: {
+        _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, '-')}`,
+        name: product.brandName
+      },
+      maker: product.brandName
+    };
+
+    try {
+      setAddingProductId(productId);
+      await dispatch(addProductToCart({
+        productId,
+        quantity: 1,
+        productData
+      })).unwrap();
+
+      // Show success modal
+      setLastAddedProduct({ id: productId, name: productName });
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+    } finally {
+      setAddingProductId(null);
+    }
+  };
+
+  const handleViewCart = () => {
+    setShowSuccessModal(false);
+    // Navigate to cart page
+    window.location.href = '/cart';
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    setLastAddedProduct(null);
+  };
 
   return (
     <div>
@@ -146,8 +203,9 @@ const NewArrivals = () => {
                         )}`}
                         discount={formattedDiscount}
                         numReviews={product.numReviews}
-                        displayPrice={product.displayPrice}
-                        regularPrice={product.regularPrice}
+                        onAddToCart={handleAddToCart}
+                        cartLoading={addingProductId !== null}
+                        addingProductId={addingProductId}
                       />
                   </SwiperSlide>
                 );
@@ -156,6 +214,13 @@ const NewArrivals = () => {
           )}
         </div>
       </section>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleCloseModal}
+        onViewCart={handleViewCart}
+        productName={lastAddedProduct?.name}
+      />
     </div>
   );
 };

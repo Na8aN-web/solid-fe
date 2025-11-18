@@ -12,11 +12,11 @@ interface DealsCardProps {
   price?: string;
   oldPrice?: string;
   discount?: string;
-  rating?: number;
   reviews?: string;
-  maker?: string;
-  displayPrice?: number;
-  regularPrice?: number;
+  productId: string; // Add productId
+  onAddToCart?: (productId: string, productName: string) => void; // Add callback
+  cartLoading?: boolean; // Add loading state
+  addingProductId?: string | null; // Track which product is being added
 }
 
 const DealsCard: React.FC<DealsCardProps> = ({
@@ -26,116 +26,59 @@ const DealsCard: React.FC<DealsCardProps> = ({
   category,
   oldPrice,
   discount,
-  price,
-  rating,
-  maker,
-  displayPrice,
-  regularPrice,
-  reviews
+  reviews,
+  productId,
+  onAddToCart,
+  cartLoading = false,
+  addingProductId = null,
 }) => {
-  const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    // const Favourite = MdFavoriteBorder as unknown as React.FC<
-    //   React.SVGProps<SVGSVGElement>
-    // >;
-    const { cart } = useAppSelector((state) => state.cart);
-    const cartState = useAppSelector((state) => state.cart);
-    const cartLoading = cartState.loading || false;
-    const [addingProductId, setAddingProductId] = useState<string | null>(null);
-    const [lastAddedProduct, setLastAddedProduct] = useState<{
-      id: string;
-      name: string;
-    } | null>(null);
-    const [addedToCart, setAddedToCart] = useState(false);
-  
-    // Check if this product is already in cart
-    const isInCart =
-      cart?.products?.some((item) => item.product._id === productId) || false;
-  
-    const handleAddToCart = async (productId: string, productName: string) => {
-      const productData = {
-        _id: productId,
-        name: title,
-        images: [image],
-        salesPrice:
-          displayPrice ||
-          parseFloat(price?.replace("₦", "").replace(",", "") || "0"),
-        displayPrice:
-          displayPrice ||
-          parseFloat(price?.replace("₦", "").replace(",", "") || "0"),
-        regularPrice:
-          regularPrice ||
-          parseFloat(oldPrice?.replace("₦", "").replace(",", "") || "0"),
-        stockStatus: "In Stock",
-        brand: {
-          _id: maker || "unknown",
-          name: maker || "Unknown",
-        },
-        maker: maker || "Unknown",
-      };
-  
-      try {
-        setAddingProductId(productId);
-  
-        await dispatch(
-          addProductToCart({
-            productId,
-            quantity: 1,
-            productData,
-          })
-        ).unwrap();
-  
-        setAddedToCart(true);
-        setLastAddedProduct({ id: productId, name: productName });
-      } catch (error) {
-        console.error("ProductCard - Failed to add product to cart:", error);
-      } finally {
-        setAddingProductId(null);
-      }
-    };
-  
-    const handleButtonClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-  
-      if (addedToCart || isInCart) {
-        // Navigate to cart
-        navigate("/cart");
-      } else {
-        // Add to cart
-        handleAddToCart(productId, title);
-      }
-    };
-    
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(productId, title);
+    }
+  };
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Add favorite functionality here if needed
+    // console.log("Add to favorite:", productId);
+  };
+
   return (
-    <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex w-full gap-4">
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16 w-full">
+    <div className="border px-4 md:px-12 py-6 rounded-2xl text-start lg:flex">
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-16">
         <div className="relative">
           {discount && (
-            <span className="bg-primary text-white text-xs p-2 w-[38px] h-[26px] rounded-3xl flex justify-center items-center absolute top-[-5px] right-[-60px] xl:top-[-50px]">
+            <span className="bg-primary text-white text-xs p-2 rounded-3xl absolute top-[-5px] right-[-60px] xl:top-[-50px]">
               {discount}
             </span>
           )}
-          <img
-            src={image}
-            alt=""
-            className="w-[140px] h-[140px] md:max-w-[200px] md:h-[200px]"
-          />
+          {/* Fixed main image size */}
+          <div className="w-full lg:w-[250px] h-48 flex items-center justify-center overflow-hidden">
+            <img 
+              src={image} 
+              alt={title} 
+              className="w-full h-full object-contain"
+            />
+          </div>
         </div>
         <div className="flex justify-center lg:flex-col items-center gap-4 w-full pb-6">
-          <div className="border p-3 rounded-2xl flex justify-center items-center">
-            <img src={image} alt={title} className="w-14 h-12 md:w-28" />
+          {/* Fixed thumbnail sizes */}
+          <div className="border p-3 rounded-2xl w-24 h-24 flex justify-center items-center overflow-hidden">
+            <img src={image} alt={title} className="w-16 h-16 object-contain" />
           </div>
-          <div className="border p-4 rounded-2xl flex justify-center items-center">
-            <img src={image} alt={title} className="w-14 h-12 md:w-28" />
+          <div className="border p-3 rounded-2xl w-24 h-24 flex justify-center items-center overflow-hidden">
+            <img src={image} alt={title} className="w-16 h-16 object-contain" />
           </div>
-          <div className="border p-4 rounded-2xl flex justify-center items-center">
-            <img src={image} alt={title} className="w-14 h-12 md:w-28" />
+          <div className="border p-3 rounded-2xl w-24 h-24 flex justify-center items-center overflow-hidden">
+            <img src={image} alt={title} className="w-16 h-16 object-contain" />
           </div>
         </div>
       </div>
-      <div className="w-full">
+      <div className="">
         <p className="text-[10px] font-semibold text-customGray2 leading-normal">
           {category}
         </p>
@@ -143,15 +86,7 @@ const DealsCard: React.FC<DealsCardProps> = ({
           {title}
         </h3>
         <div className="flex items-center gap-1 py-2">
-          <div className="flex gap-1">
-            {[...Array(5)].map((_, index) => (
-              <Star
-                key={index}
-                color={index < (rating ?? 0) ? "gold" : "lightgrey"}
-                className="w-3 h-3"
-              />
-            ))}
-          </div>
+          <img src="/stars.svg" alt="stars" />
           <span className="text-sm font-medium text-customGray3">
             ({reviews} Reviews)
           </span>
@@ -165,83 +100,51 @@ const DealsCard: React.FC<DealsCardProps> = ({
           )}
         </div>
         <div className="flex gap-3 pt-4">
-        <button
-          onClick={handleButtonClick}
-          disabled={cartLoading && addingProductId === productId}
-          className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm ${
-            isInCart
-              ? "bg-customGray3 text-white hover:bg-blue-600"
-              : cartLoading && addingProductId === productId
+          <button 
+            onClick={handleAddToCart}
+            disabled={cartLoading && addingProductId === productId}
+            className={`flex items-center justify-center gap-2 border rounded border-primary py-2 w-full sm:w-56 ${
+              cartLoading && addingProductId === productId
                 ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-primary text-white hover:bg-blue-700"
-          }`}
-        >
-          {cartLoading && addingProductId === productId ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Adding...
-            </>
-          ) : isInCart ? (
-            <>
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              View Cart
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              Add to cart
-            </>
-          )}
-        </button>
-          <button
-            className="border rounded border-primary py-2 px-3"
-            onClick={(e) => {
-              e.stopPropagation();
-              // handle add to wishlist logic
-            }}
+                : "hover:border-2 hover:border-primary transition-colors"
+            }`}
+          >
+            {cartLoading && addingProductId === productId ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Adding...
+              </>
+            ) : (
+              <>
+                <img src="/add-cart.svg" alt="cart" />
+                <span className="text-sm text-primary font-normal">
+                  Add to cart
+                </span>
+              </>
+            )}
+          </button>
+          <button 
+            onClick={handleFavorite}
+            className="border rounded border-primary py-2 px-3 hover:bg-primary transition-colors"
           >
             <img src="/favourite.svg" alt="favourite" className="w-6" />
           </button>
