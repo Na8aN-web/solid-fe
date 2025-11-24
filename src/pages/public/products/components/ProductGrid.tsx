@@ -4,6 +4,7 @@ import SortSidebar from "./SortSidebar";
 import { Link, useNavigate } from "react-router-dom"; // Add useNavigate import
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { addProductToCart, updateCartProductData } from "../../../../store/slices/cartSlice";
+import { FilterState } from "../ProductPageLayout";
 import SuccessModal from "../../../../components/SuccessModal";
 
 interface Product {
@@ -51,6 +52,7 @@ interface ProductGridProps {
   setIsSortOpen: (isOpen: boolean) => void;
   cartLoading: boolean;
   filterLoading?: boolean;
+  setFilters: (filters: FilterState) => void;
   activeFilterText?: string;
 }
 
@@ -75,6 +77,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   setIsSortOpen,
   cartLoading,
   activeFilterText,
+  setFilters,
   filterLoading,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -217,8 +220,31 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <div className="w-full md:w-3/4">
       {activeFilterText && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md flex justify-between items-center">
           <p className="text-blue-700 text-sm">{activeFilterText}</p>
+          <button
+            onClick={() => {
+              // Reset all filters to their default state
+              setFilters({
+                maker: "",
+                model: "",
+                year: "",
+                engine: "",
+                minPrice: 100,
+                maxPrice: 200000,
+                categories: [],
+                departments: [],
+                vehicleTypes: [],
+                brands: [],
+              });
+              setSortOrder("");
+              // Use the prop directly instead of dispatch
+              setCurrentPage(1);
+            }}
+            className="ml-4 px-3 py-1 bg-white text-blue-700 border border-blue-300 rounded-md text-sm hover:bg-blue-50 transition-colors"
+          >
+            Clear Filters
+          </button>
         </div>
       )}
 
@@ -527,7 +553,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       )}
 
-       <SuccessModal
+      <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleCloseModal}
         onViewCart={handleViewCart}
