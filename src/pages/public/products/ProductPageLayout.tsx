@@ -15,7 +15,7 @@ import { addProductToCart } from "../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { useLocation } from "react-router-dom";
 
-interface FilterState {
+export interface FilterState {
   maker: string;
   model: string;
   year: string;
@@ -180,6 +180,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     const name = params.get("name");
     const category = params.get("category");
     const vehicleType = params.get("vehicleType");
+    const brand = params.get("brand");
 
     const fetchInitialData = async () => {
       setFilterLoading(true);
@@ -204,7 +205,23 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
             ...prev,
             categories: [category]
           }));
-        } else if (vehicleType) {
+        }
+        else if (brand) { // NEW: Handle brand filter
+          dispatch(setCurrentPage(1));
+          setFilters(prev => ({
+            ...prev,
+            brands: [brand]
+          }));
+
+          // Fetch products with brand filter
+          await dispatch(fetchProducts({
+            brands: [brand],
+            page: 1,
+            limit: itemsPerPage,
+            sortBy: sortOrder
+          } as any)).unwrap();
+        }
+        else if (vehicleType) {
           dispatch(setCurrentPage(1));
           setFilters(prev => ({
             ...prev,
@@ -329,6 +346,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
                     {activeFilterText}
                   </p>
                 )}
+               
               </div>
             </div>
           )}
@@ -421,6 +439,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
               setItemsPerPage={handleItemsPerPageChange}
               setSortOrder={handleSortOrderChange}
               filterLoading={filterLoading}
+              setFilters={setFilters}
               activeFilterText={activeFilterText}
             />
           </div>

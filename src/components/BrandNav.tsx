@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../store";
 import { fetchBrands } from "../store/slices/brandSlice";
 import { fetchCategories } from "../store/slices/categoriesSlice";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
@@ -19,7 +19,7 @@ interface BrandNavProps {
 
 const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate(); // Add this hook
+  const navigate = useNavigate();
   const { brands, loading: brandsLoading, error: brandsError } = useSelector((state: RootState) => state.brands);
   const { categories, loading: categoriesLoading, error: categoriesError } = useSelector((state: RootState) => state.categories);
   const [isDropOpen, setIsDropOpen] = useState(false);
@@ -30,16 +30,15 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Prepare brands array for display
-  const displayBrands = brands?.map(brand => brand.name);
-  
-
-  // Add this function to handle category click
+  // Handle category click
   const handleCategoryClick = (categoryId: string, categoryName: string) => {
-    // Navigate to products page with category filter
     navigate(`/products?category=${encodeURIComponent(categoryId)}`);
-    // Close the dropdown after selection
     setIsDropOpen(false);
+  };
+
+  // NEW: Handle brand click
+  const handleBrandClick = (brandId: string) => {
+    navigate(`/products?brand=${encodeURIComponent(brandId)}`);
   };
 
   return (
@@ -62,14 +61,13 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
           </p>
         </div>
         <div
-          className={`px-4 py-2 bg-white w-full absolute z-50 transition-all duration-300 ease-in-out ${
-            isDropOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-10 opacity-0 invisible"
-          }`}
+          className={`px-4 py-2 bg-white w-full absolute z-50 transition-all duration-300 ease-in-out ${isDropOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-10 opacity-0 invisible"
+            }`}
         >
           <h2 className="text-customBrown font-semibold text-base py-5">
             Categories
           </h2>
-          
+
           {categoriesLoading ? (
             <div className="flex justify-center py-4">
               <div className="text-sm text-gray-500">Loading categories...</div>
@@ -81,14 +79,12 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
           ) : (
             <ul className="flex flex-col justify-around items-start gap-3 h-inherit text-gray-500 text-sm font-normal">
               {categories?.map((category) => (
-                <li 
+                <li
                   key={category._id}
                   className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                  onClick={() => handleCategoryClick(category._id, category.name)} // Add onClick handler
+                  onClick={() => handleCategoryClick(category._id, category.name)}
                 >
                   <div className="flex items-center gap-4">
-                    {/* Commented out the icon since we don't have category icons from API */}
-                    {/* <img src="/game-icons_race-car.svg" alt={category.name} className="w-auto"/> */}
                     <span>{category.name}</span>
                   </div>
                   <ChevronRight className="w-5 h-5" />
@@ -137,10 +133,13 @@ const BrandNav: React.FC<BrandNavProps> = ({ isMenuOpen }) => {
                 1280: { slidesPerView: 10 }, // Desktops
               }}
             >
-              {displayBrands?.map((brand, index) => (
-                <SwiperSlide key={index}>
-                  <p className="text-sm cursor-pointer hover:text-primary transition-colors">
-                    {brand}
+              {brands?.map((brand) => (
+                <SwiperSlide key={brand._id}>
+                  <p
+                    className="text-sm cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => handleBrandClick(brand._id)} // Pass brand._id instead of brand.name
+                  >
+                    {brand.name}
                   </p>
                 </SwiperSlide>
               ))}
