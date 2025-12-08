@@ -13,14 +13,12 @@ interface DealsCardProps {
   oldPrice?: string;
   discount?: string;
   reviews?: string;
-  productId: string; // Add productId
   onAddToCart?: (productId: string, productName: string) => void; // Add callback
   cartLoading?: boolean; // Add loading state
   addingProductId?: string | null; // Track which product is being added
 }
 
 const DealsCard: React.FC<DealsCardProps> = ({
-  productId,
   image,
   title,
   category,
@@ -92,7 +90,6 @@ const DealsCard: React.FC<DealsCardProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-customBrown">{price}</p>
           {oldPrice && (
             <p className="text-sm font-semibold text-customGray3 line-through">
               {oldPrice}

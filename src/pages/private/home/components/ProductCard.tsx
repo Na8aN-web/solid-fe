@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { MdFavoriteBorder } from "react-icons/md";
+import { Link, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 
 interface ProductCardProps {
   productId: string;
@@ -39,8 +41,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   >;
   const { cart } = useAppSelector((state) => state.cart);
   const cartState = useAppSelector((state) => state.cart);
-  const cartLoading = cartState.loading || false;
-  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  // const cartLoading = cartState.loading || false;
+  // const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [lastAddedProduct, setLastAddedProduct] = useState<{
     id: string;
     name: string;
