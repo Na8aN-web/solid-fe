@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../services/api/axios";
 import { Category } from "../services/categories/types";
+import { CiSearch } from "react-icons/ci";
 
 type Props = {
   categoriesProp?: Category[];
@@ -10,14 +11,21 @@ type Props = {
   onSearchDone?: () => void;
 };
 
-const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDone }) => {
+const SearchFilter: React.FC<Props> = ({
+  categoriesProp,
+  loadingProp,
+  onSearchDone,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [searchValue, setSearchValue] = useState("");
-  const [categories, setCategories] = useState<Category[]>(categoriesProp ?? []);
+  const [categories, setCategories] = useState<Category[]>(
+    categoriesProp ?? []
+  );
   const [loading, setLoading] = useState<boolean>(!!loadingProp);
   const [selectedCatId, setSelectedCatId] = useState<string>("");
+  const Search = CiSearch as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
 
   // Clear search when leaving /products
   useEffect(() => {
@@ -45,30 +53,22 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
       }
     })();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [categoriesProp]);
 
-  const handleCategoryChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
+  const handleCategoryChange: React.ChangeEventHandler<HTMLSelectElement> = (
+    e
+  ) => {
     const id = e.target.value;
     setSelectedCatId(id);
   };
 
-  // const goSearch = () => {
-  //   const q = searchValue.trim();
-  //   const qs = new URLSearchParams();
-
-  //   if (q) qs.set("name", q);
-  //   if (selectedCatId) qs.set("categoryId", selectedCatId);
-  //   qs.set("page", "1");
-  //   console.log("Search Query:", qs.toString());
-  //   navigate(`/products?${qs.toString()}`);
-  //   onSearchDone?.();
-  // };
-
   const goSearch = () => {
     const q = searchValue.trim();
     const qs = new URLSearchParams();
-  
+
     if (q) qs.set("name", q);
     qs.set("page", "1");
 
@@ -76,24 +76,31 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
     onSearchDone?.();
   };
 
-
   return (
     <form
-      onSubmit={(e) => { e.preventDefault(); goSearch(); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        goSearch();
+      }}
       className="flex gap-4 w-full"
     >
       <div className="flex w-full">
         {/* Category Select */}
-        <div className="relative w-full md:w-[250px]">
+        <div className="relative w-full md:w-[250px] hidden md:inline-block">
           <select
-            className="appearance-none pl-[16px] h-12 border rounded-l-lg pr-[40px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-white"
+            className="appearance-none pl-[16px] h-12 border rounded-l-lg pr-[40px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-transparent text-white"
             value={selectedCatId}
             onChange={handleCategoryChange}
             disabled={loading}
           >
-            <option value="">{loading ? "Loading..." : "All Categories"}</option>
+            <option value="">
+              {loading ? "Loading..." : "All Categories"}
+            </option>
             {categories.map((c) => (
-              <option key={(c as any).id ?? (c as any)._id} value={(c as any).id ?? (c as any)._id}>
+              <option
+                key={(c as any).id ?? (c as any)._id}
+                value={(c as any).id ?? (c as any)._id}
+              >
                 {c.name}
               </option>
             ))}
@@ -107,17 +114,13 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
 
         {/* Search input */}
         <div className="relative w-full">
-          <img
-            src="/search.svg"
-            alt="search"
-            className="absolute top-4 left-5 w-5"
-          />
+          <Search className="text-white absolute top-3 left-5 w-6 h-6" />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && goSearch()}
-            className="border h-12 w-full p-2 rounded-r-lg text-sm pl-12"
+            className="border h-12 w-full p-2 rounded-lg md:rounded-l-none text-base pl-12 bg-transparent text-white placeholder:text-white outline-none focus:ring-0 focus:border-gray-300"
             placeholder="Search by part name"
           />
         </div>
@@ -125,7 +128,7 @@ const SearchFilter: React.FC<Props> = ({ categoriesProp, loadingProp, onSearchDo
 
       <button
         type="submit"
-        className="border h-12 rounded-lg bg-primary text-white px-4 text-base font-semibold"
+        className="h-12 rounded-lg bg-primary text-white px-4 text-base font-semibold hidden md:inline-block"
         disabled={loading}
       >
         Search

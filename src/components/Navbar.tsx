@@ -21,12 +21,12 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const [isFixed, setIsFixed] = useState(false);
 
   // NEW: categories
   const [categories, setCategories] = useState<Category[]>([]);
   const [catLoading, setCatLoading] = useState(false);
   const [selectedCat, setSelectedCat] = useState<string>("");
-  
 
   // A) Clear search input whenever we leave /products
   useEffect(() => {
@@ -34,9 +34,6 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       setSearchValue("");
     }
   }, [location.pathname]);
-
- 
-
 
   // D) search submit
   const handleSearch = (e?: React.FormEvent) => {
@@ -109,541 +106,565 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsFixed(window.scrollY > 120); // threshold (px)
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="relative bg-white">
-      <header>
-        <div className="flex items-center pt-6 px-5 w-full relative lg:gap-20 lg:border-b lg:pb-9 lg:pt-9">
-          <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto">
-            <div className="flex justify-between">
-              <div className="flex gap-4">
-                {isMenuOpen ? (
-                  //home
-                  <Link to="/home">
-                    <img
-                      src="/cancel.svg"
-                      alt="close"
-                      className="w-4 lg:hidden"
-                      onClick={() => setIsMenuOpen(false)}
-                    />
-                  </Link>
-                ) : (
-                  <img
-                    src="/hamburger.svg"
-                    alt="open"
-                    className="w-6 lg:hidden"
-                    onClick={() => setIsMenuOpen(true)}
-                  />
-                )}
+    <nav
+      className={`
+      w-full transition-all duration-300 ease-in-out bg-white pt-6 px-5 lg:border-b pb-4
+      ${isFixed ? "fixed top-0 left-0 z-50 shadow-lg lg:pb-6 lg:pt-6" : "relative lg:pb-9 lg:pt-9"}
+    `}
+    >
+      <div className="flex items-center w-full relative lg:gap-20">
+        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto">
+          <div className="flex justify-between">
+            <div className="flex gap-4">
+              {isMenuOpen ? (
+                //home
                 <Link to="/home">
                   <img
-                    src="/Frame 47.svg"
-                    alt="solid-logo"
-                    className="w-32 lg:w-44"
+                    src="/cancel.svg"
+                    alt="close"
+                    className="w-4 lg:hidden"
+                    onClick={() => setIsMenuOpen(false)}
                   />
                 </Link>
-              </div>
-              <Link to="/cart">
-                <img src="/cart.svg" alt="cart" className="w-8 lg:hidden" />
+              ) : (
+                <img
+                  src="/hamburger.svg"
+                  alt="open"
+                  className="w-6 lg:hidden"
+                  onClick={() => setIsMenuOpen(true)}
+                />
+              )}
+              <Link to="/home">
+                <img
+                  src="/Frame 47.svg"
+                  alt="solid-logo"
+                  className="w-32 lg:w-44"
+                />
               </Link>
             </div>
-            {/* mobile input */}
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="border h-12 w-full p-2 rounded-lg lg:rounded-r-lg text-sm pl-12 lg:hidden"
-              placeholder="Search by part name of OEM number"
-            />
+            <Link to="/cart">
+              <img src="/cart.svg" alt="cart" className="w-8 lg:hidden" />
+            </Link>
           </div>
-          {/* desktop */}
-          <div className="hidden lg:flex w-full">
-            <SearchFilter
-    categoriesProp={categories}
-    loadingProp={catLoading}
-    onSearchDone={() => setIsMenuOpen(false)}
-  />
+          {/* mobile input */}
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="border h-12 w-full p-2 rounded-lg lg:rounded-r-lg text-sm pl-12 lg:hidden"
+            placeholder="Search by part name of OEM number"
+          />
+        </div>
+        {/* desktop */}
+        <div className="hidden lg:flex w-full">
+          <SearchFilter
+            categoriesProp={categories}
+            loadingProp={catLoading}
+            onSearchDone={() => setIsMenuOpen(false)}
+          />
 
-
-            {/* User Options */}
-            <div className="flex gap-4 items-center justify-end w-full">
+          {/* User Options */}
+          <div className="flex gap-4 items-center justify-end w-full">
+            <div className="flex gap-1 items-center">
+              <img src="/wishList.svg" alt="help" className="w-6" />
+              <p className="text-sm">Wishlist</p>
+            </div>
+            <div className="flex gap-1 items-center relative group">
+              <img src="/help.svg" alt="help" className="w-6" />
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    navigate(e.target.value);
+                    e.target.value = ""; // Reset dropdown
+                  }
+                }}
+                className="text-sm cursor-pointer bg-transparent border-none outline-none w-14"
+              >
+                <option value="">Help</option>
+                <option value="/help">Help Center</option>
+                <option value="/faqs">FAQs</option>
+                <option value="/contact">Contact Us</option>
+              </select>
+            </div>
+            <Link to="/cart">
               <div className="flex gap-1 items-center">
-                <img src="/wishList.svg" alt="help" className="w-6" />
-                <p className="text-sm">Wishlist</p>
+                <img src="/cart.svg" alt="cart" className="w-6" />
+                <p className="text-sm">My Cart</p>
               </div>
-              <div className="flex gap-1 items-center">
-                <img src="/help.svg" alt="help" className="w-6" />
-                <select defaultValue="" name="" id="" className="text-sm">
-                  <option value="">Help</option>
-                </select>
-              </div>
-              <Link to="/cart">
-                <div className="flex gap-1 items-center">
-                  <img src="/cart.svg" alt="cart" className="w-6" />
-                  <p className="text-sm">My Cart</p>
+            </Link>
+            <div className="relative" ref={profileRef}>
+              <div
+                className="flex gap-1 items-center cursor-pointer"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+              >
+                <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-full flex items-center justify-center">
+                  <p className="text-base font-semibold text-customBrown">
+                    {getInitial(isAuthenticated && user?.firstName)}
+                  </p>
                 </div>
-              </Link>
-              <div className="relative" ref={profileRef}>
-                <div
-                  className="flex gap-1 items-center cursor-pointer"
-                  onClick={() => setIsProfileOpen((prev) => !prev)}
-                >
-                  <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-full flex items-center justify-center">
-                    <p className="text-base font-semibold text-customBrown">
-                      {getInitial(isAuthenticated && user?.firstName)}
+                <img
+                  src="/arrow-down.svg"
+                  alt="dropdown arrow"
+                  className="w-4"
+                />
+              </div>
+
+              {/* Dropdown menu */}
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-3 w-60 bg-white border rounded-lg shadow-lg z-20">
+                  <div className="px-4 py-4 ">
+                    <p className="text-[16px] text-center font-semibold">
+                      Hi, {user?.firstName || user?.name}
                     </p>
                   </div>
+                  <ul className="flex flex-col gap-6 p-6 text-sm">
+                    <li
+                      className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                      onClick={() => {
+                        navigate("/account-information/profile");
+                        setIsProfileOpen(false);
+                      }}
+                    >
+                      <img src="/profile.svg" className="w-4 h-4" />
+                      Profile
+                    </li>
+                    <li
+                      className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                      onClick={() => {
+                        navigate("/account-information/orders");
+                        setIsProfileOpen(false);
+                      }}
+                    >
+                      <img src="/orders.svg" className="w-4 h-4" />
+                      Orders
+                    </li>
+                    <li
+                      className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                      onClick={() => {
+                        navigate("/account-information/saved");
+                        setIsProfileOpen(false);
+                      }}
+                    >
+                      <img src="/favourite.svg" className="w-4 h-4" />
+                      Saved Items
+                    </li>
+                    <li
+                      className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                      onClick={() => {
+                        navigate("/account-information/track");
+                        setIsProfileOpen(false);
+                      }}
+                    >
+                      <img src="/track-orders.svg" className="w-4 h-4" />
+                      Track Order
+                    </li>
+                    <li
+                      className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                      onClick={() => {
+                        navigate("/account-information/messages");
+                        setIsProfileOpen(false);
+                      }}
+                    >
+                      <img src="/chat.svg" className="w-4 h-4" />
+                      Messages
+                    </li>
+                    {userRole === "SubDistributor" && (
+                      <li
+                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
+                        onClick={handleAdminNavigation}
+                      >
+                        <img src="/sellermode.png" alt="seller mode" />
+                      </li>
+                    )}
+                    <li
+                      className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-red-600 border-t pt-2 mt-2"
+                      onClick={handleLogOut}
+                    >
+                      <img src="/logout-icon.png" className="w-4 h-4" />
+                      Log out
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* mobile nav dropdown */}
+      <section
+        className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
+          isMenuOpen
+            ? "translate-y-0 opacity-100 visible"
+            : "-translate-y-10 opacity-0 invisible"
+        }`}
+      >
+        <div className="py-5 px-5">
+          <div className="flex gap-3 items-center">
+            <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-[200px] flex items-center justify-center">
+              <p className="text-base font-semibold text-customBrown">
+                {getInitial(user?.firstName)}
+              </p>
+            </div>
+            <div className="flex flex-col justify-between">
+              <p className="text-customDark text-base font-semibold">
+                {user?.firstName}
+              </p>
+              <p className="text-xs text-customGray3">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+        {/* profile */}
+        <div>
+          <ul className="flex flex-col items-center gap-3 border-t border-b w-full py-4 px-4">
+            {/* <Link to="/account-information/profile"> */}
+            <li
+              className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+              onClick={() => {
+                navigate("/account-information/profile");
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <img src="/profile.svg" alt="person" className="w-5 h-5" />
+                <span className="text-sm font-normal text-shadeGray">
+                  Profile
+                </span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            {/* </Link> */}
+            <li
+              className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+              onClick={() => {
+                navigate("/account-information/orders");
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <img src="/orders.svg" alt="order" className="w-5 h-5" />
+                <span className="text-sm font-normal text-shadeGray">
+                  Orders
+                </span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li
+              className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+              onClick={() => {
+                navigate("/account-information/saved");
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <img src="/favourite.svg" alt="favourite" className="w-5 h-5" />
+                <span className="text-sm font-normal text-shadeGray">
+                  Sved Items
+                </span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li
+              className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+              onClick={() => {
+                navigate("/account-information/track");
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <img src="/track-orders.svg" alt="order" className="w-5 h-5" />
+                <span className="text-sm font-normal text-shadeGray">
+                  Track Order
+                </span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li
+              className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+              onClick={() => {
+                navigate("/account-information/messages");
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <img src="/chat.svg" alt="chat" className="w-5 h-5" />
+                <span className="text-sm font-normal text-shadeGray">
+                  Messages
+                </span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+          </ul>
+        </div>
+        {/* categories */}
+        <div className="px-5 py-5">
+          <h2 className="text-customBrown font-semibold text-base pb-5">
+            Categories
+          </h2>
+          <ul className="flex flex-col justify-around items-start gap-3 h-inherit text-gray-500 text-sm font-normal">
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/game-icons_race-car.svg" alt="body-part" />
+                <span>Body Parts</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/iconoir_electronics-chip.svg" alt="electronics" />
+                <span>Electronics</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="performance-part.svg" alt="performance-part" />
+                <span>Performance Parts</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/repair-parts.svg" alt="repair-parts" />
+                <span>Repairs Parts</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/wheels-tyres.svg" alt="wheels-tyres" />
+                <span>Wheels & Tyres</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/tools-equip.png" alt="tools-equip" />
+                <span>Tools & Equipments</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/steering.svg" alt="steering" />
+                <span>Steering Systems</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/filter.svg" alt="filters" />
+                <span>Filters</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/cooling-heat.svg" alt="cooling-heat" />
+                <span>Cooling & Heating Systems</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div className="flex items-center gap-4">
+                <img src="/air-conditioner.svg" alt="air-condition" />
+                <span>Air Conditioning</span>
+              </div>
+              <img
+                src="/arrow-right.svg"
+                alt="arrow-right"
+                className="w-4 h-4"
+              />
+            </li>
+            <li>See More +</li>
+          </ul>
+        </div>
+        {/* more options */}
+        <div className="px-5 py-5">
+          <div className="block pb-6">
+            <h2 className="text-customBrown font-semibold text-base pb-1">
+              Support
+            </h2>
+            <span className="bg-customGold rounded block w-12 h-[4px]"></span>
+          </div>
+          <Link to="/help-center" onClick={() => setIsMenuOpen(false)}>
+            <p className="text-gray-500 font-normal text-sm pb-3 hover:text-primary cursor-pointer">
+              Help Center
+            </p>
+          </Link>
+          <Link to="/faqs" onClick={() => setIsMenuOpen(false)}>
+            <p className="text-gray-500 font-normal text-sm pb-3 hover:text-primary cursor-pointer">
+              FAQs
+            </p>
+          </Link>
+          <Link to="/terms" onClick={() => setIsMenuOpen(false)}>
+            <p className="text-gray-500 font-normal text-sm pb-3 hover:text-primary cursor-pointer">
+              Terms of Service
+            </p>
+          </Link>
+          <Link to="/privacy" onClick={() => setIsMenuOpen(false)}>
+            <p className="text-gray-500 font-normal text-sm pb-3 hover:text-primary cursor-pointer">
+              Privacy Policy
+            </p>
+          </Link>
+        </div>
+        {/* contact us */}
+        <div className="w-full max-w-xs px-5 py-5">
+          <div className="pb-6">
+            <h2 className="text-customBrown font-semibold text-base pb-1">
+              Contact Us
+            </h2>
+            <span className="bg-customGold rounded block w-12 h-[4px]"></span>
+          </div>
+          <p className="text-gray-500 text-sm font-normal pb-6">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat.
+          </p>
+          <div className="flex gap-3 items-start">
+            <img src="/address-marker-outline.svg" alt="address-marker" />
+            <p className="text-gray-500 font-normal text-sm pb-3">
+              2972 Westheimer Rd. Santa Ana, Illinois 85486
+            </p>
+          </div>
+          <div className="flex gap-3 items-start">
+            <img src="/tabler_phone.svg" alt="phone" />
+            <p className="text-gray-500 font-normal text-sm pb-3">
+              08012300000, 070123456789
+            </p>
+          </div>
+          <div className="flex gap-3 items-start">
+            <img src="/tabler_mail.svg" alt="mail" />
+            <p className="text-gray-500 font-normal text-sm pb-3">
+              tanya.hill@example.com
+            </p>
+          </div>
+        </div>
+        {/* latest offers */}
+        <div className="flex flex-col justify-between px-5 py-5">
+          <div>
+            <h3 className="text-customBrown font-semibold text-base pb-6">
+              Get The Latest From Us
+            </h3>
+            <p className="text-sm font-normal text-shadeGray pb-3">
+              Subscribe to our newsletter to get updates on our latest offres
+            </p>
+            <div>
+              <div className="flex gap-2 items-center w-full justify-between">
+                <div className="relative w-full">
                   <img
-                    src="/arrow-down.svg"
-                    alt="dropdown arrow"
-                    className="w-4"
+                    src="/message-icon.svg"
+                    alt="message-icon"
+                    className="absolute top-4 left-5 w-5"
+                  />
+                  <input
+                    type="text"
+                    className="border h-12 p-2 w-full rounded-lg text-sm pl-12"
+                    placeholder="Enter your email address"
                   />
                 </div>
-
-                {/* Dropdown menu */}
-                {isProfileOpen && (
-                  <div className="absolute right-0 mt-3 w-60 bg-white border rounded-lg shadow-lg z-20">
-                    <div className="px-4 py-4 ">
-                      <p className="text-[16px] text-center font-semibold">
-                        Hi, {user?.firstName || user?.name}
-                      </p>
-                    </div>
-                    <ul className="flex flex-col gap-6 p-6 text-sm">
-                      <li
-                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
-                        onClick={() => {
-                          navigate("/account-information/profile");
-                          setIsProfileOpen(false);
-                        }}
-                      >
-                        <img src="/profile.svg" className="w-4 h-4" />
-                        Profile
-                      </li>
-                      <li
-                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
-                        onClick={() => {
-                          navigate("/account-information/orders");
-                          setIsProfileOpen(false);
-                        }}
-                      >
-                        <img src="/orders.svg" className="w-4 h-4" />
-                        Orders
-                      </li>
-                      <li
-                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
-                        onClick={() => {
-                          navigate("/account-information/saved");
-                          setIsProfileOpen(false);
-                        }}
-                      >
-                        <img src="/favourite.svg" className="w-4 h-4" />
-                        Saved Items
-                      </li>
-                      <li
-                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
-                        onClick={() => {
-                          navigate("/account-information/track");
-                          setIsProfileOpen(false);
-                        }}
-                      >
-                        <img src="/track-orders.svg" className="w-4 h-4" />
-                        Track Order
-                      </li>
-                      <li
-                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
-                        onClick={() => {
-                          navigate("/account-information/messages");
-                          setIsProfileOpen(false);
-                        }}
-                      >
-                        <img src="/chat.svg" className="w-4 h-4" />
-                        Messages
-                      </li>
-                      {userRole === "SubDistributor" && (
-                        <li
-                          className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-primary"
-                          onClick={handleAdminNavigation}
-                        >
-                          <img src="/sellermode.png" alt="seller mode" />
-                        </li>
-                      )}
-                      <li
-                        className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-red-600 border-t pt-2 mt-2"
-                        onClick={handleLogOut}
-                      >
-                        <img src="/logout-icon.png" className="w-4 h-4" />
-                        Log out
-                      </li>
-                    </ul>
-                  </div>
-                )}
+                <button className="bg-primary text-white text-base font-normal rounded-lg w-32 h-12">
+                  Subscribe
+                </button>
               </div>
             </div>
           </div>
         </div>
-        {/* mobile nav dropdown */}
-        <section
-          className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen
-              ? "translate-y-0 opacity-100 visible"
-              : "-translate-y-10 opacity-0 invisible"
-          }`}
-        >
-          <div className="py-5 px-5">
-            <div className="flex gap-3 items-center">
-              <div className="w-[40px] h-[40px] bg-[#E3E6EA] rounded-[200px] flex items-center justify-center">
-                <p className="text-base font-semibold text-customBrown">
-                  {getInitial(user?.firstName)}
-                </p>
-              </div>
-              <div className="flex flex-col justify-between">
-                <p className="text-customDark text-base font-semibold">
-                  {user?.firstName}
-                </p>
-                <p className="text-xs text-customGray3">{user?.email}</p>
-              </div>
-            </div>
+        {/* join us */}
+        <div className="px-5 py-2">
+          <h2 className="text-customBrown font-semibold text-base pb-6">
+            Join Us On
+          </h2>
+          <div className="flex gap-6">
+            <img src="/facebook-dark.svg" alt="facebook" className="w-auto" />
+            <img src="/youtube-dark.svg" alt="youtube" className="w-auto" />
+            <img src="/twitter-dark.svg" alt="twitter" className="w-auto" />
+            <img src="/instagram-dark.svg" alt="insta" className="w-auto" />
+            <img src="/tiktok-dark.svg" alt="tiktok" className="w-auto" />
           </div>
-          {/* profile */}
-          <div>
-            <ul className="flex flex-col items-center gap-3 border-t border-b w-full py-4 px-4">
-              {/* <Link to="/account-information/profile"> */}
-              <li
-                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                onClick={() => {
-                  navigate("/account-information/profile");
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <img src="/profile.svg" alt="person" className="w-5 h-5" />
-                  <span className="text-sm font-normal text-shadeGray">
-                    Profile
-                  </span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              {/* </Link> */}
-              <li
-                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                onClick={() => {
-                  navigate("/account-information/orders");
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <img src="/orders.svg" alt="order" className="w-5 h-5" />
-                  <span className="text-sm font-normal text-shadeGray">
-                    Orders
-                  </span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li
-                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                onClick={() => {
-                  navigate("/account-information/saved");
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src="/favourite.svg"
-                    alt="favourite"
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm font-normal text-shadeGray">
-                    Sved Items
-                  </span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li
-                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                onClick={() => {
-                  navigate("/account-information/track");
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src="/track-orders.svg"
-                    alt="order"
-                    className="w-5 h-5"
-                  />
-                  <span className="text-sm font-normal text-shadeGray">
-                    Track Order
-                  </span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li
-                className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                onClick={() => {
-                  navigate("/account-information/messages");
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <img src="/chat.svg" alt="chat" className="w-5 h-5" />
-                  <span className="text-sm font-normal text-shadeGray">
-                    Messages
-                  </span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-            </ul>
-          </div>
-          {/* categories */}
-          <div className="px-5 py-5">
-            <h2 className="text-customBrown font-semibold text-base pb-5">
-              Categories
-            </h2>
-            <ul className="flex flex-col justify-around items-start gap-3 h-inherit text-gray-500 text-sm font-normal">
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/game-icons_race-car.svg" alt="body-part" />
-                  <span>Body Parts</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/iconoir_electronics-chip.svg" alt="electronics" />
-                  <span>Electronics</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="performance-part.svg" alt="performance-part" />
-                  <span>Performance Parts</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/repair-parts.svg" alt="repair-parts" />
-                  <span>Repairs Parts</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/wheels-tyres.svg" alt="wheels-tyres" />
-                  <span>Wheels & Tyres</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/tools-equip.png" alt="tools-equip" />
-                  <span>Tools & Equipments</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/steering.svg" alt="steering" />
-                  <span>Steering Systems</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/filter.svg" alt="filters" />
-                  <span>Filters</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/cooling-heat.svg" alt="cooling-heat" />
-                  <span>Cooling & Heating Systems</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li className="flex items-center justify-between w-full px-1 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <img src="/air-conditioner.svg" alt="air-condition" />
-                  <span>Air Conditioning</span>
-                </div>
-                <img
-                  src="/arrow-right.svg"
-                  alt="arrow-right"
-                  className="w-4 h-4"
-                />
-              </li>
-              <li>See More +</li>
-            </ul>
-          </div>
-          {/* more options */}
-          <div className="px-5 py-5">
-            <div className="block pb-6">
-              <h2 className="text-customBrown font-semibold text-base pb-1">
-                Support
-              </h2>
-              <span className="bg-customGold rounded block w-12 h-[4px]"></span>
-            </div>
-            <p className="text-gray-500 font-normal text-sm pb-3">
-              Help Center
-            </p>
-            <p className="text-gray-500 font-normal text-sm pb-3">FAQs</p>
-            <p className="text-gray-500 font-normal text-sm pb-3">
-              Terms of Service
-            </p>
-            <p className="text-gray-500 font-normal text-sm pb-3">
-              Privacy Policy
-            </p>
-          </div>
-          {/* contact us */}
-          <div className="w-full max-w-xs px-5 py-5">
-            <div className="pb-6">
-              <h2 className="text-customBrown font-semibold text-base pb-1">
-                Contact Us
-              </h2>
-              <span className="bg-customGold rounded block w-12 h-[4px]"></span>
-            </div>
-            <p className="text-gray-500 text-sm font-normal pb-6">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
-            </p>
-            <div className="flex gap-3 items-start">
-              <img src="/address-marker-outline.svg" alt="address-marker" />
-              <p className="text-gray-500 font-normal text-sm pb-3">
-                2972 Westheimer Rd. Santa Ana, Illinois 85486
-              </p>
-            </div>
-            <div className="flex gap-3 items-start">
-              <img src="/tabler_phone.svg" alt="phone" />
-              <p className="text-gray-500 font-normal text-sm pb-3">
-                08012300000, 070123456789
-              </p>
-            </div>
-            <div className="flex gap-3 items-start">
-              <img src="/tabler_mail.svg" alt="mail" />
-              <p className="text-gray-500 font-normal text-sm pb-3">
-                tanya.hill@example.com
-              </p>
-            </div>
-          </div>
-          {/* latest offers */}
-          <div className="flex flex-col justify-between px-5 py-5">
-            <div>
-              <h3 className="text-customBrown font-semibold text-base pb-6">
-                Get The Latest From Us
-              </h3>
-              <p className="text-sm font-normal text-shadeGray pb-3">
-                Subscribe to our newsletter to get updates on our latest offres
-              </p>
-              <div>
-                <div className="flex gap-2 items-center w-full justify-between">
-                  <div className="relative w-full">
-                    <img
-                      src="/message-icon.svg"
-                      alt="message-icon"
-                      className="absolute top-4 left-5 w-5"
-                    />
-                    <input
-                      type="text"
-                      className="border h-12 p-2 w-full rounded-lg text-sm pl-12"
-                      placeholder="Enter your email address"
-                    />
-                  </div>
-                  <button className="bg-primary text-white text-base font-normal rounded-lg w-32 h-12">
-                    Subscribe
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* join us */}
-          <div className="px-5 py-2">
-            <h2 className="text-customBrown font-semibold text-base pb-6">
-              Join Us On
-            </h2>
-            <div className="flex gap-6">
-              <img src="/facebook-dark.svg" alt="facebook" className="w-auto" />
-              <img src="/youtube-dark.svg" alt="youtube" className="w-auto" />
-              <img src="/twitter-dark.svg" alt="twitter" className="w-auto" />
-              <img src="/instagram-dark.svg" alt="insta" className="w-auto" />
-              <img src="/tiktok-dark.svg" alt="tiktok" className="w-auto" />
-            </div>
-          </div>
-        </section>
-        <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
-          <div className="flex flex-col items-center">
-            <img src="/home.svg" alt="home" className="w-auto" />
-            <p className="text-sm">Home</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <img src="/categories.svg" alt="category" className="w-auto" />
-            <p className="text-sm">Categories</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <img src="/you.svg" alt="you" className="w-auto" />
-            <p className="text-sm">You</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <img src="/helpp.svg" alt="help" className="w-auto" />
-            <p className="text-sm">Help</p>
-          </div>
-        </section>
-      </header>
-    </div>
+        </div>
+      </section>
+      <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
+        <div className="flex flex-col items-center">
+          <img src="/home.svg" alt="home" className="w-auto" />
+          <p className="text-sm">Home</p>
+        </div>
+        <div className="flex flex-col items-center">
+          <img src="/categories.svg" alt="category" className="w-auto" />
+          <p className="text-sm">Categories</p>
+        </div>
+        <div className="flex flex-col items-center">
+          <img src="/you.svg" alt="you" className="w-auto" />
+          <p className="text-sm">You</p>
+        </div>
+        <div className="flex flex-col items-center">
+          <img src="/helpp.svg" alt="help" className="w-auto" />
+          <p className="text-sm">Help</p>
+        </div>
+      </section>
+    </nav>
   );
 };
 

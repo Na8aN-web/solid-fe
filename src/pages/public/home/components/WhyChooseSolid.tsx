@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import SectionHeading from "./SectionHeading";
 
 const WhyChooseSolidParts = () => {
   const StartShoppingButton = () => (
@@ -14,10 +15,9 @@ const WhyChooseSolidParts = () => {
   );
   return (
     <div className="mx-auto px-[20px] md:px-[80px] py-[30px] font-roboto">
-      <h2 className="text-[20px] md:text-[24px] font-semibold flex items-center mb-16">
-        <img src="/double-right.png" alt="double right arrow" />
-        <span>Why Choose Solid Spare Parts?</span>
-      </h2>
+    <div className="pb-16 pt-6">
+    <SectionHeading title="Why Choose Solid Spare Parts?" />
+    </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Wide Product Range */}

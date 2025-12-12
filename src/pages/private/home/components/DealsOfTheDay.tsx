@@ -1,132 +1,124 @@
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import DealsCard from './DealsCard';
-import { useState, useEffect } from 'react';
-import { useAppDispatch } from '../../../../store/hooks';
-import { addProductToCart } from '../../../../store/slices/cartSlice';
-import SuccessModal from '../../../../components/SuccessModal';
-
-// Define product interface based on API response
-interface DealProduct {
-  _id: string;
-  name: string;
-  displayPrice: number;
-  regularPrice: number;
-  rating: number | null;
-  numReviews: number;
-  image: string;
-  categoryName: string | null;
-  brandName: string;
-}
-
-interface DealsResponse {
-  products: DealProduct[];
-}
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import DealsCard from "./DealsCard";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { addProductToCart } from "../../../../store/slices/cartSlice";
+import { dealsOfTheDay } from "../../../../store/slices/productSlice";
+import SuccessModal from "../../../../components/SuccessModal";
+import { RootState } from "../../../../store";
+import SectionHeading from "../../../public/home/components/SectionHeading";
 
 const DealsOfTheDay = () => {
-  const [dealProducts, setDealProducts] = useState<DealProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [addingProductId, setAddingProductId] = useState<string | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
   const dispatch = useAppDispatch();
 
-  // Fetch deals of the day from API
+  // Redux State
+  const {
+    dealsOfTheDay: dealProducts,
+    loading,
+    error,
+  } = useAppSelector((state: RootState) => state.products);
+
+  const { loading: cartLoading } = useAppSelector(
+    (state: RootState) => state.cart
+  );
+
+  // Local State
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  // Fetch deals on mount
   useEffect(() => {
-    const fetchDeals = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}products/deals`);
+    if (!dealProducts || dealProducts.length === 0) {
+      dispatch(dealsOfTheDay());
+    }
+  }, [dispatch, dealProducts]);
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch deals: ${response.status}`);
-        }
-
-        const data: DealsResponse = await response.json();
-        setDealProducts(data.products);
-      } catch (err) {
-        console.error('Error fetching deals:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch deals');
-      } finally {
-        setLoading(false);
+  const handleAddToCart = useCallback(
+    async (productId: string, productName: string) => {
+      const product = dealProducts?.find((p) => p._id === productId);
+  
+      if (!product) {
+        console.error("Product not found");
+        return;
       }
-    };
+  
+      const productData = {
+        _id: product._id,
+        name: product.name,
+        images: [product.image],
+        salesPrice: product.displayPrice,
+        displayPrice: product.displayPrice,
+        regularPrice: product.regularPrice,
+        stockStatus: "In Stock",
+        brand: {
+          _id: `brand-${product.brandName.toLowerCase().replace(/\s+/g, "-")}`,
+          name: product.brandName,
+        },
+        category: {
+          _id: product.category,
+          name: product.categoryName,
+        },
+        maker: product.brandName,
+      };
+  
+      try {
+        setAddingProductId(productId); // Set loading state
+        await dispatch(
+          addProductToCart({
+            productId,
+            quantity: 1,
+            productData,
+          })
+        ).unwrap();
+  
+        setLastAddedProduct({ id: productId, name: productName });
+        setShowSuccessModal(true);
+      } catch (error) {
+        console.error("Failed to add product to cart:", error);
+      } finally {
+        setAddingProductId(null); // Clear loading state
+      }
+    },
+    [dispatch, dealProducts]
+  );
 
-    fetchDeals();
+  const handleViewCart = useCallback(() => {
+    setShowSuccessModal(false);
+    window.location.href = "/cart";
   }, []);
 
-  const handleAddToCart = async (productId: string, productName: string) => {
-    const product = dealProducts.find(p => p._id === productId);
-
-    if (!product) {
-      console.error('Product not found');
-      return;
-    }
-
-    // Prepare product data for cart
-    const productData = {
-      _id: product._id,
-      name: product.name,
-      images: [product.image],
-      salesPrice: product.displayPrice,
-      displayPrice: product.displayPrice,
-      regularPrice: product.regularPrice,
-      stockStatus: 'In Stock',
-      brand: {
-        _id: `brand-${product.brandName.toLowerCase().replace(/\s+/g, '-')}`,
-        name: product.brandName
-      },
-      maker: product.brandName
-    };
-
-    try {
-      setAddingProductId(productId);
-      await dispatch(addProductToCart({
-        productId,
-        quantity: 1,
-        productData
-      })).unwrap();
-
-      // Show success modal
-      setLastAddedProduct({ id: productId, name: productName });
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Failed to add product to cart:', error);
-    } finally {
-      setAddingProductId(null);
-    }
-  };
-
-  const handleViewCart = () => {
-    setShowSuccessModal(false);
-    // Navigate to cart page
-    window.location.href = '/cart';
-  };
-
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setShowSuccessModal(false);
     setLastAddedProduct(null);
-  };
+  }, []);
 
   // Calculate discount percentage
-  const calculateDiscount = (regularPrice: number, displayPrice: number): number => {
-    return Math.round(((regularPrice - displayPrice) / regularPrice) * 100);
-  };
+  const calculateDiscount = useCallback(
+    (regularPrice: number, displayPrice: number): number => {
+      if (regularPrice <= 0) return 0;
+      return Math.round(((regularPrice - displayPrice) / regularPrice) * 100);
+    },
+    []
+  );
 
+  // Check if we have valid products
+  const hasProducts = useMemo(
+    () => dealProducts && dealProducts.length > 0,
+    [dealProducts]
+  );
+
+  // Loading State
   if (loading) {
     return (
-      <section className="relative py-[20px] px-[20px]">
-        <div className="flex justify-between items-center py-6">
-          <div className="flex gap-0 items-center">
-            <img src="/double-right.png" alt="right" className="w-9 md:w-16" />
-            <h2 className="text-xl sm:text-2xl text-customGray1 font-semibold">
-              Deals of the Day
-            </h2>
-          </div>
-        </div>
+      <section className="relative py-[20px]">
+        <SectionHeading title="Deals of the Day" />
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
@@ -134,17 +126,11 @@ const DealsOfTheDay = () => {
     );
   }
 
+  // Error State
   if (error) {
     return (
-      <section className="relative py-[20px] px-[20px]">
-        <div className="flex justify-between items-center py-6">
-          <div className="flex gap-0 items-center">
-            <img src="/double-right.png" alt="right" className="w-9 md:w-16" />
-            <h2 className="text-xl sm:text-2xl text-customGray1 font-semibold">
-              Deals of the Day
-            </h2>
-          </div>
-        </div>
+      <section className="relative py-[20px]">
+        <SectionHeading title="Deals of the Day" />
         <div className="flex justify-center items-center py-12">
           <p className="text-red-500">Error: {error}</p>
         </div>
@@ -152,17 +138,11 @@ const DealsOfTheDay = () => {
     );
   }
 
-  if (dealProducts.length === 0) {
+  // Empty State
+  if (!hasProducts) {
     return (
-      <section className="relative py-[20px] px-[20px]">
-        <div className="flex justify-between items-center py-6">
-          <div className="flex gap-0 items-center">
-            <img src="/double-right.png" alt="right" className="w-9 md:w-16" />
-            <h2 className="text-xl sm:text-2xl text-customGray1 font-semibold">
-              Deals of the Day
-            </h2>
-          </div>
-        </div>
+      <section className="py-8 px-5 md:px-20">
+        <SectionHeading title="Deals of the Day" />
         <div className="flex justify-center items-center py-12">
           <p className="text-gray-500">No deals available at the moment.</p>
         </div>
@@ -172,39 +152,54 @@ const DealsOfTheDay = () => {
 
   return (
     <>
-      <section className=" py-[20px] px-[20px]">
-        <div className="flex justify-between items-center py-6">
-          <div className="flex gap-0 items-center">
-            <img src="/double-right.png" alt="right" className="w-9 md:w-16" />
-            <h2 className="text-xl sm:text-2xl text-customGray1 font-semibold">
-              Deals of the Day
-            </h2>
-          </div>
-          <div className="flex gap-3">
-            <button className="custom-prev w-9 h-9 bg-white rounded-full border">
-              ❮
+      <section className="py-[20px]">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 gap-4">
+          <SectionHeading title="Deals of the Day" />
+
+          {/* Navigation Controls */}
+          <nav className="flex gap-3" aria-label="Deals navigation">
+            <button
+              className="custom-prev w-9 h-9 bg-white rounded-full border hover:bg-gray-50 transition-colors"
+              aria-label="Previous deals"
+            >
+              ◀
             </button>
-            <button className="custom-next w-9 h-9 bg-white rounded-full border">
-              ❯
+            <button
+              className="custom-next w-9 h-9 bg-white rounded-full border hover:bg-gray-50 transition-colors"
+              aria-label="Next deals"
+            >
+              ▶
             </button>
-          </div>
+          </nav>
         </div>
-        <div className='h-auto'>
+
+        <div className="h-auto">
           <Swiper
             slidesPerView={1}
-            spaceBetween={30}
+            spaceBetween={24}
             modules={[Navigation]}
             navigation={{
               nextEl: ".custom-next",
               prevEl: ".custom-prev",
             }}
-            className="mySwiper"
+            // className="mySwiper"
             breakpoints={{
-              1280: { slidesPerView: 2 },
+              640: { slidesPerView: 1.2, spaceBetween: 20 },
+              768: { slidesPerView: 1.5, spaceBetween: 24 },
+              1024: { slidesPerView: 1, spaceBetween: 24 },
+              1280: { slidesPerView: 2, spaceBetween: 30 },
+            }}
+            className="deals-swiper"
+            a11y={{
+              prevSlideMessage: "Previous deal",
+              nextSlideMessage: "Next deal",
             }}
           >
             {dealProducts.map((product) => {
-              const discount = calculateDiscount(product.regularPrice, product.displayPrice);
+              const discount = calculateDiscount(
+                product.regularPrice,
+                product.displayPrice
+              );
 
               return (
                 <SwiperSlide key={product._id}>
@@ -214,11 +209,11 @@ const DealsOfTheDay = () => {
                     category={product.categoryName || product.brandName}
                     price={`₦${product.displayPrice.toLocaleString()}`}
                     oldPrice={`₦${product.regularPrice.toLocaleString()}`}
-                    discount={`-${discount}%`}
-                    reviews={product.numReviews.toString()}
+                    discount={discount > 0 ? `-${discount}%` : ""}
+                    reviews={product.numReviews?.toString() || "0"}
                     productId={product._id}
                     onAddToCart={handleAddToCart}
-                    cartLoading={addingProductId !== null}
+                    cartLoading={cartLoading}
                     addingProductId={addingProductId}
                   />
                 </SwiperSlide>
@@ -226,9 +221,8 @@ const DealsOfTheDay = () => {
             })}
           </Swiper>
         </div>
-
-
       </section>
+
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleCloseModal}

@@ -1,0 +1,7 @@
+.hero-perspective-grid {
+  background-image: url("/src/assets/perspectiveGrid.svg");
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  max-height: 360px;
+}

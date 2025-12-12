@@ -408,7 +408,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {products.map((product) => (
             <Link to={`/product/${product._id}`} key={product._id}>
               <div
-                className={`bg-white rounded-[20px] hover:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.15)] ${viewType === "list" ? "p-4" : "p-2"} overflow-hidden`}
+                className={`bg-white rounded-[20px] hover:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.15)] ${viewType === "list" ? "p-4" : "p-3"} overflow-hidden`}
               >
                 <div className="relative">
                   {/* Discount tag */}
@@ -453,7 +453,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     <img
                       src={product.image}
                       alt={product.name}
-                      className={`${viewType === "list" ? "max-w-none w-full h-auto" : "w-full h-32 object-contain"} mx-auto`}
+                      className={`${viewType === "list" ? "w-full h-full max-h-[200px] px-10 py-6" : "w-full h-[158px] px-2 pt-10"} mx-auto`}
                     />
                   </div>
 

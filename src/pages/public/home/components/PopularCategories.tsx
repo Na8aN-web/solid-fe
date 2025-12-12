@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { fetchCategories } from '../../../../store/slices/categoriesSlice';
 import { useNavigate } from 'react-router-dom';
+import SectionHeading from './SectionHeading';
 
 const PopularCategories = () => {
   const dispatch = useAppDispatch();
@@ -37,16 +38,8 @@ const PopularCategories = () => {
   if (loading) {
     return (
       <div className="mx-auto py-[20px] px-[20px] md:px-[80px]">
-        <div className="flex items-center justify-between mb-8 font-roboto">
-          <h2 className="text-[20px] md:text-[24px] font-semibold flex items-center text-[#3D3D3D]">
-            <img 
-              src="/double-right.png" 
-              alt="double right arrow" 
-              className="w-5 h-5 mr-2"
-            />
-            <span>Popular Categories</span>
-          </h2>
-        </div>
+        <SectionHeading title="Popular Categories" />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, index) => (
             <div key={index} className="bg-white p-4 border rounded-lg shadow-lg animate-pulse">
@@ -82,16 +75,9 @@ const PopularCategories = () => {
   }
 
   return (
-    <div className="mx-auto py-[20px] px-[20px] md:px-[80px]">
+    <div className="mx-auto py-[20px] px-[20px] md:px-[80px] bg-[#F9F9F9]">
       <div className="flex items-center justify-between mb-8 font-roboto">
-        <h2 className="text-[20px] md:text-[24px] font-semibold flex items-center text-[#3D3D3D]">
-          <img 
-            src="/double-right.png" 
-            alt="double right arrow" 
-            className="w-5 h-5 mr-2"
-          />
-          <span>Popular Categories</span>
-        </h2>
+        <SectionHeading title="Popular Categories" />
         <div className="flex gap-2">
           <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors">
             <ChevronLeft className="w-4 h-4" />
