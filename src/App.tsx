@@ -29,6 +29,7 @@ import RateReviewProduct from "./pages/private/accountinformation/components/rat
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
 import Store from "./pages/public/visitstore/Store";
 import HelpCenter from "./pages/private/help/Help";
+import InteractiveFAQPage from "./pages/public/home/components/Faq";
 import KycForm from "./pages/private/accountinformation/kyc/KycForm";
 import PrivateLayout from "./components/PrivateLayout";
 import PrivateLayoutBrand from "./components/PrivateLayoutBrand";
@@ -182,8 +183,9 @@ function App() {
     <>
       <Routes>
         {/* layout for landing page without siging in */}
+        <Route path="/" element={<Home />} />
+        
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/blog" element={<Blog />} />
@@ -222,7 +224,6 @@ function App() {
           />
         </Route>
 
-
         {/* Private layout with brands nav */}
         <Route element={<PrivateLayoutBrand />}>
           {/* Private Routes: This component is only accessible to authenticated users */}
@@ -240,6 +241,7 @@ function App() {
             <Route path="rate-product" element={<RateReviewProduct />} />
           </Route>
           <Route path="/help" element={<HelpCenter />} />
+          <Route path="/faqs" element={<InteractiveFAQPage />} />
         </Route>
 
         <Route
@@ -257,7 +259,6 @@ function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/store" element={<Store />} />
-
 
         {/* Authentication */}
         <Route path="/account-type" element={<AccountTypeSelection />} />

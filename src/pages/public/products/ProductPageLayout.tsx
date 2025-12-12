@@ -74,6 +74,28 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     brand: true,
   });
 
+  const handleClearFilters = () => {
+    // Reset filter state
+    setFilters({
+      maker: "",
+      model: "",
+      year: "",
+      engine: "",
+      minPrice: 100,
+      maxPrice: 200000,
+      categories: [],
+      departments: [],
+      vehicleTypes: [],
+      brands: [],
+    });
+  
+    // Reset sort
+    setSortOrder("");
+  
+    // Reset pagination
+    dispatch(setCurrentPage(1));
+  };
+
   const generateFilterText = (newFilters: FilterState) => {
     const activeFilters = [];
 
@@ -405,6 +427,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
                 toggleSection={toggleSection}
                 selectedCategory={params.get("category")}
                 onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
               />
               {isMobile && (
                 <div className="md:sticky bottom-0 p-4 bg-white border-t">

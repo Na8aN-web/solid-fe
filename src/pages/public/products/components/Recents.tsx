@@ -23,7 +23,7 @@ const Recents = () => {
     "Heavy Machinery",
   ];
   return (
-    <div>
+    <div className="px-4">
       <section>
         <div className="flex justify-between items-center py-6">
           <div className="flex gap-0 items-center">

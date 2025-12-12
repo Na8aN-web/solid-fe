@@ -1,5 +1,5 @@
 import { useState } from "react";
-import InteractiveFAQPage from "./components/Faq";
+import InteractiveFAQPage from "../../public/home/components/Faq";
 
 // Define TypeScript types
 type SidebarItem = {

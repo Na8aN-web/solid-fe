@@ -117,18 +117,17 @@ const Features: React.FC = () => {
     ];
 
     return (
-        <div className="relative w-full py-[20px] md:py-[40px] px-[20px] md:px-[80px] font-roboto">
+        <div className="relative w-full py-[20px] md:py-[40px] px-4 md:px-[80px] font-roboto">
             {/* Background Image */}
             <div
-                className="absolute inset-0 bg-cover bg-center opacity-50"
-                style={{ backgroundImage: `url(${FeaturesBg})` }}
+                className="absolute inset-0 bg-cover bg-center opacity-50 bg-primary/20"
             />
 
             {/* Overlay with the specified color */}
             <div className="absolute inset-0 bg-[#00336633]" />
 
             {/* Content */}
-            <div className="relative container mx-auto px-4">
+            <div className="relative container mx-auto">
                 <div className="flex items-center mb-6">
                     <div className="text-[#3D3D3D] font-bold text-[20px] md:text-[24px] flex items-center">
                         <img src="/double-right.png" alt='double right arrow' />
