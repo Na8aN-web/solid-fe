@@ -41,7 +41,6 @@ const RecommendedProduct: React.FC<RecommendedProductProps> = ({ relatedProducts
       </div>
       <div className="flex justify-between gap-4 py-4">
          {productsArray.slice(0, 6).map((product: { _id: string; image: string; name: string; categoryName: string; displayPrice: number; regularPrice: any; numReviews: number; rating: number; }, index: any) => {
-          // Use the fields from your API response
           const productId = product._id || `dummy-${index}`;
           const image = product.image || "/shock-absorber.svg";
           const name = product.name || "Product Name";
