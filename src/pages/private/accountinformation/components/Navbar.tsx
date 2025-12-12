@@ -440,21 +440,21 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             </div>
           </div>
         </section>
-        <section className="flex justify-evenly w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
+        <section className="flex justify-evenly items-center w-full bg-white fixed bottom-0 py-4 z-10 lg:hidden">
           <div className="flex flex-col items-center">
-            <img src="/home.svg" alt="home" className="w-auto" />
+            <img src="/home.svg" alt="home" className="w-auto h-5" />
             <p className="text-sm">Home</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/categories.svg" alt="category" className="w-auto" />
+            <img src="/categories.svg" alt="category" className="w-auto h-5" />
             <p className="text-sm">Categories</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/you.svg" alt="you" className="w-auto" />
-            <p className="text-sm">You</p>
+            <img src="/you.svg" alt="you" className="w-auto h-5" />
+            <p className="text-sm">My Profile</p>
           </div>
           <div className="flex flex-col items-center">
-            <img src="/helpp.svg" alt="help" className="w-auto" />
+            <img src="/helpp.svg" alt="help" className="w-auto h-5" />
             <p className="text-sm">Help</p>
           </div>
         </section>
