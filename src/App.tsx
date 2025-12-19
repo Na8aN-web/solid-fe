@@ -132,6 +132,14 @@ const EmailVerificationRoute: React.FC<{ children: React.ReactNode }> = ({
   return <>{children}</>;
 };
 
+// Dynamic Layout Component that switches between Layout and PrivateLayout
+const DynamicLayout: React.FC = () => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  
+  // Use PrivateLayout if authenticated, otherwise use regular Layout
+  return isAuthenticated ? <PrivateLayoutBrand /> : <Layout />;
+};
+
 function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
@@ -185,7 +193,7 @@ function App() {
         {/* layout for landing page without siging in */}
         <Route path="/" element={<Home />} />
         
-        <Route element={<Layout />}>
+        <Route element={<DynamicLayout />}>
           <Route path="/about" element={<About />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/blog" element={<Blog />} />
