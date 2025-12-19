@@ -8,6 +8,7 @@ import {
   fetchProductById,
   fetchRelatedProducts,
 } from "../../../../store/slices/productSlice";
+import SuccessModal from "../../../../components/SuccessModal";
 import { Product } from "../types/product";
 import { useNavigate } from "react-router-dom";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
@@ -27,11 +28,11 @@ const ProductDetails = () => {
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [quantityCount, setQuantityCount] = useState<number>(1);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalProductName, setModalProductName] = useState<string>("");
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
 
-<<<<<<< Updated upstream
   // Redux State
-=======
   useEffect(() => {
     // Reset all UI states when product changes
     setActiveTab("description");
@@ -49,7 +50,6 @@ const ProductDetails = () => {
     }
   }, [dispatch, id]);
 
->>>>>>> Stashed changes
   const product = useAppSelector(
     (state) => state.products.product as Product | null
   );
@@ -69,16 +69,9 @@ const ProductDetails = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [dispatch, id]);
 
-<<<<<<< Updated upstream
   // Price Calculations
   const priceCalculations = useMemo(() => {
     if (!product) return null;
-=======
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [id]);
->>>>>>> Stashed changes
-
     const pricePerUnit = product.salesPrice || 0;
     const regularPricePerUnit = product.regularPrice || 0;
     const discountPerUnit = regularPricePerUnit - pricePerUnit;
@@ -114,6 +107,15 @@ const ProductDetails = () => {
 
   // Handlers
 
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+  };
+
+  const handleViewCart = () => {
+    setShowSuccessModal(false);
+    navigate("/cart");
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
 
@@ -134,7 +136,10 @@ const ProductDetails = () => {
           maker: product.brand?.name || "Unknown",
         },
       })
-    );
+    ).then(() => {
+      setModalProductName(product.name);
+      setShowSuccessModal(true);
+    });
   };
 
   const handleBuyNow = () => {
@@ -144,6 +149,18 @@ const ProductDetails = () => {
       addProductToCart({
         productId: product._id,
         quantity: quantityCount,
+        productData: {
+          _id: product._id,
+          name: product.name,
+          images: product.images || [],
+          salesPrice: product.salesPrice,
+          displayPrice: product.salesPrice,
+          regularPrice: product.regularPrice,
+          stockStatus: product.stockStatus,
+          brand: product.brand,
+          category: product.category,
+          maker: product.brand?.name || "Unknown",
+        },
       })
     ).then(() => {
       navigate("/cart");
@@ -175,48 +192,6 @@ const ProductDetails = () => {
     );
   }
 
-<<<<<<< Updated upstream
-  // Destructure product data with defaults
-=======
-  const handleAddToCart = () => {
-    if (product) {
-      const productData = {
-        _id: product._id,
-        name: product.name,
-        images: product.images || [],
-        salesPrice: product.salesPrice,
-        displayPrice: product.salesPrice, // Add this for consistency
-        regularPrice: product.regularPrice,
-        stockStatus: product.stockStatus,
-        brand: product.brand,
-        category: product.category,
-        maker: product.brand?.name || 'Unknown' // Add maker for consistency
-      };
-
-      dispatch(
-        addProductToCart({
-          productId: product._id,
-          quantity: quantityCount,
-          productData
-        })
-      );
-    }
-  };
-
-  const handleBuyNow = () => {
-    if (product) {
-      dispatch(
-        addProductToCart({
-          productId: product._id,
-          quantity: quantityCount,
-        })
-      ).then(() => {
-        navigate("/cart"); // Navigate to cart page
-      });
-    }
-  };
-
->>>>>>> Stashed changes
   const {
     name = "Unknown Product",
     brand,
@@ -321,6 +296,16 @@ const ProductDetails = () => {
       />
 
       <RecommendedProduct relatedProducts={relatedProducts} />
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleCloseModal}
+        onViewCart={handleViewCart}
+        productName={modalProductName}
+        title="Success!"
+        message={`${modalProductName} has been successfully added to your cart.`}
+        viewCartText="View Cart"
+        continueShoppingText="Continue Shopping"
+      />
     </div>
   );
 };
@@ -688,11 +673,10 @@ const ProductTabs = ({
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`text-sm font-medium py-2 capitalize ${
-              activeTab === tab
-                ? "text-primary border-b-2 border-primary"
-                : "text-shadeGray"
-            }`}
+            className={`text-sm font-medium py-2 capitalize ${activeTab === tab
+              ? "text-primary border-b-2 border-primary"
+              : "text-shadeGray"
+              }`}
           >
             {tab === "specs" ? "Specifications" : tab}
           </button>
@@ -995,394 +979,6 @@ const ReviewsSection = ({ product, starCount, isOpen, setIsOpen }: any) => {
       </div>
     </section>
   );
-<<<<<<< Updated upstream
-=======
-
-  return (
-    <div className="bg-[#F5F5F5] pb-10">
-      {loading ? (
-        <div className="flex justify-center items-center h-[400px]">
-          <LoaderSpinner txt="Product" />
-        </div>
-      ) : (
-        <div>
-          <section className="lg:px-5 lg:py-4">
-            <h2 className="py-2 px-5 flex flex-row items-center"><Link to="/products"><img src="/white-left.png" alt="back" /></Link> {product?.name}</h2>
-            <div className="lg:flex lg:gap-6">
-              <div className="py-6 px-4 lg:px-8 flex flex-col lg:w-2/3 gap-6 lg:gap-10 lg:flex-row bg-white lg:rounded-lg">
-                <div className="flex-1">
-                  <div className="flex flex-col flex-1 items-center gap-16 w-full pt-24">
-                    <div className="h-[220px] border">
-                      {images.length > 0 ? (
-                        <img
-                          src={images[0]}
-                          alt={name}
-                          className="w-[220px] h-[220px] object-fill"
-                        />
-                      ) : (
-                        <div className="w-[220px] h-[220px] flex items-center justify-center bg-gray-100">
-                          <span>No Image</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between w-full">
-                      <div className="border px-4 py-4 rounded flex justify-center items-center">
-                        <img
-                          src={images[0]}
-                          alt={name}
-                          className="w-[65px] h-[65px] object-fill"
-                        />
-                      </div>
-                      <div className="border px-4 py-4 rounded flex justify-center items-center">
-                        <img
-                          src={images[1]}
-                          alt={name}
-                          className="w-[65px] h-[65px] object-fill"
-                        />
-                      </div>
-                      <div className="border px-4 py-4 rounded flex justify-center items-center">
-                        <img
-                          src={images[1]}
-                          alt={name}
-                          className="w-[65px] h-[65px] object-fill"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between flex-1 items-center pt-8">
-                    <p className="text-sm text-customGray3">
-                      Share This Product
-                    </p>
-                    <div className="flex gap-2">
-                      <img src="/facebookshare.svg" alt="" />
-                      <img src="/xshare.svg" alt="" />
-                      <img src="/whatsappshare.svg" alt="" />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-3 flex-1">
-                  <h2 className="text-xl text-customBrown">{name}</h2>
-                  {/* review */}
-                  <div className="flex gap-2 items-center">
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, index) => (
-                        <Star
-                          key={index}
-                          color={index < starCount ? "gold" : "lightgrey"}
-                          className="w-4 h-4"
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-customGray3">
-                      ({numReviews} reviews)
-                    </span>
-                  </div>
-                  {/* brand */}
-                  <p className="text-sm text-customGray3">
-                    Brand:{" "}
-                    <span className="text-customBrown">{brand?.name}</span>
-                  </p>
-                  {/* price */}
-                  <p className="text-xl text-customBrown">
-                    {`₦${Math.floor(salesPrice)}.00`}
-                    <span className="text-sm text-customGray3">
-                      {`₦${Math.floor(regularPrice)}.00`}
-                    </span>
-                  </p>
-                  <p className="text-xs text-customGray3">
-                    You save ₦{savedPrice}
-                  </p>
-                  <div className="flex gap-2 items-center">
-                    <img src="/vector.svg" alt="" />
-                    <span className="text-xs text-[#F24844]">
-                      {quantityInStock} Units left
-                    </span>
-                  </div>
-                  {/* description */}
-                  <div>
-                    <h3 className="text-sm text-shadeGray font-medium pb-2">
-                      Description
-                    </h3>
-                    <p className="text-sm text-customGray2">
-                      {briefDescription}
-                    </p>
-                  </div>
-                  <div className="space-y-2 px-2 border rounded-xl">
-                    <div className="flex gap-6 items-center py-4">
-                      <img src="/delivery.svg" alt="" />
-                      <div className="space-y-1">
-                        <h4 className="text-customBrown text-sm font-bold">
-                          Delivery
-                        </h4>
-                        <p className="text-xs text-shadeGray">
-                          Estimated delivery time 1-9 business days
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-6 items-center border-t border-b py-4">
-                      <img src="/warranty.svg" alt="" />
-                      <div className="space-y-1">
-                        <h4 className="text-customBrown text-sm font-bold">
-                          Warranty
-                        </h4>
-                        <p className="text-xs text-shadeGray">
-                          Warranty information unavailable for this item.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-6 items-center py-4">
-                      <img src="/return-policy.svg" alt="" />
-                      <div className="space-y-1">
-                        <h4 className="text-customBrown text-sm font-bold">
-                          Return Policy
-                        </h4>
-                        <p className="text-xs text-shadeGray">
-                          Eligible items can be returned for free within 7 days
-                          of delivery
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {/* seller information */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm text-shadeGray">
-                      Seller Information
-                    </h3>
-                    <div className="border rounded-xl flex justify-between items-center py-4 px-2">
-                      <div className="flex gap-2">
-                        <img src="/warehouse.svg" alt="" />
-                        <div>
-                          <p className="text-sm text-customBrown">{store}</p>
-                          <p className="text-xs text-shadeGray">
-                            200 successful sales
-                          </p>
-                        </div>
-                      </div>
-                      <div className="border border-primary py-2 px-4 rounded-lg">
-                        <p className="text-primary text-xs">Visit Store</p>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between pb-1">
-                          <p className="text-xs text-shadeGray">
-                            Product Quality
-                          </p>
-                          <span className="text-xs text-shadeGray">80%</span>
-                        </div>
-                        <img src="/progressbar.svg" alt="" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between pb-1">
-                          <p className="text-xs text-shadeGray">
-                            Delivery Rate
-                          </p>
-                          <span className="text-xs text-shadeGray">80%</span>
-                        </div>
-                        <img src="/progressbar.svg" alt="" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="py-6 px-4 lg:px-8 bg-white lg:rounded-lg lg:w-1/3 self-start">
-                {/* order details */}
-                <div className="pb-6">
-                  <h3 className="text-sm text-customBrown border-b leading-8 mb-6">
-                    Order Details
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-customGray3">Quantity:</p>
-                      <div className="flex items-center justify-around border border-gray-300 rounded-[2px] w-[106px] h-[28px]">
-                        <button
-                          className="flex-1 w-full text-center bg-[#F6F6F6] active:bg-[#b5b4b4]"
-                          onClick={() =>
-                            setQuantityCount((prev) =>
-                              prev > 1 ? prev - 1 : 1
-                            )
-                          }
-                        >
-                          <Minus />
-                        </button>
-                        <span className="flex-1 w-full text-center border-l border-r text-customBrown text-base font-meduim">
-                          {quantityCount}
-                        </span>
-                        <button
-                          className="flex-1 w-full text-center bg-[#F6F6F6] active:bg-[#b5b4b4]"
-                          onClick={() => setQuantityCount((prev) => prev + 1)}
-                        >
-                          <Plus />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customGray3">Price:</p>
-                      <span className="text-sm text-customBrown font-meduim">
-                        ₦{totalPrice}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customGray3">Discount:</p>
-                      <span className="text-sm text-customBrown font-meduim">
-                        ({discountPercent}%) -₦{discountPrice}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customGray3 flex gap-2 items-center">
-                        Discount
-                        <span className="text-[10px] text-customBrown font-meduim flex gap-2 bg-[#BFCCD8] px-3 py-[2px] rounded-2xl">
-                          standard
-                          <img
-                            src="/standardarrow.svg"
-                            alt="Discount Type Arrow"
-                          />
-                        </span>
-                      </p>
-                      <span className="text-sm text-customBrown font-meduim">
-                        ({discountPercent}%) -₦{discountPrice}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="border-b pb-1">
-                  <h3 className="text-sm text-customBrown border-b leading-8 mb-6">
-                    Delivery & Returns
-                  </h3>
-                  <p className="text-sm text-customGray3 font-normal">
-                    Same day delivery available in
-                  </p>
-                  <span className="text-sm text-customGray3 font-semibold">
-                    Lagos
-                  </span>
-                </div>
-                <form action="" className="py-6">
-                  <div className="flex flex-col border-b pb-6">
-                    <label
-                      htmlFor="address"
-                      className="text-sm text-customGray3 pb-3"
-                    >
-                      Choose your location
-                    </label>
-                    <div className="relative">
-                      <img
-                        src="/address-marker-outline.svg"
-                        alt=""
-                        className="w-4 absolute left-4 top-4"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Enter an address"
-                        className="border h-12 px-10 w-full rounded-lg"
-                      />
-                      <img
-                        src="/standardarrow.svg"
-                        alt=""
-                        className="w-4 absolute right-4 bottom-4"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col border-b pb-6 pt-6">
-                    <label
-                      htmlFor="coupon"
-                      className="text-sm text-customGray3 pb-3"
-                    >
-                      COUPON
-                    </label>
-                    <div className="relative">
-                      <img
-                        src="/address-marker-outline.svg"
-                        alt=""
-                        className="w-4 absolute left-4 top-4"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Enter Code Here"
-                        className="border h-12 px-10 w-full rounded-lg"
-                      />
-                      <span className="absolute right-4 bottom-4 text-xs text-customGold">
-                        APPLY COUPON
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pt-6 pb-4 border-b space-y-2">
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customGray3">Subtotal:</p>
-                      <span className="text-sm text-customBrown font-meduim">
-                        ₦{totalPrice}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-sm text-customBrown font-medium">
-                        Total
-                      </p>
-                      <span className="text-base text-customBrown font-meduim">
-                        ₦{totalPrice}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-6 pt-6">
-                    <button
-                      type="button"
-                      onClick={handleBuyNow}
-                      disabled={cartLoading}
-                      className="bg-primary rounded-lg h-[60px] w-full text-base text-white disabled:bg-gray-400"
-                    >
-                      {cartLoading ? "Processing..." : "Buy Now"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleAddToCart}
-                      disabled={cartLoading}
-                      className="bg-white border border-primary rounded-lg h-[60px] w-full text-base text-primary disabled:bg-gray-100 disabled:text-gray-400"
-                    >
-                      {cartLoading ? "Adding..." : "Add to Cart"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </section>
-          {/* Specifications */}
-          <section className="bg-white lg:rounded-lg px-4 lg:px-10 lg:m-5">
-            {/* tab header */}
-            <div className="hidden md:block">
-              <div className="flex gap-20 border-b md:mb-6">
-                {["description", "specs", "reviews"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab as any)}
-                    className={`text-sm font-medium py-2 ${activeTab === tab
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-shadeGray"
-                      }`}
-                  >
-                    {tab === "description"
-                      ? "Description"
-                      : tab === "specs"
-                        ? "Specifications"
-                        : "Reviews"}
-                  </button>
-                ))}
-              </div>
-              <div>
-                {activeTab === "description" && <DescriptionSection />}
-                {activeTab === "specs" && <SpecsSection />}
-                {activeTab === "reviews" && <ReviewsSection />}
-              </div>
-            </div>
-            <div className="block md:hidden space-y-8">
-              <DescriptionSection />
-              <SpecsSection />
-              <ReviewsSection />
-            </div>
-          </section>
-          <RecommendedProduct relatedProducts={relatedProducts} />
-        </div>
-      )}
-    </div>
-  );
->>>>>>> Stashed changes
 };
 
 const ReviewItem = ({ review }: { review: any }) => (
