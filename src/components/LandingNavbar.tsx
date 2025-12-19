@@ -30,27 +30,23 @@ const Navbar: React.FC = () => {
     { label: "Privacy Policy", href: "/privacy" },
   ];
 
-<<<<<<< Updated upstream
   useEffect(() => {
     const handleScroll = () => {
-      setIsFixed(window.scrollY > 500); //  threshold (px)
+      setIsFixed(window.scrollY > 500);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);  
+  }, []);
 
   return (
     <nav
-    className={`w-full transition-all duration-300 ease-in-out bg-transparent
-      ${isFixed
-        ? "fixed top-0 left-0 z-50 shadow-md bg-white"
-        : "relative"
-      }
+      className={`w-full transition-all duration-300 ease-in-out bg-transparent
+      ${isFixed ? "fixed top-0 left-0 z-50 shadow-md bg-white" : "relative"}
     `}
-  >
+    >
       <div className="mx-auto py-[20px] px-[20px] lg:px-[40px] xl:px-[80px]">
-        <div className="flex justify-between  items-center">
+        <div className="flex justify-between items-center">
           <div className="flex justify-start gap-2">
             {/* Mobile menu button */}
             <div className="lg:hidden flex items-center">
@@ -80,82 +76,6 @@ const Navbar: React.FC = () => {
               </a>
             </div>
           </div>
-=======
-    return (
-        <nav className="bg-white shadow-sm font-roboto relative">
-            <div className=" mx-auto py-[20px] px-[20px] lg:px-[80px]">
-                <div className="flex justify-between  items-center">
-                    <div className='flex justify-start gap-2'>
-                        {/* Mobile menu button */}
-                        <div className="md:hidden flex items-center">
-                            <button
-                                type="button"
-                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-blue-900 hover:bg-gray-100"
-                                aria-controls="mobile-menu"
-                                aria-expanded={isMenuOpen}
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            >
-                                <span className="sr-only">Open main menu</span>
-                                <img
-                                    src={isMenuOpen ? closeMenuIcon : openMenuIcon}
-                                    alt="Menu"
-                                    className="h-4 w-4"
-                                />
-                            </button>
-                        </div>
-                        {/* Logo */}
-                        <div className="flex-shrink-0 flex items-center">
-                            <a href="/" className="flex items-center">
-                                <img
-                                    className="h-[27px] lg:h-10 lg:w-auto w-[100px]"
-                                    src={Logo}
-                                    alt="Solid Spare Parts Logo"
-                                />
-                            </a>
-                        </div>
-                    </div>
-
-                    {/* Desktop Navigation */}
-                    <div className="hidden md:block border-[1px] border-[#D9D9D9] rounded-[10px] px-[12px] lg:px-[48px] py-[10px] bg-[#F9F9F9]">
-                        <div className="flex gap-[20px] lg:gap-[64px]">
-                            {navItems.map((item) => (
-                                <a
-                                    key={item.label}
-                                    href={item.href}
-                                    className="text-customGray1 hover:text-primary text-[10px] lg:text-sm font-medium"
-                                >
-                                    {item.label}
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-4 items-center">
-                        {/* <div className="hidden md:flex gap-1">
-                            <img src={Cart} alt="" className='w-[24px]'/>
-                            <p className="text-[14px] text-[#2D2828] font-roboto">My Cart</p>
-                        </div> */}
-                        <div className="hidden md:block">
-                            <a href='/login'>
-                                <button
-                                    type="submit"
-                                    className="border border-primary h-12 w-16 rounded-lg bg-white text-primary text-sm font-semibold"
-                                >
-                                    Log in
-                                </button>
-                            </a>
-                        </div>
-                        <div className="hidden md:block">
-                            <a href='/account-type'>
-                                <button
-                                    type="submit"
-                                    className="border h-12 w-20 rounded-lg bg-primary text-white text-sm font-semibold"
-                                >
-                                    Sign up
-                                </button>
-                            </a>
-                        </div>
->>>>>>> Stashed changes
 
           {/* Desktop Navigation */}
           <div className="hidden lg:block border-[1px] border-[#D9D9D9] rounded-[10px] px-[30px] xl:px-[48px] py-[10px] bg-[#F9F9F999]">
@@ -179,13 +99,19 @@ const Navbar: React.FC = () => {
               ) : (
                 <img src={whiteCart} alt="" />
               )}
-              <p className={`text-[14px] font-roboto ${isFixed ? "text-customGray1" : "text-white"}`}>My Cart</p>
+              <p className={`text-[14px] font-roboto ${isFixed ? "text-customGray1" : "text-white"}`}>
+                My Cart
+              </p>
             </div>
             <div className="hidden md:block">
               <a href="/login">
                 <button
                   type="submit"
-                  className={`border h-12 w-16 rounded-lg text-sm font-semibold ${isFixed ? "border-[#D9D9D9] text-customGray1" : "bg-transparent text-white border-white"}`}
+                  className={`border h-12 w-16 rounded-lg text-sm font-semibold ${
+                    isFixed
+                      ? "border-[#D9D9D9] text-customGray1"
+                      : "bg-transparent text-white border-white"
+                  }`}
                 >
                   Log in
                 </button>
@@ -202,74 +128,15 @@ const Navbar: React.FC = () => {
               </a>
             </div>
 
-<<<<<<< Updated upstream
             {/* Cart icon for mobile */}
-            <div className="md:hidden flex items-center">
+            <div className="lg:hidden flex items-center">
               <a href="/cart">
-                <img src={cart} alt="Cart" className="w-6 h-6" />
+                <img src={isFixed ? cart : whiteCart} alt="Cart" className="w-6 h-6" />
               </a>
             </div>
           </div>
         </div>
       </div>
-=======
-            {/* Full-screen Mobile menu */}
-            {isMenuOpen && (
-                <div className="fixed inset-0 bg-white z-50 overflow-y-auto md:hidden">
-                    <div className="flex justify-between items-center mx-auto py-[20px] px-[10px] lg:px-[20px] border-b">
-                        <div className='flex justify-start gap-2'>
-                            {/* Mobile menu button */}
-                            <div className="md:hidden flex items-center">
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-blue-900 hover:bg-gray-100"
-                                    aria-controls="mobile-menu"
-                                    aria-expanded={isMenuOpen}
-                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                >
-                                    <span className="sr-only">Open main menu</span>
-                                    {/* Menu open: "hidden", Menu closed: "block" */}
-                                    <svg
-                                        className={`${isMenuOpen ? 'hidden' : 'block'} h-4 w-4`}
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                    </svg>
-                                    {/* Menu open: "block", Menu closed: "hidden" */}
-                                    <svg
-                                        className={`${isMenuOpen ? 'block' : 'hidden'} h-4 w-4`}
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            {/* Logo */}
-                            <div className="flex-shrink-0 flex items-center">
-                                <a href="/" className="flex items-center">
-                                    <img
-                                        className="h-[32px] w-[120px]"
-                                        src={Logo}
-                                        alt="Solid Spare Parts Logo"
-                                    />
-                                </a>
-                            </div>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                            <a href="/cart">
-                                <img src={Cart} alt="Cart" className="w-6 h-6" />
-                            </a>
-                        </div>
-                    </div>
->>>>>>> Stashed changes
 
       {/* Full-screen Mobile menu */}
       {isMenuOpen && (
@@ -285,39 +152,12 @@ const Navbar: React.FC = () => {
                   aria-expanded={isMenuOpen}
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
-                  <span className="sr-only">Open main menu</span>
-                  {/* Menu open: "hidden", Menu closed: "block" */}
-                  <svg
-                    className={`${isMenuOpen ? "hidden" : "block"} h-4 w-4`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                  {/* Menu open: "block", Menu closed: "hidden" */}
-                  <svg
-                    className={`${isMenuOpen ? "block" : "hidden"} h-4 w-4`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <span className="sr-only">Close main menu</span>
+                  <img
+                    src={closeMenuIcon}
+                    alt="Close Menu"
+                    className="h-4 w-4"
+                  />
                 </button>
               </div>
               {/* Logo */}
@@ -340,18 +180,22 @@ const Navbar: React.FC = () => {
 
           {/* Login/Signup buttons */}
           <div className="flex p-4 gap-4">
-            <button
-              type="submit"
-              className="border border-primary flex-1 h-12 rounded-lg bg-white text-primary text-sm font-semibold"
-            >
-              Log in
-            </button>
-            <button
-              type="submit"
-              className="border flex-1 h-12 rounded-lg bg-primary text-white text-sm font-semibold"
-            >
-              Sign up
-            </button>
+            <a href="/login" className="flex-1">
+              <button
+                type="submit"
+                className="border border-primary w-full h-12 rounded-lg bg-white text-primary text-sm font-semibold"
+              >
+                Log in
+              </button>
+            </a>
+            <a href="/account-type" className="flex-1">
+              <button
+                type="submit"
+                className="border w-full h-12 rounded-lg bg-primary text-white text-sm font-semibold"
+              >
+                Sign up
+              </button>
+            </a>
           </div>
 
           {/* Main navigation items */}

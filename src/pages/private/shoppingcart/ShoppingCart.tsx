@@ -64,6 +64,10 @@ const ShoppingCart = () => {
   };
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     // For guest users, try to load from session storage first
     if (!isAuthenticated()) {
       const guestCart = sessionStorage.getItem("guest_cart");
@@ -86,7 +90,8 @@ const ShoppingCart = () => {
       .then(() => {
         setInitialLoad(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Failed to fetch cart:", error);
         setInitialLoad(false);
       });
   }, [dispatch]);

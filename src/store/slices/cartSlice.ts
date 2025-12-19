@@ -225,7 +225,7 @@ export const removeProductFromCart = createAsyncThunk(
         return updatedCart;
       } catch (error: any) {
         console.error('Error removing from guest cart:', error);
-    return rejectWithValue("Failed to remove product from guest cart");
+        return rejectWithValue("Failed to remove product from guest cart");
       }
     }
 
@@ -261,8 +261,13 @@ export const updateCartItemQuantity = createAsyncThunk(
           return rejectWithValue("Cart is empty");
         }
 
+        const updatedCart = {
+          ...currentCart,
+          products: [...currentCart.products] // Create a new array
+        };
+
         // Find and update product quantity
-        const itemIndex = currentCart.products.findIndex(
+        const itemIndex = updatedCart.products.findIndex(
           (item: CartItem) => item.product._id === productId
         );
 
@@ -270,18 +275,20 @@ export const updateCartItemQuantity = createAsyncThunk(
           return rejectWithValue("Product not found in cart");
         }
 
-        currentCart.products[itemIndex].quantity = quantity;
-        currentCart.products[itemIndex].totalPrice =
-          currentCart.products[itemIndex].product.salesPrice * quantity;
+        updatedCart.products[itemIndex] = {
+          ...updatedCart.products[itemIndex],
+          quantity: quantity,
+          totalPrice: updatedCart.products[itemIndex].product.salesPrice * quantity
+        };
 
         // Recalculate total
-        currentCart.total = currentCart.products.reduce(
+        updatedCart.total = updatedCart.products.reduce(
           (sum: number, item: CartItem) => sum + item.totalPrice,
           0
         );
 
-        saveGuestCart(currentCart);
-        return currentCart;
+        saveGuestCart(updatedCart);
+        return updatedCart;
       } catch (error: any) {
         return rejectWithValue("Failed to update quantity in guest cart");
       }
