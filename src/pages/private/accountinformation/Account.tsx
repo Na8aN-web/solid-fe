@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Recents from "./components/Recents";
+import Recents from "../../public/products/components/Recents";
 import { Outlet, useParams } from "react-router-dom";
 
 const Account = () => {
@@ -11,13 +11,13 @@ const Account = () => {
       <nav className="bg-[#F5F5F5] p-4 border-b hidden md:block">
         <div className="mx-auto flex items-center">
           <div className="flex space-x-6 ml-[50px]">
-            <a href="#" className="text-gray-500 hover:text-gray-700">
+            <button className="text-gray-500 hover:text-gray-700">
               Home
-            </a>
+            </button>
             <img src="/arrow-right.svg" alt="arrow facing right" />
-            <a href="#" className="text-gray-900 font-semibold first-letter:uppercase">
+            <button className="text-gray-900 font-semibold first-letter:uppercase underline">
               {section}
-            </a>
+            </button>
           </div>
         </div>
       </nav>

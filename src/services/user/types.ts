@@ -1,4 +1,5 @@
-// src/services/user/types.ts
+import { Product } from "../products/types";
+
 export interface User {
   _id: string;
   firstName: string;
@@ -19,5 +20,5 @@ export interface userState {
     loading: boolean;
     error: string | null;
     totalUsers: number;      // for "get total user count"
-    recentlyViewed: string[];  // to track recently viewed users
+    recentlyViewed: Product[]; // to track recently viewed users
   }

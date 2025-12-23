@@ -54,7 +54,6 @@ const NewArrivals = () => {
     const product = newArrivals.find(p => p._id === productId);
 
     if (!product) {
-      console.error('Product not found');
       return;
     }
 
@@ -85,8 +84,7 @@ const NewArrivals = () => {
       // Show success modal
       setLastAddedProduct({ id: productId, name: productName });
       setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Failed to add product to cart:', error);
+    } catch {
     } finally {
       setAddingProductId(null);
     }

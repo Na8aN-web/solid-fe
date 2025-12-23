@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  fetchWishlist, 
-  toggleProductInWishlist 
+import {
+  fetchWishlist,
+  toggleProductInWishlist,
 } from "../../../../../store/slices/wishlistSlice";
 import { addProductToCart } from "../../../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
@@ -13,20 +13,22 @@ const SavedItems = () => {
   const dispatch = useAppDispatch();
   const { wishlist, loading } = useAppSelector((state) => state.wishlist);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const itemsPerPage = 12;
 
   // wishlist products
   const wishlistProducts = wishlist?.products || [];
-  console.log("Wishlist products:", wishlistProducts);
   const totalItems = wishlistProducts.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Get items for current page
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = wishlistProducts.slice(startIndex, startIndex + itemsPerPage);
+  const currentItems = wishlistProducts.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   // Fetch wishlist on mount
   useEffect(() => {
@@ -43,11 +45,7 @@ const SavedItems = () => {
   const handleToggleWishlist = async (productId: string) => {
     try {
       await dispatch(toggleProductInWishlist(productId)).unwrap();
-      console.log("Product removed from wishlist");
-    } catch (error) {
-      console.error("Failed to remove from wishlist:", error);
-      alert("Failed to remove from wishlist");
-    }
+    } catch {}
   };
 
   const handleAddToCart = async (productId: string, product: any) => {
@@ -73,9 +71,7 @@ const SavedItems = () => {
         })
       ).unwrap();
       alert("Product added to cart!");
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-      alert("Failed to add to cart");
+    } catch {
     } finally {
       setAddingToCart(null);
     }
@@ -89,9 +85,11 @@ const SavedItems = () => {
   if (loading) {
     return (
       <div className="p-4 md:p-5 mb-12">
-        <h1 className="text-customBrown font-medium text-xl pb-4">Saved Items</h1>
+        <h1 className="text-customBrown font-medium text-xl pb-4">
+          Saved Items
+        </h1>
         <div className="flex items-center justify-center py-20">
-          <LoaderSpinner txt="Loading wishlist"/>
+          <LoaderSpinner txt="Loading wishlist" />
         </div>
       </div>
     );
@@ -101,11 +99,13 @@ const SavedItems = () => {
   if (!wishlist || wishlistProducts.length === 0) {
     return (
       <div className="p-4 md:p-5 mb-12">
-        <h1 className="text-customBrown font-medium text-xl pb-4">Saved Items</h1>
+        <h1 className="text-customBrown font-medium text-xl pb-4">
+          Saved Items
+        </h1>
         <div className="flex flex-col items-center justify-center py-20">
-          <img 
-            src="/empty-wishlist.svg" 
-            alt="Empty wishlist" 
+          <img
+            src="/empty-wishlist.svg"
+            alt="Empty wishlist"
             className="w-32 h-32 mb-4"
             onError={(e) => {
               e.currentTarget.src = "/placeholder.png";
@@ -193,13 +193,17 @@ const SavedItems = () => {
               </div>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold text-customBrown">
-                  ₦{product.salesPrice?.toLocaleString() || product.displayPrice?.toLocaleString()}
+                  ₦
+                  {product.salesPrice?.toLocaleString() ||
+                    product.displayPrice?.toLocaleString()}
                 </p>
-                {product.regularPrice && product.regularPrice > (product.salesPrice || product.displayPrice) && (
-                  <p className="text-[11px] font-semibold text-customGray3 line-through">
-                    ₦{product.regularPrice.toLocaleString()}
-                  </p>
-                )}
+                {product.regularPrice &&
+                  product.regularPrice >
+                    (product.salesPrice || product.displayPrice) && (
+                    <p className="text-[11px] font-semibold text-customGray3 line-through">
+                      ₦{product.regularPrice.toLocaleString()}
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -261,7 +265,11 @@ const SavedItems = () => {
               disabled={currentPage === 1}
               className="h-[35px] w-[35px] border rounded-3xl disabled:opacity-50 flex justify-center items-center hover:bg-gray-100 transition-colors"
             >
-              <img src="/next.svg" alt="Previous" className="w-[5px] rotate-180" />
+              <img
+                src="/next.svg"
+                alt="Previous"
+                className="w-[5px] rotate-180"
+              />
             </button>
 
             {Array.from({ length: totalPages }).map((_, i) => (
@@ -290,7 +298,8 @@ const SavedItems = () => {
           </div>
           <div className="flex justify-center items-center">
             <p className="text-xs text-customBrown">
-              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems} Products
+              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, totalItems)}{" "}
+              of {totalItems} Products
             </p>
           </div>
         </>
