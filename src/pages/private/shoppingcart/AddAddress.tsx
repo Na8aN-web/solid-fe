@@ -1,16 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { createAddress } from "../../../store/slices/addressSlice";
 
-// Nigerian states
-const nigerianStates = [
-  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
-  "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe",
-  "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara",
-  "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau",
-  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT"
-];
+// Nigerian states with their popular cities (for suggestions only)
+const nigerianStatesWithCities: Record<string, string[]> = {
+  "Abia": ["Aba", "Umuahia", "Ohafia", "Arochukwu", "Bende"],
+  "Adamawa": ["Yola", "Mubi", "Jimeta", "Numan", "Ganye"],
+  "Akwa Ibom": ["Uyo", "Eket", "Ikot Ekpene", "Oron", "Abak"],
+  "Anambra": ["Awka", "Onitsha", "Nnewi", "Ekwulobia", "Ihiala"],
+  "Bauchi": ["Bauchi", "Azare", "Misau", "Jama'are", "Katagum"],
+  "Bayelsa": ["Yenagoa", "Brass", "Ogbia", "Sagbama", "Ekeremor"],
+  "Benue": ["Makurdi", "Gboko", "Otukpo", "Katsina-Ala", "Vandeikya"],
+  "Borno": ["Maiduguri", "Biu", "Bama", "Konduga", "Gwoza"],
+  "Cross River": ["Calabar", "Ugep", "Ogoja", "Ikom", "Obudu"],
+  "Delta": ["Asaba", "Warri", "Sapele", "Ughelli", "Agbor"],
+  "Ebonyi": ["Abakaliki", "Afikpo", "Onueke", "Ezza", "Ishielu"],
+  "Edo": ["Benin City", "Auchi", "Ekpoma", "Uromi", "Irrua"],
+  "Ekiti": ["Ado-Ekiti", "Ikere", "Efon-Alaaye", "Ijero", "Ise"],
+  "Enugu": ["Enugu", "Nsukka", "Agbani", "Awgu", "Oji River"],
+  "Gombe": ["Gombe", "Kumo", "Deba", "Billiri", "Kaltungo"],
+  "Imo": ["Owerri", "Orlu", "Okigwe", "Oguta", "Mbaise"],
+  "Jigawa": ["Dutse", "Hadejia", "Gumel", "Birnin Kudu", "Kazaure"],
+  "Kaduna": ["Kaduna", "Zaria", "Kafanchan", "Kagoro", "Saminaka"],
+  "Kano": ["Kano", "Wudil", "Gwarzo", "Bichi", "Rano"],
+  "Katsina": ["Katsina", "Daura", "Funtua", "Malumfashi", "Dutsin-Ma"],
+  "Kebbi": ["Birnin Kebbi", "Argungu", "Zuru", "Yauri", "Jega"],
+  "Kogi": ["Lokoja", "Okene", "Kabba", "Idah", "Ankpa"],
+  "Kwara": ["Ilorin", "Offa", "Omu-Aran", "Lafiagi", "Jebba"],
+  "Lagos": ["Ikeja", "Lagos Island", "Surulere", "Yaba", "Ikorodu", "Epe", "Badagry", "Lekki", "Victoria Island", "Apapa"],
+  "Nasarawa": ["Lafia", "Keffi", "Akwanga", "Nasarawa", "Doma"],
+  "Niger": ["Minna", "Suleja", "Kontagora", "Bida", "Lapai"],
+  "Ogun": ["Abeokuta", "Ijebu Ode", "Sagamu", "Ilaro", "Ota"],
+  "Ondo": ["Akure", "Ondo", "Owo", "Ikare", "Ore"],
+  "Osun": ["Osogbo", "Ile-Ife", "Ilesa", "Ede", "Iwo"],
+  "Oyo": ["Ibadan", "Ogbomoso", "Oyo", "Iseyin", "Saki"],
+  "Plateau": ["Jos", "Bukuru", "Pankshin", "Shendam", "Langtang"],
+  "Rivers": ["Port Harcourt", "Bonny", "Eleme", "Okrika", "Ahoada"],
+  "Sokoto": ["Sokoto", "Tambuwal", "Gwadabawa", "Wurno", "Bodinga"],
+  "Taraba": ["Jalingo", "Wukari", "Bali", "Zing", "Gembu"],
+  "Yobe": ["Damaturu", "Potiskum", "Gashua", "Geidam", "Nguru"],
+  "Zamfara": ["Gusau", "Kaura Namoda", "Talata Mafara", "Bungudu", "Anka"],
+  "FCT": ["Abuja", "Gwagwalada", "Kubwa", "Kuje", "Bwari", "Nyanya", "Lugbe"]
+};
 
 const AddAddress = () => {
   const dispatch = useAppDispatch();
@@ -29,18 +61,68 @@ const AddAddress = () => {
     isDefault: false,
   });
 
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+
+  // Get suggested cities for selected state
+  const suggestedCities = useMemo(() => {
+    if (!formData.state) return [];
+    return nigerianStatesWithCities[formData.state] || [];
+  }, [formData.state]);
+
+  // Filter cities based on what user is typing
+  const filteredSuggestions = useMemo(() => {
+    if (!formData.city || formData.city.length < 2) return suggestedCities;
+    return suggestedCities.filter(city =>
+      city.toLowerCase().includes(formData.city.toLowerCase())
+    );
+  }, [formData.city, suggestedCities]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+    
+    // If state changes, reset city
+    if (name === "state") {
+      setFormData((prev) => ({
+        ...prev,
+        state: value,
+        city: "", // Reset city when state changes
+      }));
+    } else if (name === "city") {
+      setFormData((prev) => ({
+        ...prev,
+        city: value,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      }));
+    }
+  };
+
+  const handleCitySelect = (city: string) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      city: city,
     }));
+    setShowCitySuggestions(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation - just ensure state is selected and city is not empty
+    if (!formData.state) {
+      alert("Please select a state");
+      return;
+    }
+    
+    if (!formData.city.trim()) {
+      alert("Please enter a city");
+      return;
+    }
     
     try {
       await dispatch(createAddress(formData)).unwrap();
@@ -182,15 +264,15 @@ const AddAddress = () => {
                 className="w-full p-4 border border-[#D9D9D9] rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="">Please Select state</option>
-                {nigerianStates.map((state) => (
+                <option value="">Please Select State</option>
+                {Object.keys(nigerianStatesWithCities).map((state) => (
                   <option key={state} value={state}>
                     {state}
                   </option>
                 ))}
               </select>
             </div>
-            <div>
+            <div className="relative">
               <label
                 htmlFor="city"
                 className="leading-8 text-sm text-customBrown font-normal"
@@ -200,12 +282,37 @@ const AddAddress = () => {
               <input
                 name="city"
                 type="text"
-                placeholder="Enter Your City"
+                placeholder={formData.state ? "Enter your city (e.g., Ikeja, Surulere)" : "Select state first"}
                 value={formData.city}
                 onChange={handleInputChange}
-                className="w-full p-4 border border-[#D9D9D9] rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                onFocus={() => setShowCitySuggestions(true)}
+                onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
+                disabled={!formData.state}
+                className="w-full p-4 border border-[#D9D9D9] rounded-lg text-base shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 required
+                autoComplete="off"
               />
+              {showCitySuggestions && formData.state && filteredSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="px-4 py-2 bg-gray-50 text-xs text-gray-600 border-b">
+                    Popular cities (you can type any city)
+                  </div>
+                  {filteredSuggestions.map((city) => (
+                    <div
+                      key={city}
+                      onClick={() => handleCitySelect(city)}
+                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer text-base border-b last:border-b-0"
+                    >
+                      {city}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {formData.state && (
+                <p className="text-xs text-gray-500 mt-1">
+                  You can type any city in {formData.state}. Suggestions are provided for popular cities.
+                </p>
+              )}
             </div>
             <div className="flex gap-2">
               <input

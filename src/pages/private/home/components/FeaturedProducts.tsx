@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
-// Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/grid";
 import "../styles.css";
-// import required modules
 import { Grid, Navigation } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { featuredProducts } from "../../../../store/slices/productSlice";
@@ -28,7 +25,6 @@ const FeaturedProducts = () => {
   );
 
   const loading = useAppSelector((state) => state.products.loading);
-  // const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(featuredProducts());
@@ -48,7 +44,6 @@ const FeaturedProducts = () => {
     const product = featProducts.find(p => p._id === productId);
 
     if (!product) {
-      console.error('Product not found');
       return;
     }
 
@@ -79,8 +74,7 @@ const FeaturedProducts = () => {
       // Show success modal
       setLastAddedProduct({ id: productId, name: productName });
       setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Failed to add product to cart:', error);
+    } catch {
     } finally {
       setAddingProductId(null);
     }
@@ -170,22 +164,32 @@ const FeaturedProducts = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={product._id}>
-                    <Link to={`/product/${product._id}`}>
                       <ProductCard
                         productId={product._id}
                         image={product.image}
                         title={product.name}
                         category={product.category}
                         rating={product.rating}
-                        price={`₦${Math.floor(product.displayPrice)}.00`}
-                        oldPrice={`₦${Math.floor(product.regularPrice)}.00`}
+                        price={`₦${product.displayPrice.toLocaleString(
+                          "en-NG",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}`}
+                        oldPrice={`₦${product.regularPrice.toLocaleString(
+                          "en-NG",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}`}
                         discount={formattedDiscount}
                         numReviews={product.numReviews}
                         onAddToCart={handleAddToCart}
                         cartLoading={addingProductId !== null}
                         addingProductId={addingProductId}
                       />
-                    </Link>
                   </SwiperSlide>
                 );
               })}

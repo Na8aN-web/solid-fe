@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import whiteLogo from "../assets/white-solid-logo.svg";
 import whiteCart from "../assets/white-cart.svg";
@@ -13,7 +14,14 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isFixed, setIsFixed] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
+
+  // Determine if we're on a page with blue/dark background (home page)
+  const isHomePage = location.pathname === "/" || location.pathname === "/home";
+  
+  // Use white/dark styling (not position) if: not on homepage OR scrolled on homepage
+  const useWhiteStyling = !isHomePage || isScrolled;
 
   const navItems: NavItem[] = [
     { label: "Products", href: "/products" },
@@ -32,8 +40,11 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsFixed(window.scrollY > 500);
+      setIsScrolled(window.scrollY > 500); //  threshold (px)
     };
+
+    // Check initial scroll position
+    setIsScrolled(window.scrollY > 500);
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -41,10 +52,13 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className={`w-full transition-all duration-300 ease-in-out bg-transparent
-      ${isFixed ? "fixed top-0 left-0 z-50 shadow-md bg-white" : "relative"}
+    className={`w-full transition-all duration-300 ease-in-out bg-transparent
+      ${isScrolled
+        ? "fixed top-0 left-0 z-50 shadow-md bg-white"
+        : "relative"
+      }
     `}
-    >
+  >
       <div className="mx-auto py-[20px] px-[20px] lg:px-[40px] xl:px-[80px]">
         <div className="flex justify-between items-center">
           <div className="flex justify-start gap-2">
@@ -70,7 +84,7 @@ const Navbar: React.FC = () => {
               <a href="/" className="flex items-center">
                 <img
                   className="h-[32px] md:h-10 md:w-auto w-[120px]"
-                  src={isFixed ? logo : whiteLogo}
+                  src={useWhiteStyling ? logo : whiteLogo}
                   alt="Solid Spare Parts Logo"
                 />
               </a>
@@ -94,24 +108,18 @@ const Navbar: React.FC = () => {
 
           <div className="flex gap-4 items-center">
             <div className="hidden md:flex gap-1 items-center">
-              {isFixed ? (
+              {useWhiteStyling ? (
                 <img src={cart} alt="" />
               ) : (
                 <img src={whiteCart} alt="" />
               )}
-              <p className={`text-[14px] font-roboto ${isFixed ? "text-customGray1" : "text-white"}`}>
-                My Cart
-              </p>
+              <p className={`text-[14px] font-roboto ${isScrolled ? "text-customGray1" : "text-white"}`}>My Cart</p>
             </div>
             <div className="hidden md:block">
               <a href="/login">
                 <button
                   type="submit"
-                  className={`border h-12 w-16 rounded-lg text-sm font-semibold ${
-                    isFixed
-                      ? "border-[#D9D9D9] text-customGray1"
-                      : "bg-transparent text-white border-white"
-                  }`}
+                  className={`border h-12 w-16 rounded-lg text-sm font-semibold ${isScrolled ? "border-[#D9D9D9] text-customGray1" : "bg-transparent text-white border-white"}`}
                 >
                   Log in
                 </button>
@@ -131,7 +139,7 @@ const Navbar: React.FC = () => {
             {/* Cart icon for mobile */}
             <div className="lg:hidden flex items-center">
               <a href="/cart">
-                <img src={isFixed ? cart : whiteCart} alt="Cart" className="w-6 h-6" />
+                <img src={isScrolled ? cart : whiteCart} alt="Cart" className="w-6 h-6" />
               </a>
             </div>
           </div>

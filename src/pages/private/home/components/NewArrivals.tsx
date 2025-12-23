@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
 import "../styles.css";
-// import required modules
 import { Navigation, Grid } from "swiper/modules";
 import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { newProducts } from "../../../../store/slices/productSlice";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
-import { Link } from "react-router-dom";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
 import SuccessModal from "../../../../components/SuccessModal";
 
@@ -27,7 +24,6 @@ export interface Product {
 }
 
 const NewArrivals = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useAppDispatch();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
@@ -39,7 +35,6 @@ const NewArrivals = () => {
   );
 
   const loading = useAppSelector((state) => state.products.loading);
-  // const error = useAppSelector((state) => state.products.error);
 
   useEffect(() => {
     dispatch(newProducts());
@@ -59,7 +54,6 @@ const NewArrivals = () => {
     const product = newArrivals.find(p => p._id === productId);
 
     if (!product) {
-      console.error('Product not found');
       return;
     }
 
@@ -90,8 +84,7 @@ const NewArrivals = () => {
       // Show success modal
       setLastAddedProduct({ id: productId, name: productName });
       setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Failed to add product to cart:', error);
+    } catch {
     } finally {
       setAddingProductId(null);
     }
@@ -110,7 +103,7 @@ const NewArrivals = () => {
 
   return (
     <div>
-      <section>
+      <section className="mb-2">
         <div className="flex justify-between items-center py-6">
           <div className="flex gap-0 items-center">
             <img src="/double-right.svg" alt="right" className="w-9 md:w-16" />

@@ -1,27 +1,31 @@
-import { useState } from "react";
-// Import Swiper React components
+import { useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/grid";
 import "../styles.css";
-// import required modules
 import { Grid, Navigation } from "swiper/modules";
-import ProductCard from "./ProductCard";
+
+import ProductCard from "../../../private/home/components/ProductCard";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { getRecentlyViewed } from "../../../../store/slices/userSlice";
+import { Product } from "../../../../services/products/types";
 
 const Recents = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const dispatch = useAppDispatch();
+  const { recentlyViewed, loading } = useAppSelector((state) => state.user);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const categories = [
-    "Passengers Cars",
-    "SUVs and Crossover",
-    "Trucks",
-    "Buses",
-    "Keke (Tricycles)",
-    "Motorcycles",
-    "Heavy Machinery",
-  ];
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getRecentlyViewed());
+    }
+  }, [dispatch, isAuthenticated]);
+
+  if (!isAuthenticated || loading) return null;
+  if (!Array.isArray(recentlyViewed) || recentlyViewed.length === 0)
+    return null;
+
   return (
     <div className="px-4">
       <section>
@@ -33,81 +37,54 @@ const Recents = () => {
             </h2>
           </div>
         </div>
+
         <Swiper
           modules={[Navigation, Grid]}
           navigation={false}
           slidesPerView={2}
           spaceBetween={15}
-          grid={{ rows: 2, fill: "row" }}
+          grid={{ rows: 1, fill: "row" }}
           className="w-full"
           breakpoints={{
-            375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
-            640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-            768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-            1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
+            375: { slidesPerView: 2.2, spaceBetween: 15 },
+            640: { slidesPerView: 3.3, spaceBetween: 20 },
+            768: { slidesPerView: 4.3, spaceBetween: 20 },
+            1280: { slidesPerView: 6, spaceBetween: 20 },
           }}
         >
-          <SwiperSlide>
-            <ProductCard
-              image="/shock-absorber.svg"
-              title="Shock Absorber"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-pump.svg"
-              title="Fuel Pump"
-              category="REPAIR PARTS"
-              price="N60,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/tyres.svg"
-              title="Michellene Tyres"
-              category="WHEELS & TYRES"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/fuel-filter.svg"
-              title="Fuel Filter"
-              category="FILTERS"
-              price="N60,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/performance-exhaust.svg"
-              title="Performance Exhaust System"
-              category="PERFORMANCE PARTS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              discount="-18%"
-              reviews="88"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <ProductCard
-              image="/radiator.svg"
-              title="Radiator"
-              category="COOLING & HEATING SYSTEMS"
-              price="N60,000.00"
-              oldPrice="N80,000.00"
-              reviews="88"
-            />
-          </SwiperSlide>
+          {recentlyViewed.map((product: Product & { images?: string[] }) => {
+            const discount =
+              product.regularPrice && product.salesPrice
+                ? Math.round(
+                    ((product.regularPrice - product.salesPrice) /
+                      product.regularPrice) *
+                      100
+                  )
+                : null;
+
+            return (
+              <SwiperSlide key={product._id}>
+                <ProductCard
+                  productId={product._id}
+                  image={product.images?.[0] || ""} // use first image from array
+                  title={product.name}
+                  category={product.category}
+                  price={`₦${product.salesPrice.toLocaleString("en-NG", {
+                    minimumFractionDigits: 2,
+                  })}`}
+                  oldPrice={
+                    product.regularPrice
+                      ? `₦${product.regularPrice.toLocaleString("en-NG", {
+                          minimumFractionDigits: 2,
+                        })}`
+                      : undefined
+                  }
+                  discount={discount ? `${discount}%` : undefined}
+                  numReviews={product.numReviews}
+                />
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
       </section>
     </div>

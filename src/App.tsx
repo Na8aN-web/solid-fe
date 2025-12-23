@@ -36,6 +36,7 @@ import PrivateLayoutBrand from "./components/PrivateLayoutBrand";
 import PrivateLayoutMobileBrand from "./components/PrivateLayoutMobileBrand";
 import Layout from "./components/Layout";
 import BusinessInfo from "./pages/private/accountinformation/kyc/BusinessInfo";
+import SavedItems from "./pages/private/accountinformation/components/saveditems/SavedItems";
 
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
@@ -132,6 +133,14 @@ const EmailVerificationRoute: React.FC<{ children: React.ReactNode }> = ({
   return <>{children}</>;
 };
 
+// Dynamic Layout Component that switches between Layout and PrivateLayout
+const DynamicLayout: React.FC = () => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  
+  // Use PrivateLayout if authenticated, otherwise use regular Layout
+  return isAuthenticated ? <PrivateLayoutBrand /> : <Layout />;
+};
+
 function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
@@ -185,7 +194,7 @@ function App() {
         {/* layout for landing page without siging in */}
         <Route path="/" element={<Home />} />
         
-        <Route element={<Layout />}>
+        <Route element={<DynamicLayout />}>
           <Route path="/about" element={<About />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/blog" element={<Blog />} />
@@ -229,6 +238,7 @@ function App() {
           {/* Private Routes: This component is only accessible to authenticated users */}
           <Route path="/home" element={<HomeGuest />} />
           <Route path="/cart" element={<ShoppingCart />} />
+          <Route path="/saved-items" element={<SavedItems />} />
           <Route path="/products" element={<Product />} />
           <Route path="/product/:id" element={<ProductDetails />} />
         </Route>

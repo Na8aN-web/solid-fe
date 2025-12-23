@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
 import { User, userState } from "../../services/user/types";
+import { Product } from "../../services/products/types";
 
 const initialState: userState = {
   users: [],
@@ -106,31 +107,27 @@ export const deleteUser = createAsyncThunk<
   }
 });
 
+// RECENTLY VIEWED ACTIONS
+
 // Add recently viewed products
 export const addRecentlyViewed = createAsyncThunk<
-  string,
+  void,
   string,
   { rejectValue: string }
 >("users/addRecentlyViewed", async (productId, { rejectWithValue }) => {
   try {
-    await axiosInstance.put("/users/recently-viewed", {
-      productId,
-    });
-    return productId;
+    await axiosInstance.put("/users/recently-viewed", { productId });
   } catch (error: any) {
-    if (error.response) {
-      return rejectWithValue(
-        error.response.data.message ||
-          "Failed to add product to recently viewed"
-      );
-    }
-    return rejectWithValue("Network error. Please try again.");
+    return rejectWithValue(
+      error.response?.data?.message ||
+        "Failed to add product to recently viewed"
+    );
   }
 });
 
 // get recently viewed products
 export const getRecentlyViewed = createAsyncThunk<
-  string[],
+  { products: Product[] },
   void,
   { rejectValue: string }
 >("users/getRecentlyViewed", async (_, { rejectWithValue }) => {
@@ -138,13 +135,9 @@ export const getRecentlyViewed = createAsyncThunk<
     const response = await axiosInstance.get("/users/recently-viewed");
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to get product from recently viewed"
-      );
-    }
-    return rejectWithValue("Network error. Please try again.");
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to get recently viewed products"
+    );
   }
 });
 
@@ -236,11 +229,8 @@ const userSlice = createSlice({
       state.loading = true;
       state.error = null;
     });
-    builder.addCase(addRecentlyViewed.fulfilled, (state, action) => {
+    builder.addCase(addRecentlyViewed.fulfilled, (state) => {
       state.loading = false;
-      if (!state.recentlyViewed.includes(action.payload)) {
-        state.recentlyViewed.push(action.payload);
-      }
     });
     builder.addCase(addRecentlyViewed.rejected, (state, action) => {
       state.loading = false;
@@ -252,13 +242,18 @@ const userSlice = createSlice({
       state.loading = true;
       state.error = null;
     });
+
     builder.addCase(getRecentlyViewed.fulfilled, (state, action) => {
       state.loading = false;
-      state.recentlyViewed = action.payload;
+      state.recentlyViewed = action.payload.products;
     });
+
     builder.addCase(getRecentlyViewed.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload || "Something went wrong";
     });
   },
 });
+export const { clearUserError, clearUser } = userSlice.actions;
+
+export default userSlice.reducer;
