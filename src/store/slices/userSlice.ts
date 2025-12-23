@@ -106,6 +106,8 @@ export const deleteUser = createAsyncThunk<
   }
 });
 
+// RECENTLY VIEWED ACTIONS
+
 // Add recently viewed products
 export const addRecentlyViewed = createAsyncThunk<
   string,
@@ -262,3 +264,6 @@ const userSlice = createSlice({
     });
   },
 });
+ export const { clearUserError, clearUser } = userSlice.actions;
+
+export default userSlice.reducer;

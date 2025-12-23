@@ -36,6 +36,7 @@ import PrivateLayoutBrand from "./components/PrivateLayoutBrand";
 import PrivateLayoutMobileBrand from "./components/PrivateLayoutMobileBrand";
 import Layout from "./components/Layout";
 import BusinessInfo from "./pages/private/accountinformation/kyc/BusinessInfo";
+import SavedItems from "./pages/private/accountinformation/components/saveditems/SavedItems";
 
 //Admin
 import Dashboard from "./pages/admin/dashboard/Dashboard";
@@ -237,6 +238,7 @@ function App() {
           {/* Private Routes: This component is only accessible to authenticated users */}
           <Route path="/home" element={<HomeGuest />} />
           <Route path="/cart" element={<ShoppingCart />} />
+          <Route path="/saved-items" element={<SavedItems />} />
           <Route path="/products" element={<Product />} />
           <Route path="/product/:id" element={<ProductDetails />} />
         </Route>

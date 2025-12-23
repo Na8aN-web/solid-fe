@@ -13,11 +13,13 @@ import { useNavigate } from "react-router-dom";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
 import { FaStar } from "react-icons/fa";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
+import {useTrackProductView} from "../../../../hooks/useTrackProductView";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  useTrackProductView(id);
 
   // UI State
   const [activeTab, setActiveTab] = useState<

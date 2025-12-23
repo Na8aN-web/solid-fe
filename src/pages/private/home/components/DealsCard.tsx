@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { toggleProductInWishlist } from "../../../../store/slices/wishlistSlice";
 
 interface DealsCardProps {
   productId: string;
@@ -35,12 +38,25 @@ const DealsCard: React.FC<DealsCardProps> = ({
   addingProductId = null,
 }) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+  const FavouriteFilled = MdFavorite as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
+  
+  const { wishlist } = useAppSelector((state) => state.wishlist);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+
+  // Check if product is in wishlist
+  const isInWishlist = wishlist?.products?.some(
+    (product) => product._id === productId || product.id === productId
+  ) || false;
 
   // Calculate countdown to end of month
   const calculateTimeLeft = useMemo(() => {
@@ -92,9 +108,25 @@ const DealsCard: React.FC<DealsCardProps> = ({
     }
   };
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    setIsTogglingWishlist(true);
+    try {
+      await dispatch(toggleProductInWishlist(productId)).unwrap();
+    } catch (error: any) {
+      if (error !== "ALREADY_IN_WISHLIST") {
+        console.error("Failed to toggle wishlist:", error);
+      }
+    } finally {
+      setIsTogglingWishlist(false);
+    }
   };
 
   const handleCardClick = () => {
@@ -230,15 +262,41 @@ const DealsCard: React.FC<DealsCardProps> = ({
 
           <button
             onClick={handleFavorite}
-            className="border rounded-lg border-primary p-3 hover:bg-primary hover:bg-opacity-10 transition-colors flex-shrink-0"
-            aria-label="Add to favorites"
+            disabled={isTogglingWishlist}
+            className={`border rounded-lg p-3 transition-all flex-shrink-0 ${
+              isInWishlist
+                ? "bg-blue-50 border-primary"
+                : "border-primary hover:bg-primary hover:bg-opacity-10"
+            } ${isTogglingWishlist ? "opacity-50 cursor-not-allowed" : ""}`}
+            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+            title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <img
-              src="/favourite.svg"
-              alt=""
-              className="w-6 h-6"
-              aria-hidden="true"
-            />
+            {isTogglingWishlist ? (
+              <svg
+                className="animate-spin h-6 w-6 text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            ) : isInWishlist ? (
+              <FavouriteFilled className="w-6 h-6 text-primary" />
+            ) : (
+              <FavouriteOutline className="w-6 h-6 text-primary" />
+            )}
           </button>
         </div>
 

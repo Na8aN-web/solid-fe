@@ -176,10 +176,12 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
 
           {/* User Options */}
           <div className="flex gap-4 items-center justify-end w-full">
-            <div className="flex gap-1 items-center">
-              <img src="/wishList.svg" alt="help" className="w-6" />
-              <p className="text-sm">Wishlist</p>
-            </div>
+            <Link to="/saved-items">
+              <div className="flex gap-1 items-center">
+                <img src="/wishList.svg" alt="help" className="w-6" />
+                <p className="text-sm">Wishlist</p>
+              </div>
+            </Link>
             <div className="flex gap-1 items-center relative group">
               <img src="/help.svg" alt="help" className="w-6" />
               <select
