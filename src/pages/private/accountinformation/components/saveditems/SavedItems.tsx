@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   fetchWishlist,
@@ -11,11 +11,13 @@ import LoaderSpinner from "../../../../../components/LoaderSpinner";
 const SavedItems = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { wishlist, loading } = useAppSelector((state) => state.wishlist);
+  const loading = useAppSelector((state) => state.wishlist.loading);
+  const wishlist = useAppSelector((state) => state.wishlist.wishlist);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const hasFetchedWishlist = useRef(false);
   const itemsPerPage = 12;
 
   // wishlist products
@@ -30,14 +32,18 @@ const SavedItems = () => {
     startIndex + itemsPerPage
   );
 
-  // Fetch wishlist on mount
-  useEffect(() => {
-    if (isAuthenticated) {
+  // Memoize the fetch call to prevent redundant dispatches
+  const fetchWishlistData = useCallback(() => {
+    if (isAuthenticated && !hasFetchedWishlist.current) {
+      hasFetchedWishlist.current = true;
       dispatch(fetchWishlist());
     }
-  }, [dispatch, isAuthenticated]);
+  }, [isAuthenticated, dispatch]);
 
-  // Scroll to top when page changes
+  useEffect(() => {
+    fetchWishlistData();
+  }, [fetchWishlistData]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
@@ -45,7 +51,7 @@ const SavedItems = () => {
   const handleToggleWishlist = async (productId: string) => {
     try {
       await dispatch(toggleProductInWishlist(productId)).unwrap();
-    } catch {}
+    } catch { }
   };
 
   const handleAddToCart = async (productId: string, product: any) => {
@@ -70,8 +76,8 @@ const SavedItems = () => {
           },
         })
       ).unwrap();
-      alert("Product added to cart!");
-    } catch {
+    } catch (error) {
+      console.error("Failed to add product to cart:", error);
     } finally {
       setAddingToCart(null);
     }
@@ -79,6 +85,17 @@ const SavedItems = () => {
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
+  };
+
+  // Placeholder image - using a data URI to avoid infinite loops
+  const placeholderImage =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f3f4f6' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    // Only set placeholder if not already set to prevent infinite loop
+    if (e.currentTarget.src !== placeholderImage) {
+      e.currentTarget.src = placeholderImage;
+    }
   };
 
   // Loading state
@@ -89,7 +106,7 @@ const SavedItems = () => {
           Saved Items
         </h1>
         <div className="flex items-center justify-center py-20">
-          <LoaderSpinner txt="Loading wishlist" />
+          <LoaderSpinner txt=" wishlist" />
         </div>
       </div>
     );
@@ -107,9 +124,7 @@ const SavedItems = () => {
             src="/empty-wishlist.svg"
             alt="Empty wishlist"
             className="w-32 h-32 mb-4"
-            onError={(e) => {
-              e.currentTarget.src = "/placeholder.png";
-            }}
+            onError={handleImageError}
           />
           <p className="text-gray-500 text-lg mb-2">Your wishlist is empty</p>
           <p className="text-gray-400 text-sm mb-4">
@@ -164,13 +179,11 @@ const SavedItems = () => {
                 src={
                   (Array.isArray(product.images) && product.images.length > 0
                     ? product.images[0]
-                    : product.image) || "/placeholder.png"
+                    : product.image) || placeholderImage
                 }
                 alt={product.name}
                 className="w-full h-[110px] lg:h-[200px] object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.png";
-                }}
+                onError={handleImageError}
               />
             </div>
 
@@ -199,7 +212,7 @@ const SavedItems = () => {
                 </p>
                 {product.regularPrice &&
                   product.regularPrice >
-                    (product.salesPrice || product.displayPrice) && (
+                  (product.salesPrice || product.displayPrice) && (
                     <p className="text-[11px] font-semibold text-customGray3 line-through">
                       ₦{product.regularPrice.toLocaleString()}
                     </p>
@@ -211,11 +224,10 @@ const SavedItems = () => {
             <button
               onClick={() => handleAddToCart(product._id, product)}
               disabled={addingToCart === product._id}
-              className={`flex items-center justify-center gap-2 border rounded border-primary py-3 px-1 w-full transition-colors ${
-                addingToCart === product._id
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-primary hover:bg-blue-700"
-              }`}
+              className={`flex items-center justify-center gap-2 border rounded border-primary py-3 px-1 w-full transition-colors ${addingToCart === product._id
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-primary hover:bg-blue-700"
+                }`}
             >
               {addingToCart === product._id ? (
                 <>
@@ -276,11 +288,10 @@ const SavedItems = () => {
               <button
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 border rounded-3xl transition-colors ${
-                  currentPage === i + 1
-                    ? "bg-primary text-white"
-                    : "hover:bg-gray-100"
-                }`}
+                className={`px-3 py-1 border rounded-3xl transition-colors ${currentPage === i + 1
+                  ? "bg-primary text-white"
+                  : "hover:bg-gray-100"
+                  }`}
               >
                 {i + 1}
               </button>

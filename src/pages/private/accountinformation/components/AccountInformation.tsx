@@ -136,7 +136,7 @@ const AccountInformation = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+  }, [activeItem]);
 
   return (
     <div className="bg-[#F5F5F5] mx-auto px-4 md:px-16 py-6">

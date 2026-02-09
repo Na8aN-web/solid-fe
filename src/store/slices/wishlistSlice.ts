@@ -13,58 +13,6 @@ const initialState: WishlistState = {
   error: null,
 };
 
-// Helper function to normalize API response - handles direct product array
-const normalizeWishlistResponse = (response: any): Wishlist => {
-  
-  // If response is an array of products (direct return)
-  if (Array.isArray(response)) {
-    return {
-      _id: "",
-      user: "",
-      products: response,
-    } as Wishlist;
-  }
-  
-  // If response has wishlist property
-  if (response.wishlist) {
-    return response.wishlist;
-  }
-  
-  // If response has data.wishlist
-  if (response.data?.wishlist) {
-    return response.data.wishlist;
-  }
-  
-  // If response has products array
-  if (response.products && Array.isArray(response.products)) {
-    return {
-      _id: response._id || "",
-      user: response.user || "",
-      products: response.products,
-    } as Wishlist;
-  }
-  
-  // If response has data with products
-  if (response.data?.products && Array.isArray(response.data.products)) {
-    return {
-      _id: response.data._id || "",
-      user: response.data.user || "",
-      products: response.data.products,
-    } as Wishlist;
-  }
-  
-  // If response._id exists (direct wishlist object)
-  if (response._id) {
-    return response;
-  }
-  
-  // Default: return empty wishlist
-  return {
-    _id: "",
-    user: "",
-    products: [],
-  } as Wishlist;
-};
 
 // Create a new wishlist for the authenticated user
 export const createWishlist = createAsyncThunk<
@@ -74,7 +22,7 @@ export const createWishlist = createAsyncThunk<
 >("wishlist/createWishlist", async (_, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post("/wishlists/user");
-    return normalizeWishlistResponse(response.data);
+    return response.data;
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
@@ -87,25 +35,19 @@ export const createWishlist = createAsyncThunk<
 
 // Get the authenticated user's wishlist with product details
 export const fetchWishlist = createAsyncThunk<
-  Wishlist,
+  Wishlist | null, // Allow null return
   void,
   { rejectValue: string }
 >("wishlist/fetchWishlist", async (_, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.get("/wishlists/user");
-    
-    const wishlistData = normalizeWishlistResponse(response.data);
-    
+    const wishlistData = response.data;
     return wishlistData;
   } catch (error: any) {
     if (error.response) {
-      // If wishlist doesn't exist (404), return empty wishlist
+      // If wishlist doesn't exist (404), return null
       if (error.response.status === 404) {
-        return {
-          _id: "",
-          user: "",
-          products: [],
-        } as Wishlist;
+        return null; // Return null instead of empty object
       }
       return rejectWithValue(
         error.response.data.message || "Failed to fetch wishlist"
@@ -144,7 +86,7 @@ export const addProductToWishlist = createAsyncThunk<
       "/wishlists/user/product",
       { productId }
     );
-    return normalizeWishlistResponse(response.data);
+    return response.data;
   } catch (error: any) {
     // Check if product already exists error
     if (error.response?.status === 400 || error.response?.status === 409) {
@@ -173,7 +115,7 @@ export const removeProductFromWishlist = createAsyncThunk<
         data: { productId },
       }
     );
-    return normalizeWishlistResponse(response.data);
+    return response.data;
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
@@ -209,7 +151,7 @@ export const toggleProductInWishlist = createAsyncThunk<
             data: { productId },
           }
         );
-        const wishlistData = normalizeWishlistResponse(response.data);
+        const wishlistData = response.data;
         return { wishlist: wishlistData, action: "removed" };
       } else {
         // Add to wishlist
@@ -217,7 +159,7 @@ export const toggleProductInWishlist = createAsyncThunk<
           "/wishlists/user/product",
           { productId }
         );
-        const wishlistData = normalizeWishlistResponse(response.data);
+        const wishlistData = response.data;
         return { wishlist: wishlistData, action: "added" };
       }
     } catch (error: any) {
@@ -276,7 +218,9 @@ const wishlistSlice = createSlice({
       })
       .addCase(fetchWishlist.fulfilled, (state, action) => {
         state.loading = false;
-        state.wishlist = action.payload;
+        if (JSON.stringify(state.wishlist) !== JSON.stringify(action.payload)) {
+          state.wishlist = action.payload;
+        }
         state.error = null;
       })
       .addCase(fetchWishlist.rejected, (state, action) => {

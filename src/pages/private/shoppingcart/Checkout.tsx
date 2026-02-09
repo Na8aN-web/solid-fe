@@ -3,7 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { fetchUserCart } from "../../../store/slices/cartSlice";
 import { fetchAllAddresses, setSelectedAddress } from "../../../store/slices/addressSlice";
+import { applyCoupon, initiatePayment, clearCoupon, clearPaymentLink, clearCheckoutError, InitiatePaymentRequest } from "../../../store/slices/checkoutSlice";
 import { CartItem } from "../../../services/cart/types";
+import { Address } from "../../../store/slices/addressSlice";
 
 const Checkout: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -13,10 +15,21 @@ const Checkout: React.FC = () => {
   const { addresses, selectedAddress, loading: addressLoading } = useAppSelector(
     (state) => state.address
   );
+  const {
+    couponLoading,
+    couponError,
+    couponDiscount,
+    paymentLoading,
+    paymentError,
+    paymentLink,
+    appliedCouponCode
+  } = useAppSelector((state) => state.checkout);
 
   const [selectedDeliveryType, setSelectedDeliveryType] = useState<DeliveryType | null>(null);
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [userId, setUserId] = useState<string>("");
 
   enum DeliveryType {
     FastDelivery = "fast-delivery",
@@ -42,6 +55,23 @@ const Checkout: React.FC = () => {
   useEffect(() => {
     dispatch(fetchUserCart());
     dispatch(fetchAllAddresses());
+    
+    // Get user ID from localStorage or your auth state
+    const storedUserId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+    
+    // Get current user from your auth state
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setUserId(user._id || user.id || "");
+      } catch (error) {
+        console.error("Failed to parse user data:", error);
+      }
+    }
   }, [dispatch]);
 
    useEffect(() => {
@@ -56,25 +86,60 @@ const Checkout: React.FC = () => {
     }
   }, [navigate]);
 
-  // Calculate totals
+  // Handle payment link redirection
+  useEffect(() => {
+    if (paymentLink) {
+      // Redirect to payment gateway or show payment modal
+      window.open(paymentLink, '_blank');
+      
+      // Optional: Track payment initiation
+      console.log("Payment initiated, redirecting to:", paymentLink);
+      
+      // Clear payment link after use
+      setTimeout(() => {
+        dispatch(clearPaymentLink());
+      }, 3000);
+    }
+  }, [paymentLink, dispatch]);
+
+  // Clear errors on component unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearCheckoutError());
+    };
+  }, [dispatch]);
+
+  // Calculate totals with coupon discount
   const calculateTotals = () => {
     if (!cart?.products || cart.products.length === 0) {
-      return { subtotal: 0, discount: 0, deliveryFee: 0, total: 0 };
+      return { subtotal: 0, discount: 0, couponDiscountAmount: 0, deliveryFee: 0, total: 0 };
     }
 
     const subtotal = cart.products.reduce(
       (sum: number, item: CartItem) => sum + item.product.salesPrice * item.quantity,
       0
     );
-    const discount = subtotal * 0.2;
+    
+    // Apply coupon discount if available
+    const couponDiscountAmount = couponDiscount ? (subtotal * couponDiscount) / 100 : 0;
+    const regularDiscount = subtotal * 0.2; // Your existing 20% discount
+    const totalDiscount = regularDiscount + couponDiscountAmount;
+    
     const selectedDelivery = deliveryTypes.find(d => d.type === selectedDeliveryType);
     const deliveryFee = selectedDelivery ? selectedDelivery.price : 0;
-    const total = subtotal - discount + deliveryFee;
+    const total = subtotal - totalDiscount + deliveryFee;
 
-    return { subtotal, discount, deliveryFee, total };
+    return { 
+      subtotal, 
+      discount: regularDiscount, 
+      couponDiscount: couponDiscountAmount,
+      deliveryFee, 
+      total,
+      totalDiscount
+    };
   };
 
-  const { subtotal, discount, deliveryFee, total } = calculateTotals();
+  const { subtotal, discount, couponDiscount: couponDiscountAmount, deliveryFee, total, totalDiscount } = calculateTotals();
 
   const handleDeliveryTypeSelect = (type: DeliveryType) => {
     setSelectedDeliveryType(type);
@@ -86,6 +151,28 @@ const Checkout: React.FC = () => {
       dispatch(setSelectedAddress(address));
       setShowAddressModal(false);
     }
+  };
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) {
+      alert("Please enter a coupon code");
+      return;
+    }
+    
+    if (!userId) {
+      alert("User ID not found. Please log in again.");
+      return;
+    }
+    
+    dispatch(applyCoupon({ 
+      code: couponCode.trim(), 
+      userId: userId 
+    }));
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
+    dispatch(clearCoupon());
   };
 
   const handleCheckout = async () => {
@@ -101,8 +188,33 @@ const Checkout: React.FC = () => {
       alert("Your cart is empty");
       return;
     }
+    if (!userId) {
+      alert("User ID not found. Please log in again.");
+      return;
+    }
 
-    alert("Payment functionality coming soon!");
+    // Prepare payment data
+    const paymentData: InitiatePaymentRequest = {
+      provider: "opay" as const,
+      amount: total * 100, // Convert to kobo/pesewas
+      orderId: `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      email: selectedAddress.email,
+      phone: selectedAddress.phone,
+      user: {
+        id: userId,
+        firstName: selectedAddress.firstName,
+        lastName: selectedAddress.lastName,
+        address: {
+          street: selectedAddress.street,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          country: "Nigeria" // Add if available
+        }
+      }
+    };
+
+    // Dispatch payment initiation
+    dispatch(initiatePayment(paymentData));
   };
 
   const ProductReview = () => (
@@ -183,6 +295,32 @@ const Checkout: React.FC = () => {
 
   return (
     <div>
+      {/* Error Modals */}
+      {(couponError || paymentError) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-red-600">Error</h3>
+              <button
+                onClick={() => dispatch(clearCheckoutError())}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-gray-700 mb-4">
+              {couponError || paymentError}
+            </p>
+            <button
+              onClick={() => dispatch(clearCheckoutError())}
+              className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       <section className="p-5 sm:px-8 lg:px-10 lg:bg-[#F5F5F5]">
         <h2 className="text-xl text-customBrown font-semibold lg:hidden">
           Checkout
@@ -442,6 +580,32 @@ const Checkout: React.FC = () => {
                     (20%) -₦{discount.toLocaleString()}
                   </span>
                 </div>
+                
+                {/* Coupon Discount Display */}
+                {couponDiscount && (
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-customGray3 flex items-center gap-2">
+                      Coupon Discount
+                      {appliedCouponCode && (
+                        <span className="text-xs text-primary bg-green-100 px-2 py-1 rounded">
+                          {appliedCouponCode}
+                        </span>
+                      )}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-green-600 font-medium">
+                        ({couponDiscount}%) -₦{(couponDiscountAmount || 0).toLocaleString()}
+                      </span>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3 flex gap-2 items-center">
                     Delivery
@@ -460,6 +624,8 @@ const Checkout: React.FC = () => {
                   <p>₦{total.toLocaleString()}</p>
                 </div>
               </div>
+              
+              {/* Coupon Section */}
               <div className="relative pt-3 pb-5 border-b">
                 <img
                   src="/address-marker-outline.svg"
@@ -468,20 +634,65 @@ const Checkout: React.FC = () => {
                 />
                 <input
                   type="text"
-                  placeholder="Enter Code Here"
-                  className="border h-12 px-10 w-full rounded-lg bg-[#FFF8EE] text-base"
+                  placeholder="Enter Coupon Code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  disabled={couponLoading || !!couponDiscount}
+                  className={`border h-12 px-10 w-full rounded-lg ${
+                    couponDiscount ? 'bg-green-50' : 'bg-[#FFF8EE]'
+                  } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
-                <span className="absolute right-4 bottom-9 text-xs text-customGold cursor-pointer hover:underline">
-                  APPLY COUPON
-                </span>
+                <button
+                  onClick={handleApplyCoupon}
+                  disabled={couponLoading || !couponCode.trim() || !!couponDiscount}
+                  className="absolute right-4 bottom-9 text-xs text-customGold cursor-pointer hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {couponLoading ? (
+                    <span className="flex items-center gap-1">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-customGold"></div>
+                      Applying...
+                    </span>
+                  ) : couponDiscount ? (
+                    "Applied ✓"
+                  ) : (
+                    "APPLY COUPON"
+                  )}
+                </button>
               </div>
+              
+              {couponLoading && (
+                <div className="text-center py-2">
+                  <p className="text-sm text-blue-600">Applying coupon...</p>
+                </div>
+              )}
+              
               <button
                 onClick={handleCheckout}
-                disabled={!selectedAddress || !selectedDeliveryType || cartLoading}
-                className="bg-primary py-4 text-white text-sm rounded w-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                disabled={
+                  !selectedAddress || 
+                  !selectedDeliveryType || 
+                  cartLoading || 
+                  paymentLoading ||
+                  !cart?.products ||
+                  cart.products.length === 0
+                }
+                className="bg-primary py-4 text-white text-sm rounded w-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex items-center justify-center"
               >
-                Pay ₦{total.toLocaleString()}
+                {paymentLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  `Pay ₦${total.toLocaleString()}`
+                )}
               </button>
+              
+              {paymentLoading && (
+                <p className="text-center text-sm text-blue-600 mt-2">
+                  Redirecting to payment gateway...
+                </p>
+              )}
             </div>
           </section>
         </section>
