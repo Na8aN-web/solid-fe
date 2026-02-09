@@ -111,28 +111,54 @@ const AddAddress = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  if (!formData.state) {
+    alert("Please select a state");
+    return;
+  }
+  
+  if (!formData.city.trim()) {
+    alert("Please enter a city");
+    return;
+  }
+  
+  try {
+    // Transform the form data to match backend expectations
+    const addressData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      phone: formData.phone,
+      email: formData.email,
+      street: formData.street,
+      // Only include direction if it has a value, or rename it
+      ...(formData.direction && { direction: formData.direction }),
+      city: formData.city,
+      state: formData.state,
+      isDefault: formData.isDefault,
+    };
     
-    // Basic validation - just ensure state is selected and city is not empty
-    if (!formData.state) {
-      alert("Please select a state");
-      return;
-    }
+    // Alternative: Send as empty string instead of omitting
+    const addressData2 = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      phone: formData.phone,
+      email: formData.email,
+      street: formData.street,
+      direction: formData.direction || "", // Always send, even if empty
+      city: formData.city,
+      state: formData.state,
+      isDefault: formData.isDefault,
+    };
     
-    if (!formData.city.trim()) {
-      alert("Please enter a city");
-      return;
-    }
-    
-    try {
-      await dispatch(createAddress(formData)).unwrap();
-      alert("Address saved successfully!");
-      navigate("/checkout");
-    } catch (err: any) {
-      console.error("Failed to save address:", err);
-      alert(err || "Failed to save address");
-    }
-  };
+    await dispatch(createAddress(addressData2)).unwrap();
+    alert("Address saved successfully!");
+    navigate("/checkout");
+  } catch (err: any) {
+    console.error("Failed to save address:", err);
+    alert(err || "Failed to save address");
+  }
+};
 
   return (
     <div className="p-5">

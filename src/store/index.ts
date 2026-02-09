@@ -13,7 +13,11 @@ import departmentReducer from './slices/departmentSlice'
 import adminDashboardReducer from './slices/adminDashboardSlice'
 import { deprecate } from 'util';
 import addressReducer from './slices/addressSlice'
-
+import modelReducer from './slices/modelSlice';
+import makerReducer from './slices/makerSlice';
+import yearReducer from './slices/yearSlice'; 
+import engineReducer from './slices/engineSlice';
+import checkoutReducer from './slices/checkoutSlice';
 
 export const store = configureStore({
   reducer: {
@@ -28,7 +32,12 @@ export const store = configureStore({
     cart: cartReducer,
     kyc: kycReducer,
     adminDashboard: adminDashboardReducer,
-    address: addressReducer
+    address: addressReducer,
+    model: modelReducer,
+    maker: makerReducer,
+    year: yearReducer,
+    engine: engineReducer,
+    checkout: checkoutReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

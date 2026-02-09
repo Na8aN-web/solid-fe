@@ -223,14 +223,7 @@ function App() {
           />
           <Route path="/kyc-form" element={<KycForm />} />
           <Route path="/business-information" element={<BusinessInfo />} />
-          <Route
-            path="/checkout"
-            element={
-              <PrivateRoute>
-                <Checkout />
-              </PrivateRoute>
-            }
-          />
+          
         </Route>
 
         {/* Private layout with brands nav */}
@@ -241,6 +234,12 @@ function App() {
           <Route path="/saved-items" element={<SavedItems />} />
           <Route path="/products" element={<Product />} />
           <Route path="/product/:id" element={<ProductDetails />} />
+          <Route
+            path="/checkout"
+            element={
+                <Checkout />
+            }
+          />
         </Route>
 
         {/* Private layout with brands nav */}
