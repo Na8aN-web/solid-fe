@@ -762,14 +762,11 @@ const Checkout: React.FC = () => {
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   disabled={couponLoading || !!couponDiscount}
-<<<<<<< HEAD
                   className={`border h-12 px-10 w-full rounded-lg ${
                     couponDiscount ? "bg-green-50" : "bg-[#FFF8EE]"
                   } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
-=======
                   className={`border h-12 px-10 w-full rounded-lg ${couponDiscount ? 'bg-green-50' : 'bg-[#FFF8EE]'
                     } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
->>>>>>> development
                 />
                 <button
                   onClick={handleApplyCoupon}
