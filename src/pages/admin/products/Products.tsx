@@ -20,6 +20,7 @@ import {
 import ErrorButton from "../../../components/ErrorButton";
 import LoaderSpinner from "../../../components/LoaderSpinner";
 
+
 const Products: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -36,6 +37,11 @@ const Products: React.FC = () => {
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
   const [sortBy, setSortBy] = useState("-createdAt");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
 
   const productsList = useMemo(() => {
     return Array.isArray(products) ? products : [];
@@ -103,20 +109,31 @@ const Products: React.FC = () => {
     navigate(`/admin/edit-product/${id}`);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await dispatch(deleteProduct(id)).unwrap();
+  const handleDelete = (id: string) => {
+    setProductToDelete(id);
+    setShowConfirmModal(true);
+  };
 
-        // Show success message
-        alert("Product deleted successfully!");
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
 
-        // Refresh current page after delete
-        fetchProductsWithFilters();
-      } catch (error: any) {
-        console.error("Failed to delete product:", error);
-        alert(`Failed to delete product: ${error.message || error}`);
-      }
+    try {
+      await dispatch(deleteProduct(productToDelete)).unwrap();
+
+      setModalMessage("Product deleted successfully!");
+      setIsError(false);
+      setShowAlertModal(true);
+
+      fetchProductsWithFilters();
+    } catch (error: any) {
+      setModalMessage(
+        `Failed to delete product: ${error.message || error}`
+      );
+      setIsError(true);
+      setShowAlertModal(true);
+    } finally {
+      setShowConfirmModal(false);
+      setProductToDelete(null);
     }
   };
 
@@ -322,52 +339,52 @@ const Products: React.FC = () => {
         {(selectedCategory !== "All Category" ||
           selectedBrand !== "All Brands" ||
           selectedStatus !== "All Status") && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {selectedCategory !== "All Category" && (
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                Category: {selectedCategory}
-                <button
-                  onClick={() => setSelectedCategory("All Category")}
-                  className="hover:text-blue-900"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            {selectedBrand !== "All Brands" && (
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                Brand: {selectedBrand}
-                <button
-                  onClick={() => setSelectedBrand("All Brands")}
-                  className="hover:text-green-900"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            {selectedStatus !== "All Status" && (
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                Status: {selectedStatus}
-                <button
-                  onClick={() => setSelectedStatus("All Status")}
-                  className="hover:text-purple-900"
-                >
-                  ×
-                </button>
-              </span>
-            )}
-            <button
-              onClick={() => {
-                setSelectedCategory("All Category");
-                setSelectedBrand("All Brands");
-                setSelectedStatus("All Status");
-              }}
-              className="text-sm text-gray-600 hover:text-gray-900 underline"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
+            <div className="mb-4 flex flex-wrap gap-2">
+              {selectedCategory !== "All Category" && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  Category: {selectedCategory}
+                  <button
+                    onClick={() => setSelectedCategory("All Category")}
+                    className="hover:text-blue-900"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {selectedBrand !== "All Brands" && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  Brand: {selectedBrand}
+                  <button
+                    onClick={() => setSelectedBrand("All Brands")}
+                    className="hover:text-green-900"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {selectedStatus !== "All Status" && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                  Status: {selectedStatus}
+                  <button
+                    onClick={() => setSelectedStatus("All Status")}
+                    className="hover:text-purple-900"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setSelectedCategory("All Category");
+                  setSelectedBrand("All Brands");
+                  setSelectedStatus("All Status");
+                }}
+                className="text-sm text-gray-600 hover:text-gray-900 underline"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
         {/* Table with Loading Overlay */}
         <div className="relative">
@@ -396,11 +413,11 @@ const Products: React.FC = () => {
               </thead>
               <tbody>
                 {loading && filteredProducts.length === 0 && (
-                    <tr><td colSpan={8} className="p-4"><LoaderSpinner txt="Pruducts"/></td></tr>
+                  <tr><td colSpan={8} className="p-4"><LoaderSpinner txt="Pruducts" /></td></tr>
                 )}
-                  {error && filteredProducts.length === 0 && (
-                    <tr><td colSpan={8} className="p-4"><ErrorButton  error={error} fetch={fetchProductsWithFilters}/></td></tr>
-                    // <ErrorButton />
+                {error && filteredProducts.length === 0 && (
+                  <tr><td colSpan={8} className="p-4"><ErrorButton error={error} fetch={fetchProductsWithFilters} /></td></tr>
+                  // <ErrorButton />
                 )}
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => {
@@ -485,17 +502,17 @@ const Products: React.FC = () => {
                         />
                         <p className="text-lg font-medium mb-1">
                           {searchTerm ||
-                          selectedCategory !== "All Category" ||
-                          selectedBrand !== "All Brands" ||
-                          selectedStatus !== "All Status"
+                            selectedCategory !== "All Category" ||
+                            selectedBrand !== "All Brands" ||
+                            selectedStatus !== "All Status"
                             ? "No products found matching your filters"
                             : "No products found"}
                         </p>
                         <p className="text-sm text-gray-400">
                           {searchTerm ||
-                          selectedCategory !== "All Category" ||
-                          selectedBrand !== "All Brands" ||
-                          selectedStatus !== "All Status"
+                            selectedCategory !== "All Category" ||
+                            selectedBrand !== "All Brands" ||
+                            selectedStatus !== "All Status"
                             ? "Try adjusting your filters"
                             : "Add your first product to get started"}
                         </p>
@@ -515,11 +532,10 @@ const Products: React.FC = () => {
               <button
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1 || loading}
-                className={`w-8 h-8 flex items-center justify-center border rounded text-sm transition-colors ${
-                  currentPage === 1 || loading
-                    ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                }`}
+                className={`w-8 h-8 flex items-center justify-center border rounded text-sm transition-colors ${currentPage === 1 || loading
+                  ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -532,11 +548,10 @@ const Products: React.FC = () => {
                     <button
                       onClick={() => handlePageChange(page as number)}
                       disabled={loading}
-                      className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${
-                        currentPage === page
-                          ? "bg-[#003366] text-white"
-                          : "border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
+                      className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${currentPage === page
+                        ? "bg-[#003366] text-white"
+                        : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                        } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                     >
                       {page}
                     </button>
@@ -547,11 +562,10 @@ const Products: React.FC = () => {
               <button
                 onClick={handleNextPage}
                 disabled={!hasMore || loading}
-                className={`w-8 h-8 flex items-center justify-center border rounded text-sm transition-colors ${
-                  !hasMore || loading
-                    ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                }`}
+                className={`w-8 h-8 flex items-center justify-center border rounded text-sm transition-colors ${!hasMore || loading
+                  ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -567,6 +581,56 @@ const Products: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Confirm Delete Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg w-[400px] p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this product?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 border rounded-md text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      {showAlertModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg w-[400px] p-6 shadow-lg">
+            <h2
+              className={`text-lg font-semibold mb-4 ${isError ? "text-red-600" : "text-green-600"
+                }`}
+            >
+              {isError ? "Error" : "Success"}
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">{modalMessage}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowAlertModal(false)}
+                className="px-4 py-2 bg-[#003366] text-white rounded-md text-sm hover:bg-[#002244]"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </AdminLayout>
   );
 };

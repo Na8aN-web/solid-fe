@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { Plus, Minus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { CartItem } from "../../../services/cart/types";
 import CheckoutAuthModal from "./CheckoutAuthModal";
+import CouponModal from "./CouponModal";
 
 const ShoppingCart = () => {
   const dispatch = useAppDispatch();
@@ -24,6 +25,9 @@ const ShoppingCart = () => {
     discount: number;
   } | null>(null);
   const [couponError, setCouponError] = useState("");
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [couponModalMessage, setCouponModalMessage] = useState("");
+  const [couponModalType, setCouponModalType] = useState<"success" | "error">("success");
 
   const handleApplyCoupon = () => {
     const code = couponCode.trim().toUpperCase();
@@ -43,10 +47,15 @@ const ShoppingCart = () => {
     if (validCoupons[code]) {
       setAppliedCoupon({ code, discount: validCoupons[code] });
       setCouponError("");
-      alert(`Coupon "${code}" applied! ${validCoupons[code] * 100}% discount`);
+      setCouponModalMessage(`Coupon "${code}" applied! ${validCoupons[code] * 100}% discount`);
+      setCouponModalType("success");
+      setShowCouponModal(true);
     } else {
       setCouponError("Invalid coupon code");
       setAppliedCoupon(null);
+      setCouponModalMessage("Invalid coupon code. Please try again.");
+      setCouponModalType("error");
+      setShowCouponModal(true);
     }
   };
 
@@ -585,6 +594,13 @@ const ShoppingCart = () => {
           </div>
         </div>
       </section>
+
+      <CouponModal
+        isOpen={showCouponModal}
+        onClose={() => setShowCouponModal(false)}
+        message={couponModalMessage}
+        type={couponModalType}
+      />
 
       {/* Authentication Modal */}
       <CheckoutAuthModal

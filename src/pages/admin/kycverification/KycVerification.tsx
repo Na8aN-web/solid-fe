@@ -38,6 +38,45 @@ interface ReviewModalProps {
   submission: KYCSubmission;
   onClose: () => void;
 }
+const DocumentErrorModal: React.FC<{ isOpen: boolean; onClose: () => void; documentType: string }> = ({
+  isOpen,
+  onClose,
+  documentType
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-[2px] flex items-center justify-center z-[60]">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-orange-500" />
+            <h3 className="text-xl font-semibold">Document Unavailable</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <p className="text-gray-600 mb-6">
+          No {documentType} document is available for this submission.
+        </p>
+
+        <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-[#003366] text-white rounded-lg hover:bg-[#002244] transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ReviewModal: React.FC<ReviewModalProps> = ({ submission, onClose }) => {
   const dispatch = useDispatch();
@@ -52,6 +91,10 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ submission, onClose }) => {
     totalSubmissions,
     filters
   } = useSelector((state: RootState) => state.kyc);
+  const [documentError, setDocumentError] = useState<{ show: boolean; type: string }>({
+    show: false,
+    type: ''
+  });
 
   // Fix: Initialize without status or set it to one of the allowed values
   const [reviewData, setReviewData] = useState<Omit<KYCReviewData, 'status'> & { status?: KYCReviewData['status'] }>({
@@ -101,11 +144,10 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ submission, onClose }) => {
 
   const handleViewDocument = (documentUrl: string | undefined, documentType: string) => {
     if (!documentUrl) {
-      alert(`No ${documentType} document available`);
+      setDocumentError({ show: true, type: documentType });
       return;
     }
 
-    // If it's a relative URL, make it absolute
     const fullUrl = documentUrl.startsWith('http') ? documentUrl : `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}${documentUrl}`;
     window.open(fullUrl, '_blank');
   };
@@ -301,7 +343,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ submission, onClose }) => {
 
         {/* Review Comments */}
         <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
             <FileText className="w-4 h-4" />
             Review Comments
           </label>
@@ -340,6 +382,13 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ submission, onClose }) => {
             {submitting ? 'Processing...' : 'Flag'}
           </button>
         </div>
+        {documentError.show && (
+          <DocumentErrorModal
+            isOpen={documentError.show}
+            onClose={() => setDocumentError({ show: false, type: '' })}
+            documentType={documentError.type}
+          />
+        )}
       </div>
     </div>
   );
@@ -377,14 +426,14 @@ const KycVerification: React.FC = () => {
 
   // Load data on component mount
   useEffect(() => {
-  dispatch(fetchAllKYCSubmissions({
-    page: currentPage,
-    limit: itemsPerPage,
-    status: filters.status === 'All' ? undefined : filters.status,
-    search: filters.searchTerm || undefined
-  }) as any);
-  dispatch(fetchKYCCounters() as any);
-}, [dispatch, currentPage, itemsPerPage, filters.status, filters.searchTerm]);
+    dispatch(fetchAllKYCSubmissions({
+      page: currentPage,
+      limit: itemsPerPage,
+      status: filters.status === 'All' ? undefined : filters.status,
+      search: filters.searchTerm || undefined
+    }) as any);
+    dispatch(fetchKYCCounters() as any);
+  }, [dispatch, currentPage, itemsPerPage, filters.status, filters.searchTerm]);
 
   // Clear error when component unmounts
   useEffect(() => {
