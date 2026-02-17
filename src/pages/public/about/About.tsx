@@ -5,15 +5,75 @@ import CoreValues from './components/CoreValues';
 
 export default function About() {
     const [email, setEmail] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
-        alert(`Thank you for subscribing with ${email}!`);
+        setModalMessage(`Thank you for subscribing with ${email}!`);
+        setShowModal(true);
         setEmail('');
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
     };
 
     return (
         <div className="flex flex-col min-h-screen">
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    {/* Backdrop */}
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                        onClick={closeModal}
+                    ></div>
+                    
+                    {/* Modal Container */}
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        {/* Modal Content */}
+                        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
+                            {/* Success Icon */}
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                                <svg 
+                                    className="h-6 w-6 text-green-600" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth="2" 
+                                        d="M5 13l4 4L19 7"
+                                    />
+                                </svg>
+                            </div>
+                            
+                            {/* Message */}
+                            <div className="text-center">
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                    Subscription Successful!
+                                </h3>
+                                <p className="text-sm text-gray-500 mb-6">
+                                    {modalMessage}
+                                </p>
+                            </div>
+                            
+                            {/* Close Button */}
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={closeModal}
+                                    className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <main className="flex-grow">
                 {/* Hero Banner */}
