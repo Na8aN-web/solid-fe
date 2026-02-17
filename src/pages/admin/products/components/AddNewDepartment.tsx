@@ -122,13 +122,15 @@ import {
   updateDepartment,
   fetchDepartments,
 } from "../../../../store/slices/departmentSlice";
-import {Department } from "../../../../services/departments/types";  
+import { Department } from "../../../../services/departments/types";
 
 type ModalProps = { onClose: () => void; department?: Department };
 
 const AddNewDepartment = ({ onClose, department }: ModalProps) => {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.departments);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const isEdit = !!department;
 
@@ -161,9 +163,11 @@ const AddNewDepartment = ({ onClose, department }: ModalProps) => {
     // Validation
     const name = formData.name.trim();
     if (!name) {
-      alert("Please enter a department name");
+      setModalMessage("Please enter a department name");
+      setShowAlertModal(true);
       return;
     }
+
 
     try {
       if (isEdit && department) {
@@ -209,11 +213,10 @@ const AddNewDepartment = ({ onClose, department }: ModalProps) => {
         <button
           type="submit"
           disabled={loading}
-          className={`flex-1 h-[58px] rounded-[16px] font-semibold text-base text-customLight transition-colors w-full ${
-            loading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/90"
-          }`}
+          className={`flex-1 h-[58px] rounded-[16px] font-semibold text-base text-customLight transition-colors w-full ${loading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-primary hover:bg-primary/90"
+            }`}
         >
           {isEdit
             ? loading
@@ -224,6 +227,25 @@ const AddNewDepartment = ({ onClose, department }: ModalProps) => {
               : "Continue"}
         </button>
       </form>
+      {/* Alert Modal */}
+      {showAlertModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg w-[350px] p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-red-600 mb-4">
+              Validation Error
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">{modalMessage}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowAlertModal(false)}
+                className="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

@@ -4,19 +4,85 @@ import Logo from "../assets/logo.svg";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
+  const [modal, setModal] = useState({ isOpen: false, message: "", type: "" });
+
+  const showModal = (message: string, type = "info") => {
+    setModal({ isOpen: true, message, type });
+  };
+
+  const closeModal = () => {
+    setModal({ isOpen: false, message: "", type: "" });
+  };
 
   const handleSubscribe = () => {
     if (!email.trim()) {
-      alert("Please enter a valid email address.");
+      showModal("Please enter a valid email address.", "error");
       return;
     }
 
     // TODO: Hook this to your backend API
-    alert(`Subscribed with: ${email}`);
+    showModal(`Subscribed with: ${email}`, "success");
     setEmail("");
   };
+
   return (
     <div>
+      {/* Modal */}
+      {modal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={closeModal}
+          ></div>
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 transform transition-all">
+            <div className="text-center">
+              {/* Icon based on type */}
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                {modal.type === "success" ? (
+                  <div className="bg-green-100 p-2 rounded-full">
+                    <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                ) : modal.type === "error" ? (
+                  <div className="bg-red-100 p-2 rounded-full">
+                    <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="bg-blue-100 p-2 rounded-full">
+                    <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                )}
+              </div>
+              
+              {/* Message */}
+              <p className="text-gray-800 font-medium mb-6">{modal.message}</p>
+              
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className={`px-6 py-2 rounded-lg text-white font-medium transition-colors ${
+                  modal.type === "success" 
+                    ? "bg-green-600 hover:bg-green-700" 
+                    : modal.type === "error"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="hidden bg-[#E6EBF0] lg:flex justify-between gap-8 px-10 py-14 h-96 w-full">
         <div className="flex flex-col justify-between">
           <img src={Logo} alt="solid-logo" className="w-[175px] h-[45px]" />
@@ -176,8 +242,8 @@ const Footer = () => {
           </div>
         </div>
         
-          {/* INFORMATION */}
-          <div>
+        {/* INFORMATION */}
+        <div>
           <h3 className="text-white font-semibold text-base pb-1 hidden sm:block">
             Information
           </h3>
@@ -200,7 +266,7 @@ const Footer = () => {
             <h3 className="text-white font-semibold text-base pb-1">Support</h3>
             <span className="bg-[#8AA1B9] rounded block w-12 h-[4px]"></span>
           </div>
-           <Link to="/help" className="text-customLight text-sm pb-3 block">
+          <Link to="/help" className="text-customLight text-sm pb-3 block">
             Help Center
           </Link>
           <p className="text-customLight font-normal text-sm pb-3">FAQs</p>

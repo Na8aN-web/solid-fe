@@ -8,6 +8,9 @@ const CreateNewPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
@@ -37,17 +40,35 @@ const CreateNewPassword = () => {
   // }, [dispatch, navigate, passwordReset.otpVerified, passwordReset.resetToken]);
 
   useEffect(() => {
-    // If password reset is successful, show success and redirect to login page
+    // If password reset is successful, show success modal and redirect to login page
     if (passwordReset.resetSuccess) {
-      alert("Password reset successful. Please login with your new password.");
-      
-      // Reset the password reset state
-      dispatch(resetPasswordState());
-      
-      // Navigate to login page
-      navigate("/login");
+      setShowSuccessModal(true);
     }
-  }, [passwordReset.resetSuccess, dispatch, navigate]);
+  }, [passwordReset.resetSuccess]);
+
+  useEffect(() => {
+    // Show error modal if there's an error from Redux
+    if (error) {
+      setErrorMessage(error);
+      setShowErrorModal(true);
+    }
+  }, [error]);
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    
+    // Reset the password reset state
+    dispatch(resetPasswordState());
+    
+    // Navigate to login page
+    navigate("/login");
+  };
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+    setErrorMessage("");
+    dispatch(clearError());
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,6 +76,8 @@ const CreateNewPassword = () => {
     // Check if the password and confirmation match
     if (formData.password !== formData.confirmPassword) {
       setPasswordMismatch(true);
+      setErrorMessage("Passwords do not match");
+      setShowErrorModal(true);
       return;
     }
 
@@ -63,7 +86,8 @@ const CreateNewPassword = () => {
     // Check if all password requirements are met
     const allRequirementsMet = Object.values(passwordRequirements).every(Boolean);
     if (!allRequirementsMet) {
-      alert("Please ensure your password meets all requirements.");
+      setErrorMessage("Please ensure your password meets all requirements.");
+      setShowErrorModal(true);
       return;
     }
 
@@ -92,6 +116,11 @@ const CreateNewPassword = () => {
         hasUppercase: /[A-Z]/.test(value),
       });
     }
+
+    // Clear password mismatch error when user types
+    if (name === "confirmPassword" || name === "password") {
+      setPasswordMismatch(false);
+    }
   };
 
   return (
@@ -101,12 +130,6 @@ const CreateNewPassword = () => {
           <h1 className="text-2xl font-bold text-customBrown leading-7 pb-2">
             Create New Password
           </h1>
-          
-          {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
           
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="relative">
@@ -200,6 +223,94 @@ const CreateNewPassword = () => {
           </form>
         </div>
       </section>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={handleCloseSuccessModal}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg 
+                  className="h-6 w-6 text-green-600" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth="2" 
+                    d="M5 13l4 4L19 7" 
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Password Reset Successful
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Your password has been reset successfully. Please login with your new password.
+              </p>
+              <button
+                onClick={handleCloseSuccessModal}
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={handleCloseErrorModal}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg 
+                  className="h-6 w-6 text-red-600" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth="2" 
+                    d="M6 18L18 6M6 6l12 12" 
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Error
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {errorMessage}
+              </p>
+              <button
+                onClick={handleCloseErrorModal}
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
