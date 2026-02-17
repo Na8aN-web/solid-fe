@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./LandingNavbar";
 import Footer from "./Footer";
@@ -10,12 +10,12 @@ type LayoutProps = {
 const Layout = () => {
   return (
     <div>
-    <Navbar  />
-    <main>
-      <Outlet />
-    </main>
-  </div>
-  )
-}
+      <Navbar />
+      <main>
+        <Outlet />
+      </main>
+    </div>
+  );
+};
 
-export default Layout
+export default Layout;

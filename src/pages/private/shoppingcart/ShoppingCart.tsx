@@ -96,6 +96,24 @@ const ShoppingCart = () => {
       });
   }, [dispatch]);
 
+  useEffect(() => {
+    if (!cart?.products || loading) return;
+
+    const outOfStockItems = cart.products.filter(
+      (item) => item.product.stockStatus !== "In Stock",
+    );
+
+    if (outOfStockItems.length === 0) return;
+
+    outOfStockItems.forEach((item) => {
+      dispatch(removeProductFromCart({ productId: item.product._id }));
+    });
+  }, [cart?.products, loading, dispatch]);
+
+  const hasOutOfStockItems = cart?.products.some(
+    (item) => item.product.stockStatus !== "In Stock",
+  );
+
   // Update loading logic to be more specific
   const isLoading = loading && initialLoad;
 
@@ -122,7 +140,7 @@ const ShoppingCart = () => {
     const subtotal = cart.products.reduce(
       (total: number, item: CartItem) =>
         total + item.product.salesPrice * item.quantity,
-      0
+      0,
     );
     const discount = subtotal * 0.2;
     const couponDiscount = appliedCoupon
@@ -132,7 +150,7 @@ const ShoppingCart = () => {
     const totalAmount = subtotal - discount - couponDiscount + deliveryFee;
     const totalItems = cart.products.reduce(
       (total: number, item: CartItem) => total + item.quantity,
-      0
+      0,
     );
 
     return {
@@ -166,13 +184,13 @@ const ShoppingCart = () => {
   // Update item quantity
   const handleQuantityUpdate = async (
     productId: string,
-    newQuantity: number
+    newQuantity: number,
   ) => {
     if (newQuantity < 1) return;
 
     try {
       await dispatch(
-        updateCartItemQuantity({ productId, quantity: newQuantity })
+        updateCartItemQuantity({ productId, quantity: newQuantity }),
       ).unwrap();
     } catch (error) {
       console.error("Failed to update quantity:", error);
@@ -358,7 +376,7 @@ const ShoppingCart = () => {
                             onClick={() =>
                               handleQuantityUpdate(
                                 item.product._id,
-                                item.quantity - 1
+                                item.quantity - 1,
                               )
                             }
                             disabled={loading || item.quantity <= 1}
@@ -373,7 +391,7 @@ const ShoppingCart = () => {
                             onClick={() =>
                               handleQuantityUpdate(
                                 item.product._id,
-                                item.quantity + 1
+                                item.quantity + 1,
                               )
                             }
                             disabled={loading}
@@ -560,7 +578,7 @@ const ShoppingCart = () => {
             <button
               onClick={handleCheckout}
               className="hidden lg:block mt-6 bg-primary text-white py-4 px-6 rounded-lg hover:bg-primary/90 transition-colors w-full disabled:opacity-50 font-medium"
-              disabled={loading || !hasProducts}
+              disabled={loading || !hasProducts || hasOutOfStockItems}
             >
               {loading ? "Processing..." : "Proceed to Checkout"}
             </button>

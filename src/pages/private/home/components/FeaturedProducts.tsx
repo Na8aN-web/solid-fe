@@ -55,7 +55,6 @@ const FeaturedProducts = () => {
       salesPrice: product.displayPrice,
       displayPrice: product.displayPrice,
       regularPrice: product.regularPrice,
-      stockStatus: 'In Stock',
       brand: {
         _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, '-')}`,
         name: product.brandName

@@ -16,6 +16,7 @@ interface ProductCardProps {
   discount?: string;
   rating?: number;
   numReviews?: number;
+  // stockStatus: "In Stock" | "Out of Stock";
   onAddToCart?: (productId: string, productName: string) => void;
   cartLoading?: boolean;
   addingProductId?: string | null;
@@ -31,6 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   rating,
   numReviews,
+  // stockStatus,
   onAddToCart,
   cartLoading = false,
   addingProductId = null,
@@ -38,20 +40,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  const FavouriteFilled = MdFavorite as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  
+  const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<
+    React.SVGProps<SVGSVGElement>
+  >;
+  const FavouriteFilled = MdFavorite as unknown as React.FC<
+    React.SVGProps<SVGSVGElement>
+  >;
+
   const { cart } = useAppSelector((state) => state.cart);
   const { wishlist } = useAppSelector((state) => state.wishlist);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  
+
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+  // const isOutOfStock = stockStatus !== "In Stock";
 
   // Check if product is in wishlist
-  const isInWishlist = wishlist?.products?.some(
-    (product) => product._id === productId || product.id === productId
-  ) || false;
+  const isInWishlist =
+    wishlist?.products?.some(
+      (product) => product._id === productId || product.id === productId,
+    ) || false;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -84,13 +92,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
             salesPrice: parseFloat(price?.replace(/[₦,]/g, "") || "0"),
             displayPrice: parseFloat(price?.replace(/[₦,]/g, "") || "0"),
             categoryName: category,
-            stockStatus: "In Stock",
+            // stockStatus,
             brand: {
               _id: "unknown",
               name: "Unknown",
             },
           },
-        })
+        }),
       ).unwrap();
     } catch (error) {
       alert("Failed to add to cart");
@@ -110,7 +118,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     setIsTogglingWishlist(true);
     try {
-      const result = await dispatch(toggleProductInWishlist(productId)).unwrap();
+      const result = await dispatch(
+        toggleProductInWishlist(productId),
+      ).unwrap();
     } catch (error: any) {
       // Only show error for real errors, not "already in wishlist"
       if (error !== "ALREADY_IN_WISHLIST") {
@@ -122,7 +132,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   // Determine if we're using parent's loading state or local state
-  const isCartLoading = (cartLoading && addingProductId) === (productId || isAddingToCart);
+  const isCartLoading =
+    (cartLoading && addingProductId) === (productId || isAddingToCart);
 
   return (
     <div className="w-full text-left pb-1">
@@ -170,6 +181,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </p>
         )}
       </div>
+
       <div className="flex gap-3 pt-4">
         <button
           onClick={handleAddToCart}
@@ -206,9 +218,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </>
           ) : (
             <>
-              <img src="/blue-cart.svg" alt="cart" className="w-auto h-auto"/>
+              <img src="/blue-cart.svg" alt="cart" className="w-auto h-auto" />
               <span className="text-[10px] text-primary font-normal">
-                Add to cart
+                Add to Cart
               </span>
             </>
           )}

@@ -1,20 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { fetchUserCart } from "../../../store/slices/cartSlice";
-import { fetchAllAddresses, setSelectedAddress } from "../../../store/slices/addressSlice";
-import { applyCoupon, initiatePayment, clearCoupon, clearPaymentLink, clearCheckoutError, InitiatePaymentRequest } from "../../../store/slices/checkoutSlice";
+import {
+  fetchUserCart,
+  removeProductFromCart,
+} from "../../../store/slices/cartSlice";
+import {
+  fetchAllAddresses,
+  setSelectedAddress,
+} from "../../../store/slices/addressSlice";
+import {
+  applyCoupon,
+  initiatePayment,
+  clearCoupon,
+  clearPaymentLink,
+  clearCheckoutError,
+  InitiatePaymentRequest,
+} from "../../../store/slices/checkoutSlice";
 import { CartItem } from "../../../services/cart/types";
 import { Address } from "../../../store/slices/addressSlice";
 
 const Checkout: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
+
   const { cart, loading: cartLoading } = useAppSelector((state) => state.cart);
-  const { addresses, selectedAddress, loading: addressLoading } = useAppSelector(
-    (state) => state.address
-  );
+  const {
+    addresses,
+    selectedAddress,
+    loading: addressLoading,
+  } = useAppSelector((state) => state.address);
   const {
     couponLoading,
     couponError,
@@ -22,10 +37,11 @@ const Checkout: React.FC = () => {
     paymentLoading,
     paymentError,
     paymentLink,
-    appliedCouponCode
+    appliedCouponCode,
   } = useAppSelector((state) => state.checkout);
 
-  const [selectedDeliveryType, setSelectedDeliveryType] = useState<DeliveryType | null>(null);
+  const [selectedDeliveryType, setSelectedDeliveryType] =
+    useState<DeliveryType | null>(null);
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [couponCode, setCouponCode] = useState("");
@@ -55,15 +71,16 @@ const Checkout: React.FC = () => {
   useEffect(() => {
     dispatch(fetchUserCart());
     dispatch(fetchAllAddresses());
-    
+
     // Get user ID from localStorage or your auth state
-    const storedUserId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+    const storedUserId =
+      localStorage.getItem("userId") || sessionStorage.getItem("userId");
     if (storedUserId) {
       setUserId(storedUserId);
     }
-    
+
     // Get current user from your auth state
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);
@@ -74,27 +91,48 @@ const Checkout: React.FC = () => {
     }
   }, [dispatch]);
 
-   useEffect(() => {
+  useEffect(() => {
     // Check authentication
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    
+    const token =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+
     if (!token) {
       // Store redirect intent
-      sessionStorage.setItem('checkout_redirect', 'true');
+      sessionStorage.setItem("checkout_redirect", "true");
       // Redirect to login
-      navigate('/login');
+      navigate("/login");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!cart?.products) return;
+
+    const outOfStockItems = cart.products.filter(
+      (item) => item.product.stockStatus !== "In Stock",
+    );
+
+    if (outOfStockItems.length === 0) return;
+
+    alert(
+      "Some items in your cart are out of stock and have been removed. Please review your cart.",
+    );
+
+    outOfStockItems.forEach((item) => {
+      dispatch(removeProductFromCart({ productId: item.product._id }));
+    });
+
+    navigate("/cart");
+  }, [cart?.products, dispatch, navigate]);
 
   // Handle payment link redirection
   useEffect(() => {
     if (paymentLink) {
       // Redirect to payment gateway or show payment modal
-      window.open(paymentLink, '_blank');
-      
+      window.open(paymentLink, "_blank");
+
       // Optional: Track payment initiation
       console.log("Payment initiated, redirecting to:", paymentLink);
-      
+
       // Clear payment link after use
       setTimeout(() => {
         dispatch(clearPaymentLink());
@@ -112,34 +150,52 @@ const Checkout: React.FC = () => {
   // Calculate totals with coupon discount
   const calculateTotals = () => {
     if (!cart?.products || cart.products.length === 0) {
-      return { subtotal: 0, discount: 0, couponDiscountAmount: 0, deliveryFee: 0, total: 0 };
+      return {
+        subtotal: 0,
+        discount: 0,
+        couponDiscountAmount: 0,
+        deliveryFee: 0,
+        total: 0,
+      };
     }
 
     const subtotal = cart.products.reduce(
-      (sum: number, item: CartItem) => sum + item.product.salesPrice * item.quantity,
-      0
+      (sum: number, item: CartItem) =>
+        sum + item.product.salesPrice * item.quantity,
+      0,
     );
-    
+
     // Apply coupon discount if available
-    const couponDiscountAmount = couponDiscount ? (subtotal * couponDiscount) / 100 : 0;
+    const couponDiscountAmount = couponDiscount
+      ? (subtotal * couponDiscount) / 100
+      : 0;
     const regularDiscount = subtotal * 0.2; // Your existing 20% discount
     const totalDiscount = regularDiscount + couponDiscountAmount;
-    
-    const selectedDelivery = deliveryTypes.find(d => d.type === selectedDeliveryType);
+
+    const selectedDelivery = deliveryTypes.find(
+      (d) => d.type === selectedDeliveryType,
+    );
     const deliveryFee = selectedDelivery ? selectedDelivery.price : 0;
     const total = subtotal - totalDiscount + deliveryFee;
 
-    return { 
-      subtotal, 
-      discount: regularDiscount, 
+    return {
+      subtotal,
+      discount: regularDiscount,
       couponDiscount: couponDiscountAmount,
-      deliveryFee, 
+      deliveryFee,
       total,
-      totalDiscount
+      totalDiscount,
     };
   };
 
-  const { subtotal, discount, couponDiscount: couponDiscountAmount, deliveryFee, total, totalDiscount } = calculateTotals();
+  const {
+    subtotal,
+    discount,
+    couponDiscount: couponDiscountAmount,
+    deliveryFee,
+    total,
+    totalDiscount,
+  } = calculateTotals();
 
   const handleDeliveryTypeSelect = (type: DeliveryType) => {
     setSelectedDeliveryType(type);
@@ -158,16 +214,18 @@ const Checkout: React.FC = () => {
       alert("Please enter a coupon code");
       return;
     }
-    
+
     if (!userId) {
       alert("User ID not found. Please log in again.");
       return;
     }
-    
-    dispatch(applyCoupon({ 
-      code: couponCode.trim(), 
-      userId: userId 
-    }));
+
+    dispatch(
+      applyCoupon({
+        code: couponCode.trim(),
+        userId: userId,
+      }),
+    );
   };
 
   const handleRemoveCoupon = () => {
@@ -193,6 +251,16 @@ const Checkout: React.FC = () => {
       return;
     }
 
+    const hasOutOfStockItems = cart.products.some(
+      (item) => item.product.stockStatus !== "In Stock",
+    );
+
+    if (hasOutOfStockItems) {
+      alert("Remove out-of-stock items before checkout");
+      navigate("/cart");
+      return;
+    }
+
     // Prepare payment data
     const paymentData: InitiatePaymentRequest = {
       provider: "opay" as const,
@@ -208,9 +276,9 @@ const Checkout: React.FC = () => {
           street: selectedAddress.street,
           city: selectedAddress.city,
           state: selectedAddress.state,
-          country: "Nigeria" // Add if available
-        }
-      }
+          country: "Nigeria", // Add if available
+        },
+      },
     };
 
     // Dispatch payment initiation
@@ -230,11 +298,11 @@ const Checkout: React.FC = () => {
               className="border-b lg:border lg:rounded-xl lg:p-5 border-[#D9D9D9] pb-4 mb-4 w-full"
             >
               <div className="flex gap-6 items-center">
-                <div className="lg:border lg:rounded-2xl lg:px-5 py-3">
+                <div className="lg:border lg:rounded-2xl lg:px-5 py-4 lg:py-3">
                   <img
                     src={item.product.images[0] || "/tyres.svg"}
                     alt={item.product.name}
-                    className="w-[100px]"
+                    className="w-[80px] h-[80px]"
                   />
                 </div>
                 <div className="lg:flex lg:justify-between w-full space-y-1">
@@ -256,7 +324,11 @@ const Checkout: React.FC = () => {
                       Quantity: {item.quantity}
                     </p>
                     <p className="text-xs lg:text-base lg:text-primary text-customGray3 font-bold">
-                      (₦{(item.product.salesPrice * item.quantity).toLocaleString()})
+                      (₦
+                      {(
+                        item.product.salesPrice * item.quantity
+                      ).toLocaleString()}
+                      )
                     </p>
                   </div>
                 </div>
@@ -308,9 +380,7 @@ const Checkout: React.FC = () => {
                 ✕
               </button>
             </div>
-            <p className="text-gray-700 mb-4">
-              {couponError || paymentError}
-            </p>
+            <p className="text-gray-700 mb-4">{couponError || paymentError}</p>
             <button
               onClick={() => dispatch(clearCheckoutError())}
               className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
@@ -345,7 +415,7 @@ const Checkout: React.FC = () => {
               <h3 className="text-sm font-semibold text-customGray1 pb-3">
                 Delivery Address
               </h3>
-              
+
               {selectedAddress ? (
                 <div className="shadow-[0_4px_12px_#00000026] rounded-lg p-5 space-y-3">
                   <div className="flex justify-between items-start">
@@ -429,7 +499,9 @@ const Checkout: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-customGray3">{address.street}</p>
+                        <p className="text-sm text-customGray3">
+                          {address.street}
+                        </p>
                         <p className="text-sm text-customGray3">
                           {address.city}, {address.state}
                         </p>
@@ -580,7 +652,7 @@ const Checkout: React.FC = () => {
                     (20%) -₦{discount.toLocaleString()}
                   </span>
                 </div>
-                
+
                 {/* Coupon Discount Display */}
                 {couponDiscount && (
                   <div className="flex justify-between items-center">
@@ -594,7 +666,8 @@ const Checkout: React.FC = () => {
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-green-600 font-medium">
-                        ({couponDiscount}%) -₦{(couponDiscountAmount || 0).toLocaleString()}
+                        ({couponDiscount}%) -₦
+                        {(couponDiscountAmount || 0).toLocaleString()}
                       </span>
                       <button
                         onClick={handleRemoveCoupon}
@@ -605,13 +678,15 @@ const Checkout: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between">
                   <p className="text-sm text-customGray3 flex gap-2 items-center">
                     Delivery
                     {selectedDeliveryType && (
                       <span className="text-[10px] text-primary font-medium flex gap-2 bg-[#BFCCD8] px-3 py-[2px] rounded-2xl">
-                        {selectedDeliveryType === DeliveryType.FastDelivery ? "fast" : "standard"}
+                        {selectedDeliveryType === DeliveryType.FastDelivery
+                          ? "fast"
+                          : "standard"}
                       </span>
                     )}
                   </p>
@@ -624,7 +699,7 @@ const Checkout: React.FC = () => {
                   <p>₦{total.toLocaleString()}</p>
                 </div>
               </div>
-              
+
               {/* Coupon Section */}
               <div className="relative pt-3 pb-5 border-b">
                 <img
@@ -639,12 +714,14 @@ const Checkout: React.FC = () => {
                   onChange={(e) => setCouponCode(e.target.value)}
                   disabled={couponLoading || !!couponDiscount}
                   className={`border h-12 px-10 w-full rounded-lg ${
-                    couponDiscount ? 'bg-green-50' : 'bg-[#FFF8EE]'
+                    couponDiscount ? "bg-green-50" : "bg-[#FFF8EE]"
                   } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
                 <button
                   onClick={handleApplyCoupon}
-                  disabled={couponLoading || !couponCode.trim() || !!couponDiscount}
+                  disabled={
+                    couponLoading || !couponCode.trim() || !!couponDiscount
+                  }
                   className="absolute right-4 bottom-9 text-xs text-customGold cursor-pointer hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {couponLoading ? (
@@ -659,19 +736,19 @@ const Checkout: React.FC = () => {
                   )}
                 </button>
               </div>
-              
+
               {couponLoading && (
                 <div className="text-center py-2">
                   <p className="text-sm text-blue-600">Applying coupon...</p>
                 </div>
               )}
-              
+
               <button
                 onClick={handleCheckout}
                 disabled={
-                  !selectedAddress || 
-                  !selectedDeliveryType || 
-                  cartLoading || 
+                  !selectedAddress ||
+                  !selectedDeliveryType ||
+                  cartLoading ||
                   paymentLoading ||
                   !cart?.products ||
                   cart.products.length === 0
@@ -687,7 +764,7 @@ const Checkout: React.FC = () => {
                   `Pay ₦${total.toLocaleString()}`
                 )}
               </button>
-              
+
               {paymentLoading && (
                 <p className="text-center text-sm text-blue-600 mt-2">
                   Redirecting to payment gateway...
