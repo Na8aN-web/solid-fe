@@ -28,10 +28,13 @@ const NewArrivals = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const newArrivals = useAppSelector(
-    (state) => state.products.newArrivals ?? []
+    (state) => state.products.newArrivals ?? [],
   );
 
   const loading = useAppSelector((state) => state.products.loading);
@@ -42,7 +45,7 @@ const NewArrivals = () => {
 
   // Extract unique display names from featured products
   const uniqueCategories = Array.from(
-    new Set(newArrivals.map((product) => product.categoryName))
+    new Set(newArrivals.map((product) => product.categoryName)),
   ).filter(Boolean); // remove null/undefined if any
 
   // filter featured products by active categoryName
@@ -51,7 +54,7 @@ const NewArrivals = () => {
     : newArrivals;
 
   const handleAddToCart = async (productId: string, productName: string) => {
-    const product = newArrivals.find(p => p._id === productId);
+    const product = newArrivals.find((p) => p._id === productId);
 
     if (!product) {
       return;
@@ -65,21 +68,23 @@ const NewArrivals = () => {
       salesPrice: product.displayPrice,
       displayPrice: product.displayPrice,
       regularPrice: product.regularPrice,
-      stockStatus: 'In Stock',
+      stockStatus: "In Stock",
       brand: {
-        _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, '-')}`,
-        name: product.brandName
+        _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, "-")}`,
+        name: product.brandName,
       },
-      maker: product.brandName
+      maker: product.brandName,
     };
 
     try {
       setAddingProductId(productId);
-      await dispatch(addProductToCart({
-        productId,
-        quantity: 1,
-        productData
-      })).unwrap();
+      await dispatch(
+        addProductToCart({
+          productId,
+          quantity: 1,
+          productData,
+        }),
+      ).unwrap();
 
       // Show success modal
       setLastAddedProduct({ id: productId, name: productName });
@@ -93,7 +98,7 @@ const NewArrivals = () => {
   const handleViewCart = () => {
     setShowSuccessModal(false);
     // Navigate to cart page
-    window.location.href = '/cart';
+    window.location.href = "/cart";
   };
 
   const handleCloseModal = () => {
@@ -118,7 +123,7 @@ const NewArrivals = () => {
             </button>
           </div>
           <div className="hidden lg:block">
-          <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
+            <ul className="flex gap-4 lg:gap-3 items-center text-xs font-semibold text-customGray1 text-center">
               <li
                 onClick={() => setActiveCategory(null)}
                 className={`p-2 rounded-lg cursor-pointer transition-all duration-300 ${
@@ -149,21 +154,21 @@ const NewArrivals = () => {
         <div>
           {loading ? (
             <div className="flex justify-center items-center h-[400px]">
-              <LoaderSpinner txt="New Arivals"/>
+              <LoaderSpinner txt="New Arivals" />
             </div>
           ) : (
             <Swiper
-            modules={[Navigation, Grid]}
-            navigation={false}
-            slidesPerView={2}
-            spaceBetween={15}
-            grid={{ rows: 1, fill: "row" }}
-            className="w-full"
-            breakpoints={{
-              375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
-              640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
-              768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
-              1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
+              modules={[Navigation, Grid]}
+              navigation={false}
+              slidesPerView={2}
+              spaceBetween={15}
+              grid={{ rows: 1, fill: "row" }}
+              className="w-full"
+              breakpoints={{
+                375: { slidesPerView: 2.2, spaceBetween: 15 }, // Small tablets
+                640: { slidesPerView: 3.3, spaceBetween: 20 }, // Small tablets
+                768: { slidesPerView: 4.3, spaceBetween: 20 }, // Tablets
+                1280: { slidesPerView: 6, spaceBetween: 20 }, // Desktops
               }}
             >
               {filteredProducts.map((product) => {
@@ -174,32 +179,20 @@ const NewArrivals = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={product._id}>
-                      <ProductCard
-                        productId={product._id}
-                        image={product.image}
-                        title={product.name}
-                        category={product.category}
-                        rating={product.rating}
-                        price={`₦${product.displayPrice.toLocaleString(
-                          "en-NG",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}`}
-                        oldPrice={`₦${product.regularPrice.toLocaleString(
-                          "en-NG",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}`}
-                        discount={formattedDiscount}
-                        numReviews={product.numReviews}
-                        onAddToCart={handleAddToCart}
-                        cartLoading={addingProductId !== null}
-                        addingProductId={addingProductId}
-                      />
+                    <ProductCard
+                      productId={product._id}
+                      image={product.image}
+                      title={product.name}
+                      category={product.categoryName}
+                      rating={product.rating}
+                      displayPrice={product.displayPrice}
+                      regularPrice={product.regularPrice}
+                      discount={formattedDiscount}
+                      numReviews={product.numReviews}
+                      onAddToCart={handleAddToCart}
+                      cartLoading={addingProductId !== null}
+                      addingProductId={addingProductId}
+                    />
                   </SwiperSlide>
                 );
               })}

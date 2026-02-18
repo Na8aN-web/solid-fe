@@ -58,7 +58,7 @@ const Recents = () => {
                 ? Math.round(
                     ((product.regularPrice - product.salesPrice) /
                       product.regularPrice) *
-                      100
+                      100,
                   )
                 : null;
 
@@ -69,16 +69,8 @@ const Recents = () => {
                   image={product.images?.[0] || ""} // use first image from array
                   title={product.name}
                   category={product.category}
-                  price={`₦${product.salesPrice.toLocaleString("en-NG", {
-                    minimumFractionDigits: 2,
-                  })}`}
-                  oldPrice={
-                    product.regularPrice
-                      ? `₦${product.regularPrice.toLocaleString("en-NG", {
-                          minimumFractionDigits: 2,
-                        })}`
-                      : undefined
-                  }
+                  displayPrice={product.displayPrice}
+                  regularPrice={product.regularPrice}
                   discount={discount ? `${discount}%` : undefined}
                   numReviews={product.numReviews}
                 />

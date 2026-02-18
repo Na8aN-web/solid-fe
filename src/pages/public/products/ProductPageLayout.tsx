@@ -192,7 +192,6 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     dispatch(setCurrentPage(1));
   };
 
-  // FIXED: Updated to properly dispatch Redux action
   const handlePageChange = (page: number) => {
     dispatch(setCurrentPage(page));
   };
@@ -228,7 +227,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
             categories: [category]
           }));
         }
-        else if (brand) { // NEW: Handle brand filter
+        else if (brand) { 
           dispatch(setCurrentPage(1));
           setFilters(prev => ({
             ...prev,

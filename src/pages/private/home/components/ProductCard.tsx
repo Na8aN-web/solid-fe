@@ -20,11 +20,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -35,12 +35,22 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
               onClick={onClose}
               className="text-gray-400 hover:text-gray-500 focus:outline-none"
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
-          
+
           {/* Content */}
           {children}
         </div>
@@ -54,12 +64,11 @@ interface ProductCardProps {
   image: string;
   title: string;
   category: string;
-  price?: string;
-  oldPrice?: string;
+  displayPrice: number;
+  regularPrice?: number;
   discount?: string;
   rating?: number;
   numReviews?: number;
-  // stockStatus: "In Stock" | "Out of Stock";
   onAddToCart?: (productId: string, productName: string) => void;
   cartLoading?: boolean;
   addingProductId?: string | null;
@@ -70,18 +79,43 @@ const ProductCard: React.FC<ProductCardProps> = ({
   image,
   title,
   category,
-  oldPrice,
+  displayPrice,
+  regularPrice,
   discount,
-  price,
   rating,
   numReviews,
-  // stockStatus,
   onAddToCart,
   cartLoading = false,
   addingProductId = null,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
+  const { wishlist } = useAppSelector((state) => state.wishlist);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+
+  // Modal states
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const formatCurrency = (amount?: number) => {
+    if (typeof amount !== "number") return "₦0";
+    return `₦${amount.toLocaleString("en-NG")}`;
+  };
+
+  // Check if product is in wishlist
+  const isInWishlist =
+    wishlist?.products?.some(
+      (product) => product._id === productId || product.id === productId,
+    ) || false;
+
+  const isCartLoading =
+    (cartLoading && addingProductId === productId) || isAddingToCart;
+
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
   const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<
     React.SVGProps<SVGSVGElement>
@@ -90,27 +124,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     React.SVGProps<SVGSVGElement>
   >;
 
-  const { cart } = useAppSelector((state) => state.cart);
-  const { wishlist } = useAppSelector((state) => state.wishlist);
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
-
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
-<<<<<<< HEAD
   // const isOutOfStock = stockStatus !== "In Stock";
-=======
-  
-  // Modal states
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
->>>>>>> development
-
-  // Check if product is in wishlist
-  const isInWishlist =
-    wishlist?.products?.some(
-      (product) => product._id === productId || product.id === productId,
-    ) || false;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -129,6 +143,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     // Otherwise, handle it here
     setIsAddingToCart(true);
+
     try {
       await dispatch(
         addProductToCart({
@@ -137,12 +152,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           productData: {
             _id: productId,
             name: title,
-            image: image,
+            image,
             images: [image],
-            salesPrice: parseFloat(price?.replace(/[₦,]/g, "") || "0"),
-            displayPrice: parseFloat(price?.replace(/[₦,]/g, "") || "0"),
+            salesPrice: displayPrice,
+            displayPrice: displayPrice,
             categoryName: category,
-            // stockStatus,
             brand: {
               _id: "unknown",
               name: "Unknown",
@@ -168,10 +182,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     setIsTogglingWishlist(true);
+
     try {
-      const result = await dispatch(
-        toggleProductInWishlist(productId),
-      ).unwrap();
+      // const result = await dispatch(
+      //   toggleProductInWishlist(productId),
+      // ).unwrap();
+      await dispatch(toggleProductInWishlist(productId)).unwrap();
     } catch (error: any) {
       // Only show error for real errors, not "already in wishlist"
       if (error !== "ALREADY_IN_WISHLIST") {
@@ -189,8 +205,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   // Determine if we're using parent's loading state or local state
-  const isCartLoading =
-    (cartLoading && addingProductId) === (productId || isAddingToCart);
+  // const isCartLoading =
+  //   (cartLoading && addingProductId) === (productId || isAddingToCart);
 
   return (
     <>
@@ -226,46 +242,29 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 className="w-2 h-3"
               />
             ))}
+            <span className="text-xs md:text-sm font-medium text-customGray3">
+              ({numReviews || 0} Reviews)
+            </span>
           </div>
-          <span className="text-xs md:text-sm font-medium text-customGray3">
-            ({numReviews || 0} Reviews)
-          </span>
         </div>
-<<<<<<< HEAD
-        <span className="text-xs md:text-sm font-medium text-customGray3">
-          ({numReviews || 0} Reviews)
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
         <p className="text-sm font-semibold text-customBrown">{price}</p>
         {oldPrice && (
           <p className="text-[11px] font-semibold text-customGray3 line-through">
             {oldPrice}
           </p>
         )}
-      </div>
+      </div> */}
 
-      <div className="flex gap-3 pt-4">
-        <button
-          onClick={handleAddToCart}
-          disabled={isCartLoading}
-          className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full transition-colors ${
-            isCartLoading
-              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-              : "hover:bg-blue-50 hover:border-2"
-          }`}
-        >
-          {isCartLoading ? (
-            <>
-=======
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-customBrown">{price}</p>
-          {oldPrice && (
-            <p className="text-[11px] font-semibold text-customGray3 line-through">
-              {oldPrice}
+          <p className="font-semibold">{formatCurrency(displayPrice)}</p>
+          {regularPrice && (
+            <p className="text-sm text-gray-400 line-through">
+              {formatCurrency(regularPrice)}
             </p>
           )}
         </div>
+
         <div className="flex gap-3 pt-4">
           <button
             onClick={handleAddToCart}
@@ -302,8 +301,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </>
             ) : (
               <>
-                <img src="/blue-cart.svg" alt="cart" className="w-auto h-auto"/>
-                <span className="text-[10px] text-primary font-normal">
+                <img src="/blue-cart.svg" alt="cart" className="w-4 h-4" />
+                <span className="text-sm text-primary font-normal">
                   Add to cart
                 </span>
               </>
@@ -320,7 +319,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
           >
             {isTogglingWishlist ? (
->>>>>>> development
               <svg
                 className="animate-spin h-4 w-4 text-primary"
                 xmlns="http://www.w3.org/2000/svg"
@@ -341,56 +339,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-<<<<<<< HEAD
-              <span className="text-[10px] text-primary">Adding...</span>
-            </>
-          ) : (
-            <>
-              <img src="/blue-cart.svg" alt="cart" className="w-auto h-auto" />
-              <span className="text-[10px] text-primary font-normal">
-                Add to Cart
-              </span>
-            </>
-          )}
-        </button>
-        <button
-          className={`border rounded py-2 px-3 transition-all ${
-            isInWishlist
-              ? "bg-blue-50 border-blue-50"
-              : "border-primary hover:bg-blue-50"
-          } ${isTogglingWishlist ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={handleFavorite}
-          disabled={isTogglingWishlist}
-          title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          {isTogglingWishlist ? (
-            <svg
-              className="animate-spin h-4 w-4 text-primary"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          ) : isInWishlist ? (
-            <FavouriteFilled className="w-4 h-4 text-primary" />
-          ) : (
-            <FavouriteOutline className="w-4 h-4 text-primary" />
-          )}
-        </button>
-=======
             ) : isInWishlist ? (
               <FavouriteFilled className="w-4 h-4 text-primary" />
             ) : (
@@ -398,7 +346,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             )}
           </button>
         </div>
->>>>>>> development
       </div>
 
       {/* Login Required Modal */}
@@ -411,13 +358,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-gray-600 mb-6">
             Please login to add items to your cart or wishlist.
           </p>
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={() => setShowLoginModal(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
+          <div>
             <button
               onClick={handleLoginRedirect}
               className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
@@ -440,7 +381,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
             onClick={() => setShowErrorModal(false)}
             className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
           >
-            OK
+            {/* OK */}
+            <p>{errorMessage}</p>
           </button>
         </div>
       </Modal>

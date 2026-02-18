@@ -3,7 +3,10 @@ import Pagination from "./Pagination";
 import SortSidebar from "./SortSidebar";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-import { addProductToCart, updateCartProductData } from "../../../../store/slices/cartSlice";
+import {
+  addProductToCart,
+  updateCartProductData,
+} from "../../../../store/slices/cartSlice";
 import { toggleProductInWishlist } from "../../../../store/slices/wishlistSlice";
 import { FilterState } from "../ProductPageLayout";
 import SuccessModal from "../../../../components/SuccessModal";
@@ -16,8 +19,8 @@ interface Product {
   maker: string;
   model: string;
   year: string;
-  price: number;
   displayPrice: number;
+  regularPrice: number;
   image: string;
   description: string;
   numReviews: number;
@@ -73,25 +76,36 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   setFilters,
   filterLoading,
 }) => {
-  const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  const FavouriteFilled = MdFavorite as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  
+  const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<
+    React.SVGProps<SVGSVGElement>
+  >;
+  const FavouriteFilled = MdFavorite as unknown as React.FC<
+    React.SVGProps<SVGSVGElement>
+  >;
+
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
-  const [togglingWishlistId, setTogglingWishlistId] = useState<string | null>(null);
+  const [togglingWishlistId, setTogglingWishlistId] = useState<string | null>(
+    null,
+  );
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
-  
+  const [lastAddedProduct, setLastAddedProduct] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   const dispatch = useAppDispatch();
-  const { cart } = useAppSelector(state => state.cart);
-  const { wishlist } = useAppSelector(state => state.wishlist);
-  const { isAuthenticated } = useAppSelector(state => state.auth);
+  const { cart } = useAppSelector((state) => state.cart);
+  const { wishlist } = useAppSelector((state) => state.wishlist);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
   // Check if product is in wishlist
   const isInWishlist = (productId: string) => {
-    return wishlist?.products?.some(
-      (product) => product._id === productId || product.id === productId
-    ) || false;
+    return (
+      wishlist?.products?.some(
+        (product) => product._id === productId || product.id === productId,
+      ) || false
+    );
   };
 
   useEffect(() => {
@@ -105,64 +119,78 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   useEffect(() => {
     if (products.length > 0 && cart && cart.products) {
-      products.forEach(product => {
-        const cartItem = cart.products.find(item => item.product._id === product._id);
-        if (cartItem && (!cartItem.product.name || cartItem.product.name === 'Product' || !cartItem.product.salesPrice)) {
-          dispatch(updateCartProductData({
-            productId: product._id,
-            productData: {
-              name: product.name,
-              images: [product.image],
-              salesPrice: product.displayPrice,
-              stockStatus: 'In Stock',
-              brand: {
-                _id: product.maker || 'unknown',
-                name: product.maker || 'Unknown'
-              }
-            }
-          }));
+      products.forEach((product) => {
+        const cartItem = cart.products.find(
+          (item) => item.product._id === product._id,
+        );
+        if (
+          cartItem &&
+          (!cartItem.product.name ||
+            cartItem.product.name === "Product" ||
+            !cartItem.product.salesPrice)
+        ) {
+          dispatch(
+            updateCartProductData({
+              productId: product._id,
+              productData: {
+                name: product.name,
+                images: [product.image],
+                salesPrice: product.displayPrice,
+                stockStatus: "In Stock",
+                brand: {
+                  _id: product.maker || "unknown",
+                  name: product.maker || "Unknown",
+                },
+              },
+            }),
+          );
         }
       });
     }
   }, [products, cart, dispatch]);
 
   const handleAddToCart = async (productId: string, productName: string) => {
-    const product = products.find(p => p._id === productId);
+    const product = products.find((p) => p._id === productId);
     if (!product) return;
 
     const productData = {
       _id: product._id,
       name: product.name,
       images: [product.image],
-      salesPrice: product.displayPrice || product.price,
-      displayPrice: product.displayPrice || product.price,
-      regularPrice: product.price,
-      stockStatus: 'In Stock',
+      salesPrice: product.displayPrice,
+      displayPrice: product.displayPrice,
+      regularPrice: product.regularPrice,
+      stockStatus: "In Stock",
       brand: {
-        _id: product.maker || 'unknown',
-        name: product.maker || 'Unknown'
+        _id: product.maker || "unknown",
+        name: product.maker || "Unknown",
       },
-      maker: product.maker || 'Unknown'
+      maker: product.maker || "Unknown",
     };
 
     try {
       setAddingProductId(productId);
-      await dispatch(addProductToCart({
-        productId,
-        quantity: 1,
-        productData
-      })).unwrap();
+      await dispatch(
+        addProductToCart({
+          productId,
+          quantity: 1,
+          productData,
+        }),
+      ).unwrap();
 
       setLastAddedProduct({ id: productId, name: productName });
       setShowSuccessModal(true);
     } catch (error) {
-      console.error('Failed to add product to cart:', error);
+      console.error("Failed to add product to cart:", error);
     } finally {
       setAddingProductId(null);
     }
   };
 
-  const handleToggleWishlist = async (e: React.MouseEvent, productId: string) => {
+  const handleToggleWishlist = async (
+    e: React.MouseEvent,
+    productId: string,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -185,7 +213,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const handleViewCart = () => {
     setShowSuccessModal(false);
-    navigate('/cart');
+    navigate("/cart");
   };
 
   const handleCloseModal = () => {
@@ -193,7 +221,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     setLastAddedProduct(null);
   };
 
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleItemsPerPageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
     setItemsPerPage(Number(e.target.value));
   };
 
@@ -258,13 +288,19 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   onClick={() => setViewType("list")}
                   className={`p-2 border ${viewType === "list" ? "bg-primary" : "bg-[#D9D9D9]"} rounded-l-lg`}
                 >
-                  <img src={`${viewType === "list" ? "/list2.png" : "/list1.png"}`} alt="list" />
+                  <img
+                    src={`${viewType === "list" ? "/list2.png" : "/list1.png"}`}
+                    alt="list"
+                  />
                 </button>
                 <button
                   onClick={() => setViewType("grid")}
                   className={`p-2 border ${viewType === "grid" ? "bg-primary" : "bg-[#D9D9D9]"} rounded-r-lg`}
                 >
-                  <img src={`${viewType === "grid" ? "/grid1.png" : "/grid2.png"}`} alt="grid" />
+                  <img
+                    src={`${viewType === "grid" ? "/grid1.png" : "/grid2.png"}`}
+                    alt="grid"
+                  />
                 </button>
               </div>
             </div>
@@ -276,8 +312,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     onClick={toggleFilter}
                     className="w-full bg-white text-primary border border-primary px-4 py-2 rounded-md flex items-center justify-center"
                   >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                      />
                     </svg>
                     Filter
                   </button>
@@ -287,8 +333,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     onClick={() => setIsSortOpen(true)}
                     className="w-full bg-white text-primary border border-primary px-4 py-2 rounded-md flex items-center justify-center"
                   >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                      />
                     </svg>
                     Sort
                   </button>
@@ -310,7 +366,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 <option value={12}>12</option>
                 <option value={18}>18</option>
               </select>
-              <div className="text-sm text-gray-600 ml-2">products per page</div>
+              <div className="text-sm text-gray-600 ml-2">
+                products per page
+              </div>
             </div>
 
             <div className="flex items-center w-[250px]">
@@ -334,11 +392,23 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       {products.length === 0 && !filterLoading ? (
         <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
           <div className="text-gray-400 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            <svg
+              className="w-16 h-16 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+              />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No products found</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            No products found
+          </h3>
           <p className="text-gray-500 max-w-md mb-4">
             {activeFilterText
               ? `No products match your current filters. Try adjusting your filter criteria.`
@@ -354,17 +424,25 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           )}
         </div>
       ) : (
-        <div className={`grid ${viewType === "grid" ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1"} gap-4`}>
+        <div
+          className={`grid ${viewType === "grid" ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1"} gap-4`}
+        >
           {products.map((product) => {
             const productInWishlist = isInWishlist(product._id);
             const isTogglingThis = togglingWishlistId === product._id;
-            
+
             return (
               <Link to={`/product/${product._id}`} key={product._id}>
-                <div className={`bg-white rounded-[20px] hover:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.15)] ${viewType === "list" ? "p-4" : "p-3"} overflow-hidden`}>
+                <div
+                  className={`bg-white rounded-[20px] hover:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.15)] ${viewType === "list" ? "p-4" : "p-3"} overflow-hidden`}
+                >
                   <div className="relative">
-                    <div className={`absolute ${viewType === "grid" ? "top-2 left-2" : "top-2 left-2"} bg-primary text-white rounded-full h-8 w-8 flex items-center justify-center`}>
-                      <span className="text-xs font-bold">{product.discount}%</span>
+                    <div
+                      className={`absolute ${viewType === "grid" ? "top-2 left-2" : "top-2 left-2"} bg-primary text-white rounded-full h-8 w-8 flex items-center justify-center`}
+                    >
+                      <span className="text-xs font-bold">
+                        {product.discount}%
+                      </span>
                     </div>
 
                     <button
@@ -373,12 +451,32 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       className={`absolute top-2 right-2 p-1 rounded-full transition-all ${
                         productInWishlist ? "bg-blue-50" : "bg-transparent"
                       } ${isTogglingThis ? "opacity-50 cursor-not-allowed" : ""}`}
-                      title={productInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                      title={
+                        productInWishlist
+                          ? "Remove from wishlist"
+                          : "Add to wishlist"
+                      }
                     >
                       {isTogglingThis ? (
-                        <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-5 w-5 text-primary"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                       ) : productInWishlist ? (
                         <FavouriteFilled className="w-5 h-5 text-primary" />
@@ -388,8 +486,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     </button>
                   </div>
 
-                  <div className={`${viewType === "list" ? "flex flex-row gap-4 items-start" : ""}`}>
-                    <div className={`${viewType === "list" ? "flex-shrink-0 w-1/3" : ""} p-2`}>
+                  <div
+                    className={`${viewType === "list" ? "flex flex-row gap-4 items-start" : ""}`}
+                  >
+                    <div
+                      className={`${viewType === "list" ? "flex-shrink-0 w-1/3" : ""} p-2`}
+                    >
                       <img
                         src={product.image}
                         alt={product.name}
@@ -397,25 +499,39 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       />
                     </div>
 
-                    <div className={`${viewType === "list" ? "flex-1" : ""} p-2`}>
-                      <div className="text-[10px] text-[#9A9A9A] uppercase mb-1">BODY PARTS</div>
-                      <h3 className="text-sm font-semibold text-[#2D2828] mb-2">{product.name}</h3>
+                    <div
+                      className={`${viewType === "list" ? "flex-1" : ""} p-2`}
+                    >
+                      <div className="text-[10px] text-[#9A9A9A] uppercase mb-1">
+                        BODY PARTS
+                      </div>
+                      <h3 className="text-sm font-semibold text-[#2D2828] mb-2">
+                        {product.name}
+                      </h3>
 
                       <div className="flex items-center mb-2">
                         {renderStars(product.rating)}
-                        <span className="text-xs text-[#827E7E] ml-1">({product.numReviews} reviews)</span>
+                        <span className="text-xs text-[#827E7E] ml-1">
+                          ({product.numReviews} reviews)
+                        </span>
                       </div>
 
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="font-bold text-[#2D2828]">₦{product.displayPrice?.toLocaleString()}</span>
-                        {product.price > product.displayPrice && (
-                          <span className="text-gray-500 line-through text-sm">₦{product.price?.toLocaleString()}</span>
+                        <span className="font-bold text-[#2D2828]">
+                          ₦{product.displayPrice?.toLocaleString()}
+                        </span>
+
+                        {product.regularPrice > product.displayPrice && (
+                          <span className="text-gray-500 line-through text-sm">
+                            ₦{product.regularPrice?.toLocaleString()}
+                          </span>
                         )}
                       </div>
 
                       {viewType === "list" && (
                         <div className="text-[12px] my-2 text-[#919191]">
-                          Designed for ultimate comfort and durability, featuring all adjustable, a...
+                          Designed for ultimate comfort and durability,
+                          featuring all adjustable, a...
                         </div>
                       )}
 
@@ -425,7 +541,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                           e.stopPropagation();
                           handleAddToCart(product._id, product.name);
                         }}
-                        disabled={cartLoading && addingProductId === product._id}
+                        disabled={
+                          cartLoading && addingProductId === product._id
+                        }
                         className={`w-full flex items-center justify-center py-2 px-4 rounded transition text-sm mt-2 ${
                           cartLoading && addingProductId === product._id
                             ? "bg-gray-400 text-gray-200 cursor-not-allowed"
@@ -434,16 +552,42 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       >
                         {cartLoading && addingProductId === product._id ? (
                           <>
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
                             </svg>
                             Adding...
                           </>
                         ) : (
                           <>
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            <svg
+                              className="w-4 h-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                              />
                             </svg>
                             Add to cart
                           </>

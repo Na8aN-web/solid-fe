@@ -6,13 +6,18 @@ interface RecommendedProductProps {
   relatedProducts?: Product[] | any;
 }
 
-const RecommendedProduct: React.FC<RecommendedProductProps> = ({ relatedProducts = [] }) => {
-
+const RecommendedProduct: React.FC<RecommendedProductProps> = ({
+  relatedProducts = [],
+}) => {
   const productsArray = React.useMemo(() => {
     if (!relatedProducts) return [];
 
     // If it's an object with products property
-    if (typeof relatedProducts === 'object' && relatedProducts.products && Array.isArray(relatedProducts.products)) {
+    if (
+      typeof relatedProducts === "object" &&
+      relatedProducts.products &&
+      Array.isArray(relatedProducts.products)
+    ) {
       return relatedProducts.products;
     }
 
@@ -22,7 +27,7 @@ const RecommendedProduct: React.FC<RecommendedProductProps> = ({ relatedProducts
     }
 
     // Fallback for unexpected formats
-    console.warn('Unexpected relatedProducts format:', relatedProducts);
+    console.warn("Unexpected relatedProducts format:", relatedProducts);
     return [];
   }, [relatedProducts]);
 
@@ -40,34 +45,53 @@ const RecommendedProduct: React.FC<RecommendedProductProps> = ({ relatedProducts
         </h2>
       </div>
       <div className="flex justify-between gap-4 py-4">
-         {productsArray.slice(0, 6).map((product: { _id: string; image: string; name: string; categoryName: string; displayPrice: number; regularPrice: any; numReviews: number; rating: number; }, index: any) => {
-          const productId = product._id || `dummy-${index}`;
-          const image = product.image || "/shock-absorber.svg";
-          const name = product.name || "Product Name";
-          const category = product.categoryName || "CATEGORY";
-          const salesPrice = product.displayPrice || 0;
-          const regularPrice = product.regularPrice;
-          const discount = regularPrice && salesPrice 
-            ? Math.round(((regularPrice - salesPrice) / regularPrice) * 100)
-            : undefined;
-          const numReviews = product.numReviews || 0;
-          const rating = product.rating || 0;
+        {productsArray
+          .slice(0, 6)
+          .map(
+            (
+              product: {
+                _id: string;
+                image: string;
+                name: string;
+                categoryName: string;
+                displayPrice: number;
+                regularPrice: any;
+                numReviews: number;
+                rating: number;
+              },
+              index: any,
+            ) => {
+              const productId = product._id || `dummy-${index}`;
+              const image = product.image || "/shock-absorber.svg";
+              const name = product.name || "Product Name";
+              const category = product.categoryName || "CATEGORY";
+              const salesPrice = product.displayPrice || 0;
+              const regularPrice = product.regularPrice;
+              const discount =
+                regularPrice && salesPrice
+                  ? Math.round(
+                      ((regularPrice - salesPrice) / regularPrice) * 100,
+                    )
+                  : undefined;
+              const numReviews = product.numReviews || 0;
+              const rating = product.rating || 0;
 
-          return (
-            <ProductCard
-              key={productId}
-              productId={productId}
-              image={image}
-              title={name}
-              category={category}
-              price={`₦${salesPrice.toLocaleString()}`}
-              oldPrice={regularPrice ? `₦${regularPrice.toLocaleString()}` : undefined}
-              discount={discount ? `-${discount}%` : undefined}
-              numReviews={numReviews}
-              rating={rating}
-            />
-          );
-        })}
+              return (
+                <ProductCard
+                  key={productId}
+                  productId={productId}
+                  image={image}
+                  title={name}
+                  category={category}
+                  displayPrice={product.displayPrice}
+                  regularPrice={product.regularPrice}
+                  discount={discount ? `-${discount}%` : undefined}
+                  numReviews={numReviews}
+                  rating={rating}
+                />
+              );
+            },
+          )}
       </div>
     </div>
   );

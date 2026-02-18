@@ -18,10 +18,13 @@ const FeaturedProducts = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [lastAddedProduct, setLastAddedProduct] = useState<{ id: string, name: string } | null>(null);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const featProducts = useAppSelector(
-    (state) => state.products.featuredProducts ?? []
+    (state) => state.products.featuredProducts ?? [],
   );
 
   const loading = useAppSelector((state) => state.products.loading);
@@ -32,7 +35,7 @@ const FeaturedProducts = () => {
 
   // Extract unique display names from featured products
   const uniqueCategories = Array.from(
-    new Set(featProducts.map((product) => product.categoryName))
+    new Set(featProducts.map((product) => product.categoryName)),
   ).filter(Boolean); // remove null/undefined if any
 
   // filter featured products by active categoryName
@@ -41,7 +44,7 @@ const FeaturedProducts = () => {
     : featProducts;
 
   const handleAddToCart = async (productId: string, productName: string) => {
-    const product = featProducts.find(p => p._id === productId);
+    const product = featProducts.find((p) => p._id === productId);
 
     if (!product) {
       return;
@@ -56,19 +59,21 @@ const FeaturedProducts = () => {
       displayPrice: product.displayPrice,
       regularPrice: product.regularPrice,
       brand: {
-        _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, '-')}`,
-        name: product.brandName
+        _id: `brand-${product.brandName?.toLowerCase().replace(/\s+/g, "-")}`,
+        name: product.brandName,
       },
-      maker: product.brandName
+      maker: product.brandName,
     };
 
     try {
       setAddingProductId(productId);
-      await dispatch(addProductToCart({
-        productId,
-        quantity: 1,
-        productData
-      })).unwrap();
+      await dispatch(
+        addProductToCart({
+          productId,
+          quantity: 1,
+          productData,
+        }),
+      ).unwrap();
 
       // Show success modal
       setLastAddedProduct({ id: productId, name: productName });
@@ -82,7 +87,7 @@ const FeaturedProducts = () => {
   const handleViewCart = () => {
     setShowSuccessModal(false);
     // Navigate to cart page
-    window.location.href = '/cart';
+    window.location.href = "/cart";
   };
 
   const handleCloseModal = () => {
@@ -138,7 +143,7 @@ const FeaturedProducts = () => {
         <div>
           {loading ? (
             <div className="flex justify-center items-center h-[400px]">
-              <LoaderSpinner txt="Featured Products"/>
+              <LoaderSpinner txt="Featured Products" />
             </div>
           ) : (
             <Swiper
@@ -163,32 +168,20 @@ const FeaturedProducts = () => {
                 const formattedDiscount = `${Math.round(discount)}%`;
                 return (
                   <SwiperSlide key={product._id}>
-                      <ProductCard
-                        productId={product._id}
-                        image={product.image}
-                        title={product.name}
-                        category={product.category}
-                        rating={product.rating}
-                        price={`₦${product.displayPrice.toLocaleString(
-                          "en-NG",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}`}
-                        oldPrice={`₦${product.regularPrice.toLocaleString(
-                          "en-NG",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}`}
-                        discount={formattedDiscount}
-                        numReviews={product.numReviews}
-                        onAddToCart={handleAddToCart}
-                        cartLoading={addingProductId !== null}
-                        addingProductId={addingProductId}
-                      />
+                    <ProductCard
+                      productId={product._id}
+                      image={product.image}
+                      title={product.name}
+                      category={product.categoryName}
+                      rating={product.rating}
+                      displayPrice={product.displayPrice}
+                      regularPrice={product.regularPrice}
+                      discount={formattedDiscount}
+                      numReviews={product.numReviews}
+                      onAddToCart={handleAddToCart}
+                      cartLoading={addingProductId !== null}
+                      addingProductId={addingProductId}
+                    />
                   </SwiperSlide>
                 );
               })}

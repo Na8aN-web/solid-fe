@@ -56,7 +56,6 @@ const Checkout: React.FC = () => {
     message: "",
   });
 
-
   enum DeliveryType {
     FastDelivery = "fast-delivery",
     StandardDelivery = "standard-delivery",
@@ -105,7 +104,8 @@ const Checkout: React.FC = () => {
     // Check authentication
     // const token =
     //   localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const token =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
 
     if (!token) {
       // Store redirect intent
@@ -140,7 +140,7 @@ const Checkout: React.FC = () => {
     if (paymentLink) {
       // Redirect to payment gateway or show payment modal
       window.open(paymentLink, "_blank");
-      window.open(paymentLink, '_blank');
+      window.open(paymentLink, "_blank");
 
       // Optional: Track payment initiation
       console.log("Payment initiated, redirecting to:", paymentLink);
@@ -184,11 +184,12 @@ const Checkout: React.FC = () => {
     const regularDiscount = subtotal * 0.2; // Your existing 20% discount
     const totalDiscount = regularDiscount + couponDiscountAmount;
 
-
     // const selectedDelivery = deliveryTypes.find(
     //   (d) => d.type === selectedDeliveryType,
     // );
-    const selectedDelivery = deliveryTypes.find(d => d.type === selectedDeliveryType);
+    const selectedDelivery = deliveryTypes.find(
+      (d) => d.type === selectedDeliveryType,
+    );
     const deliveryFee = selectedDelivery ? selectedDelivery.price : 0;
     const total = subtotal - totalDiscount + deliveryFee;
 
@@ -237,7 +238,10 @@ const Checkout: React.FC = () => {
     }
 
     if (!userId) {
-      showAlert("User ID not found. Please log in again.", "Authentication Error");
+      showAlert(
+        "User ID not found. Please log in again.",
+        "Authentication Error",
+      );
       return;
     }
 
@@ -247,10 +251,12 @@ const Checkout: React.FC = () => {
         userId: userId,
       }),
     );
-    dispatch(applyCoupon({
-      code: couponCode.trim(),
-      userId: userId
-    }));
+    dispatch(
+      applyCoupon({
+        code: couponCode.trim(),
+        userId: userId,
+      }),
+    );
   };
 
   const handleRemoveCoupon = () => {
@@ -272,7 +278,10 @@ const Checkout: React.FC = () => {
       return;
     }
     if (!userId) {
-      showAlert("User ID not found. Please log in again.", "Authentication Error");
+      showAlert(
+        "User ID not found. Please log in again.",
+        "Authentication Error",
+      );
       return;
     }
 
@@ -431,9 +440,7 @@ const Checkout: React.FC = () => {
               </button>
             </div>
 
-            <p className="text-gray-700 mb-6">
-              {alertModal.message}
-            </p>
+            <p className="text-gray-700 mb-6">{alertModal.message}</p>
 
             <button
               onClick={() => setAlertModal({ ...alertModal, show: false })}
@@ -536,10 +543,11 @@ const Checkout: React.FC = () => {
                     {addresses.map((address) => (
                       <div
                         key={address._id}
-                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedAddress?._id === address._id
-                          ? "border-primary bg-blue-50"
-                          : "border-gray-200 hover:border-primary"
-                          }`}
+                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                          selectedAddress?._id === address._id
+                            ? "border-primary bg-blue-50"
+                            : "border-gray-200 hover:border-primary"
+                        }`}
                         onClick={() => handleAddressSelect(address._id)}
                       >
                         <div className="flex items-center gap-2 mb-2">
@@ -584,9 +592,10 @@ const Checkout: React.FC = () => {
                     key={deliveryType.type}
                     className={`
                       border rounded-lg p-4 cursor-pointer transition-all duration-300
-                      ${selectedDeliveryType === deliveryType.type
-                        ? "border-[#003366]"
-                        : "border-[#E3E6EA] hover:border-blue-300"
+                      ${
+                        selectedDeliveryType === deliveryType.type
+                          ? "border-[#003366]"
+                          : "border-[#E3E6EA] hover:border-blue-300"
                       }
                     `}
                     onClick={() => handleDeliveryTypeSelect(deliveryType.type)}
@@ -595,9 +604,10 @@ const Checkout: React.FC = () => {
                       <div
                         className={`
                           w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3
-                          ${selectedDeliveryType === deliveryType.type
-                            ? "border-[#003366] bg-[#003366] text-white"
-                            : "border-[#E3E6EA]"
+                          ${
+                            selectedDeliveryType === deliveryType.type
+                              ? "border-[#003366] bg-[#003366] text-white"
+                              : "border-[#E3E6EA]"
                           }
                         `}
                       >
@@ -607,10 +617,11 @@ const Checkout: React.FC = () => {
                       </div>
                       <div className="flex justify-between w-full">
                         <h3
-                          className={`font-normal text-sm ${selectedDeliveryType === deliveryType.type
-                            ? "text-customBrown"
-                            : "text-[#5E5E5E]"
-                            }`}
+                          className={`font-normal text-sm ${
+                            selectedDeliveryType === deliveryType.type
+                              ? "text-customBrown"
+                              : "text-[#5E5E5E]"
+                          }`}
                         >
                           ₦{deliveryType.price.toLocaleString()}{" "}
                           <span className="inline-block bg-gray-200 h-2 w-2 mb-[2px] rounded-full"></span>{" "}
@@ -626,10 +637,11 @@ const Checkout: React.FC = () => {
                       </div>
                     </div>
                     <p
-                      className={`text-sm mt-2 pl-8 ${selectedDeliveryType === deliveryType.type
-                        ? "text-[#003366]"
-                        : "text-[#5E5E5E]"
-                        }`}
+                      className={`text-sm mt-2 pl-8 ${
+                        selectedDeliveryType === deliveryType.type
+                          ? "text-[#003366]"
+                          : "text-[#5E5E5E]"
+                      }`}
                     >
                       {deliveryType.description}
                     </p>
@@ -765,8 +777,6 @@ const Checkout: React.FC = () => {
                   className={`border h-12 px-10 w-full rounded-lg ${
                     couponDiscount ? "bg-green-50" : "bg-[#FFF8EE]"
                   } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
-                  className={`border h-12 px-10 w-full rounded-lg ${couponDiscount ? 'bg-green-50' : 'bg-[#FFF8EE]'
-                    } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
                 <button
                   onClick={handleApplyCoupon}
