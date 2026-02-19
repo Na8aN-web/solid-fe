@@ -6,19 +6,20 @@ export interface User {
   lastName: string;
   phoneNumber: string;
   email: string;
-  companyName: string;
+  companyName?: string;
   role: string;
 }
 
 export interface RecentlyViewedProduct {
-    productId: string;
-  }
+  productId: string;
+}
 
 export interface userState {
-    users: User[];           // for "get all users"
-    user: User | null;       // for "get user by ID", "update user"
-    loading: boolean;
-    error: string | null;
-    totalUsers: number;      // for "get total user count"
-    recentlyViewed: Product[]; // to track recently viewed users
-  }
+  users: User[]; // for "get all users"
+  user: User | null; // for "get user by ID", "update user"
+  loading: boolean;
+   userLoading: boolean,
+  error: string | null;
+  totalUsers: number; // for "get total user count"
+  recentlyViewed: Product[]; // to track recently viewed users
+}

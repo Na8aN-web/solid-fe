@@ -1,72 +1,88 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
 import { setUser } from "../../../../store/slices/authSlice";
 import ionwarning from "../../../../assets/ion_warning.svg";
 import annoucement from "../../../../assets/announcement.svg";
 import { Link } from "react-router-dom";
 import { fetchUserKYC } from "../../../../store/slices/kycSlice";
+import LoaderSpinner from "../../../../components/LoaderSpinner";
+import {
+  clearUser,
+  getUserById,
+  updateUser,
+} from "../../../../store/slices/userSlice";
 
 type UserProfile = {
   firstName?: string;
   lastName?: string;
-  name?: string;
+  companyName?: string;
   phoneNumber: string;
   emailAddress: string;
-  userType?: 'Indivdual' | 'Wholesaler';
 };
 
 const Profile = () => {
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
-  const { userKYC, loading } = useAppSelector((state) => state.kyc);
 
-  // Modal states
+  const { user: authUser } = useAppSelector((state) => state.auth);
+  const { user: profileUser, userLoading } = useAppSelector(
+    (state) => state.user,
+  );
+
+  const { userKYC } = useAppSelector((state) => state.kyc);
+
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    phoneNumber: "",
+    emailAddress: "",
+  });
+
+  const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // State to track which field is being edited
-  const [editingField, setEditingField] = useState<keyof UserProfile | null>(
-    null
-  );
-  const isWholesaler = !user?.firstName && !user?.lastName && user?.name;
+  const isWholesaler = authUser?.role === "Wholesaler";
 
-
-  // Initialize state with Redux user data
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    name: user?.name || "",
-    phoneNumber: user?.phoneNumber || user?.phone || "",
-    emailAddress: user?.email || user?.emailAddress || "",
-    userType: isWholesaler ? 'Wholesaler' : 'Indivdual'
-  });
-
-  // Update local state when Redux user data changes
   useEffect(() => {
-    if (user) {
-      const isWholesaler = !user.firstName && !user.lastName && user.name;
+    if (authUser?._id) {
+      dispatch(clearUser());
+      dispatch(getUserById(authUser._id));
+    }
+  }, [authUser?._id, dispatch]);
+
+  // Sync form with backend user
+  useEffect(() => {
+    if (profileUser) {
       setUserProfile({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        name: user.name || "",
-        phoneNumber: user.phoneNumber || user.phone || "",
-        emailAddress: user.email || user.emailAddress || "",
-        userType: isWholesaler ? 'Wholesaler' : 'Indivdual'
+        firstName: profileUser.firstName || "",
+        lastName: profileUser.lastName || "",
+        companyName: profileUser.companyName || "",
+        phoneNumber: profileUser.phoneNumber || "",
+        emailAddress: profileUser.email || "",
       });
     }
-  }, [user]);
+  }, [profileUser]);
 
   useEffect(() => {
     dispatch(fetchUserKYC());
   }, [dispatch]);
 
-  const latestKYC = Array.isArray(userKYC) ? userKYC[0] : userKYC;
+  const latestKYC = useMemo(() => {
+    if (!Array.isArray(userKYC)) return userKYC;
 
-  const isKYCCompleted = latestKYC?.status === 'Approved';
-  const isKYCPending = latestKYC?.status === 'Pending' || latestKYC?.status === 'Flagged';
-  const isKYCRejected = latestKYC?.status === 'Rejected';
-  const hasNoKYC = !latestKYC;
+    return [...userKYC].sort(
+      (a, b) =>
+        new Date(b.createdAt ?? 0).getTime() -
+        new Date(a.createdAt ?? 0).getTime(),
+    )[0];
+  }, [userKYC]);
+
+  const isKYCCompleted = latestKYC?.status === "Approved";
+  const isKYCPending =
+    latestKYC?.status === "Pending" || latestKYC?.status === "Flagged";
+  const isKYCRejected = latestKYC?.status === "Rejected";
 
   const getKYCStatusMessage = () => {
     if (isKYCCompleted) {
@@ -86,14 +102,14 @@ const Profile = () => {
       return {
         color: "bg-green-100 border-green-300 text-green-800",
         icon: "✅",
-        showVerifyButton: false
+        showVerifyButton: false,
       };
     }
     if (isKYCPending) {
       return {
         color: "bg-blue-100 border-blue-300 text-blue-800",
         icon: "⏳",
-        showVerifyButton: false
+        showVerifyButton: false,
       };
     }
     if (isKYCRejected) {
@@ -102,7 +118,7 @@ const Profile = () => {
         icon: "❌",
         showVerifyButton: true,
         buttonText: "Resubmit Documents",
-        buttonLink: "/kyc-resubmit"
+        buttonLink: "/kyc-resubmit",
       };
     }
     return {
@@ -110,44 +126,44 @@ const Profile = () => {
       icon: annoucement,
       showVerifyButton: true,
       buttonText: "Verify Documents",
-      buttonLink: "/kyc-form"
+      buttonLink: "/kyc-form",
     };
   };
 
   const statusInfo = getKYCStatusInfo();
 
   const handleEdit = (field: keyof UserProfile, value: string) => {
-    setUserProfile((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setUserProfile((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFieldClick = (field: keyof UserProfile) => {
-    setEditingField(field);
-  };
+  const handleSave = async () => {
+    if (!authUser?._id || isSaving) return;
 
-  const handleFieldBlur = () => {
-    setEditingField(null);
-  };
+    try {
+      setIsSaving(true);
 
-  const handleDoneClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setEditingField(null);
-  };
+      const payload = {
+        firstName: isWholesaler ? undefined : userProfile.firstName,
+        lastName: isWholesaler ? undefined : userProfile.lastName,
+        phoneNumber: userProfile.phoneNumber,
+        email: userProfile.emailAddress,
+        companyName: isWholesaler ? userProfile.companyName : undefined,
+        role: authUser.role,
+      };
 
-  const handleKeyDown = (e: React.KeyboardEvent, field: keyof UserProfile) => {
-    if (e.key === "Enter") {
-      setEditingField(null);
-    }
-    if (e.key === "Escape") {
-      // Reset to original value and stop editing
-      setUserProfile((prev) => ({
-        ...prev,
-        [field]: user?.[field as keyof typeof user] || "",
-      }));
-      setEditingField(null);
+      const updatedUser = await dispatch(
+        updateUser({ id: authUser._id, data: payload }),
+      ).unwrap();
+
+      // Sync auth slice so navbar etc update
+      dispatch(setUser(updatedUser));
+
+      setShowSuccessModal(true);
+    } catch (error) {
+      setErrorMessage("Failed to update profile.");
+      setShowErrorModal(true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -160,110 +176,48 @@ const Profile = () => {
     setErrorMessage("");
   };
 
-  const handleSave = async () => {
-    try {
-      // Update Redux state
-      const updatedUser = {
-        ...user,
-        firstName: userProfile.firstName,
-        lastName: userProfile.lastName,
-        name: userProfile.name,
-        phoneNumber: userProfile.phoneNumber,
-        phone: userProfile.phoneNumber,
-        email: userProfile.emailAddress,
-        emailAddress: userProfile.emailAddress,
-      };
-
-      dispatch(setUser(updatedUser));
-      
-      // Show success modal instead of alert
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      // Show error modal instead of alert
-      setErrorMessage("Failed to update profile. Please try again.");
-      setShowErrorModal(true);
-    }
-  };
-
   // Get user initials for avatar
   const getInitials = () => {
-    if (userProfile.userType === 'Wholesaler') {
-      return userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "W";
+    if (isWholesaler) {
+      const name = userProfile.companyName || profileUser?.companyName || "";
+      return name ? name.charAt(0).toUpperCase() : "W";
     }
-
-    const firstName = userProfile.firstName || user?.firstName || "";
-    return `${firstName.charAt(0)}`.toUpperCase();
+    const first = userProfile.firstName || "";
+    return first ? first.charAt(0).toUpperCase() : "U";
   };
 
-  // Get display name
   const getDisplayName = () => {
-    if (userProfile.userType === 'Wholesaler') {
-      return userProfile.name || user?.name || "Wholesaler";
-    }
-    return userProfile.firstName || user?.firstName || "User";
+    if (isWholesaler) return userProfile.companyName || "Wholesaler";
+    return userProfile.firstName || "User";
   };
 
-
-  // Render editable field
   const renderEditableField = (
     field: keyof UserProfile,
     label: string,
-    type: string = "text"
+    type = "text",
   ) => {
-    // Skip firstName and lastName fields for wholesalers
-    if (userProfile.userType === 'Wholesaler' && (field === 'firstName' || field === 'lastName')) {
+    if (isWholesaler && (field === "firstName" || field === "lastName"))
       return null;
-    }
-
-    // Skip name field for normal users
-    if (userProfile.userType === 'Indivdual' && field === 'name') {
-      return null;
-    }
-
-    const isEditing = editingField === field;
-    const value = userProfile[field] || "";
+    if (!isWholesaler && field === "companyName") return null;
 
     return (
       <div className="flex justify-between items-center">
         <div className="flex-1">
-          <p className="text-[#827E7E] text-sm pb-2">{label}</p>
-          {isEditing ? (
-            <input
-              type={type}
-              value={value}
-              onChange={(e) => handleEdit(field, e.target.value)}
-              onBlur={handleFieldBlur}
-              onKeyDown={(e) => handleKeyDown(e, field)}
-              className="font-medium bg-transparent border-b-2 border-primary focus:outline-none focus:border-primary w-full pb-1"
-              autoFocus
-              placeholder={`Enter ${label.toLowerCase()}`}
-            />
-          ) : (
-            <p
-              className="font-medium cursor-pointer hover:text-primary transition-colors py-1 border-b border-transparent hover:border-gray-200"
-            //   onClick={() => handleFieldClick(field)}
-            >
-              {value || "Not set - Click to add"}
-            </p>
-          )}
+          <label className="text-[#827E7E] text-sm pb-2">{label}</label>
+          <input
+            type={type}
+            value={userProfile[field] || ""}
+            onChange={(e) => handleEdit(field, e.target.value)}
+            className="font-medium bg-transparent border-b border-transparent focus:border-primary focus:outline-none w-full pb-1 transition-colors"
+          />
         </div>
-        <button
-          className="bg-[#D9D9D9] px-4 py-2 rounded-md text-gray-600 hover:bg-gray-300 transition-colors ml-4"
-          onClick={() => {
-            if (isEditing) {
-              //   handleDoneClick(e);
-              setEditingField(null);
-            } else {
-              handleFieldClick(field);
-            }
-          }}
-        >
-          {isEditing ? "Done" : "Edit"}
-        </button>
       </div>
     );
   };
+
+  if (!authUser || userLoading || !profileUser) {
+    return <LoaderSpinner txt="profile" />;
+  }
 
   return (
     <div className="w-full">
@@ -273,10 +227,10 @@ const Profile = () => {
 
       {/* KYC Status Banner */}
       {!isKYCCompleted && (
-        <div className={`w-full border ${statusInfo.color} rounded-[8px] flex items-center p-4 gap-3 mb-6`}>
-          <span className="text-xs">
-            {getKYCStatusMessage()}
-          </span>
+        <div
+          className={`w-full border ${statusInfo.color} rounded-[8px] flex items-center p-4 gap-3 mb-6`}
+        >
+          <span className="text-xs">{getKYCStatusMessage()}</span>
         </div>
       )}
 
@@ -289,9 +243,7 @@ const Profile = () => {
             <span className="text-lg">{getDisplayName()}</span>
             <div className="flex gap-1 items-center">
               <img src={ionwarning} alt="Warning" className="w-4 h-4" />
-              <p className="text-sm">
-                {latestKYC?.status || "Unverified"}
-              </p>
+              <p className="text-sm">{latestKYC?.status || "Unverified"}</p>
             </div>
           </div>
         </div>
@@ -310,23 +262,25 @@ const Profile = () => {
       </div>
 
       <div className="bg-white p-6 rounded-b-lg border border-gray-200 space-y-6">
-        {userProfile.userType === 'Wholesaler'
-          ? renderEditableField("name", "Business Name")
-          : (
-            <>
-              {renderEditableField("firstName", "First Name")}
-              {renderEditableField("lastName", "Last Name")}
-            </>
-          )
-        }
+        {isWholesaler ? (
+          renderEditableField("companyName", "Business Name")
+        ) : (
+          <>
+            {renderEditableField("firstName", "First Name")}
+            {renderEditableField("lastName", "Last Name")}
+          </>
+        )}
+
         {renderEditableField("phoneNumber", "Phone Number", "tel")}
         {renderEditableField("emailAddress", "Email Address", "email")}
 
         <button
-          className="w-full bg-primary text-white py-4 rounded-lg text-base font-medium mt-4"
+          disabled={isSaving}
+          className={`w-full py-4 rounded-lg text-base font-medium mt-4 transition-opacity
+    ${isSaving ? "bg-gray-400 cursor-not-allowed" : "bg-primary text-white"}`}
           onClick={handleSave}
         >
-          Save
+          {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
 
@@ -334,26 +288,26 @@ const Profile = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/50"
             onClick={handleCloseSuccessModal}
           />
-          
+
           {/* Modal Content */}
           <div className="relative bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <svg 
-                  className="h-6 w-6 text-green-600" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="h-6 w-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth="2" 
-                    d="M5 13l4 4L19 7" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
                   />
                 </svg>
               </div>
@@ -378,32 +332,30 @@ const Profile = () => {
       {showErrorModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/50"
             onClick={handleCloseErrorModal}
           />
-          
+
           {/* Modal Content */}
           <div className="relative bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg 
-                  className="h-6 w-6 text-red-600" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth="2" 
-                    d="M6 18L18 6M6 6l12 12" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Error
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Error</h3>
               <p className="text-gray-600 mb-6">
                 {errorMessage || "An error occurred. Please try again."}
               </p>

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { toggleProductInWishlist } from "../../../../store/slices/wishlistSlice";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
+import { IoCartOutline } from "react-icons/io5";
 
 // Modal Component
 interface ModalProps {
@@ -121,6 +122,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
     React.SVGProps<SVGSVGElement>
   >;
   const FavouriteFilled = MdFavorite as unknown as React.FC<
+    React.SVGProps<SVGSVGElement>
+  >;
+  const CartOutline = IoCartOutline as unknown as React.FC<
     React.SVGProps<SVGSVGElement>
   >;
 
@@ -269,11 +273,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <button
             onClick={handleAddToCart}
             disabled={isCartLoading}
-            className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full transition-colors ${
-              isCartLoading
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "hover:bg-blue-50 hover:border-2"
-            }`}
+            className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full transition-colors text-sm font-semibold
+    ${
+      isCartLoading
+        ? "bg-gray-400 text-gray-200 cursor-not-allowed border-gray-400"
+        : "bg-white text-primary hover:bg-primary hover:text-white"
+    }
+  `}
           >
             {isCartLoading ? (
               <>
@@ -301,10 +307,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </>
             ) : (
               <>
-                <img src="/blue-cart.svg" alt="cart" className="w-4 h-4" />
-                <span className="text-sm text-primary font-normal">
-                  Add to cart
-                </span>
+                {/* <img src="/blue-cart.svg" alt="cart" className="w-4 h-4" /> */}
+                <CartOutline className="h-4 w-4 font-semibold " />
+                <span className="">Add to cart</span>
               </>
             )}
           </button>

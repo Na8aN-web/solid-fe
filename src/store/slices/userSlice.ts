@@ -7,6 +7,7 @@ const initialState: userState = {
   users: [],
   user: null,
   loading: false,
+  userLoading: false,
   error: null,
   totalUsers: 0,
   recentlyViewed: [],
@@ -24,7 +25,7 @@ export const getAllUsers = createAsyncThunk<
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
-        error.response.data.message || "Failed to fetch users"
+        error.response.data.message || "Failed to fetch users",
       );
     }
     return rejectWithValue("Network error. Please try again.");
@@ -43,7 +44,7 @@ export const getTotalUserCount = createAsyncThunk<
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
-        error.response.data.message || "Failed to fetch user count"
+        error.response.data.message || "Failed to fetch user count",
       );
     }
     return rejectWithValue("Network error. Please try again.");
@@ -58,11 +59,11 @@ export const getUserById = createAsyncThunk<
 >("users/getUserById", async (id, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.get(`/users/${id}`);
-    return response.data;
+    return response.data.user;
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
-        error.response.data.message || "Failed to fetch user"
+        error.response.data.message || "Failed to fetch user",
       );
     }
     return rejectWithValue("Network error. Please try again.");
@@ -77,11 +78,11 @@ export const updateUser = createAsyncThunk<
 >("users/updateUser", async ({ id, data }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.put(`/users/${id}`, data);
-    return response.data;
+    return response.data.user;
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
-        error.response.data.message || "Failed to update user"
+        error.response.data.message || "Failed to update user",
       );
     }
     return rejectWithValue("Network error. Please try again.");
@@ -100,7 +101,7 @@ export const deleteUser = createAsyncThunk<
   } catch (error: any) {
     if (error.response) {
       return rejectWithValue(
-        error.response.data.message || "Failed to delete user"
+        error.response.data.message || "Failed to delete user",
       );
     }
     return rejectWithValue("Network error. Please try again.");
@@ -120,7 +121,7 @@ export const addRecentlyViewed = createAsyncThunk<
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data?.message ||
-        "Failed to add product to recently viewed"
+        "Failed to add product to recently viewed",
     );
   }
 });
@@ -136,7 +137,7 @@ export const getRecentlyViewed = createAsyncThunk<
     return response.data;
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Failed to get recently viewed products"
+      error.response?.data?.message || "Failed to get recently viewed products",
     );
   }
 });
@@ -184,15 +185,15 @@ const userSlice = createSlice({
 
     // get user by id
     builder.addCase(getUserById.pending, (state) => {
-      state.loading = true;
+      state.userLoading = true;
       state.error = null;
     });
     builder.addCase(getUserById.fulfilled, (state, action) => {
-      state.loading = false;
+      state.userLoading = false;
       state.user = action.payload;
     });
     builder.addCase(getUserById.rejected, (state, action) => {
-      state.loading = false;
+      state.userLoading = false;
       state.error = action.payload || "Something went wrong";
     });
 
