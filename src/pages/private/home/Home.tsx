@@ -122,7 +122,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* New Arrivals */}
+        {/* New Arrival */}
         <NewArrivals />
 
         {/* PROMOTIONAL TRIO (REUSABLE) */}
