@@ -81,6 +81,7 @@ interface ProductCardProps {
   discount?: string;
   reviews?: string;
   productId?: string;
+  stockStatus?: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -92,6 +93,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   discount,
   reviews,
   productId,
+  stockStatus,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -103,11 +105,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [showCartModal, setShowCartModal] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [modalType, setModalType] = useState<"login" | "success" | "error">("login");
+  const [modalType, setModalType] = useState<"login" | "success" | "error">(
+    "login",
+  );
+
+    const isOutOfStock = stockStatus === "Out of Stock";
 
   // Check if product is in wishlist
   const isInWishlist = wishlist?.products?.some(
-    (product) => product._id === productId
+    (product) => product._id === productId,
   );
 
   const handleProductClick = () => {
@@ -124,7 +130,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation when clicking wishlist button
-    
+
     if (!isAuthenticated) {
       setModalType("login");
       setModalMessage("Please login to add items to wishlist");
@@ -140,7 +146,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           setModalMessage(
             result.action === "added"
               ? "Added to wishlist successfully!"
-              : "Removed from wishlist successfully!"
+              : "Removed from wishlist successfully!",
           );
           setShowWishlistModal(true);
         })
@@ -155,7 +161,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation when clicking add to cart
-    
+
     if (!isAuthenticated) {
       setModalType("login");
       setModalMessage("Please login to add items to cart");
@@ -177,7 +183,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             displayPrice: parseFloat(price.replace(/[₦,]/g, "")),
             categoryName: category,
           },
-        })
+        }),
       )
         .unwrap()
         .then(() => {
@@ -200,18 +206,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   // Reusable Modal Component
-  const Modal = ({ 
-    isOpen, 
-    onClose, 
-    title, 
-    message, 
+  const Modal = ({
+    isOpen,
+    onClose,
+    title,
+    message,
     type,
-    showLoginButton = false 
-  }: { 
-    isOpen: boolean; 
-    onClose: () => void; 
-    title: string; 
-    message: string; 
+    showLoginButton = false,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    message: string;
     type: "login" | "success" | "error";
     showLoginButton?: boolean;
   }) => {
@@ -222,24 +228,54 @@ const ProductCard: React.FC<ProductCardProps> = ({
         case "success":
           return (
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-              <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              <svg
+                className="h-6 w-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
           );
         case "error":
           return (
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-              <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-6 w-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </div>
           );
         case "login":
           return (
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
-              <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="h-6 w-6 text-yellow-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
             </div>
           );
@@ -248,12 +284,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          onClick={onClose}
+        ></div>
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
             {getIcon()}
             <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {title}
+              </h3>
               <p className="text-sm text-gray-500 mb-6">{message}</p>
             </div>
             <div className="flex justify-center gap-3">
@@ -325,10 +366,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
               {discount}
             </span>
           )}
-          <img 
-            src={image} 
-            alt={title} 
-            className="px-4 w-32 m-auto lg:w-36 object-contain" 
+          <img
+            src={image}
+            alt={title}
+            className="px-4 w-32 m-auto lg:w-36 object-contain"
           />
         </div>
         <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal uppercase">
@@ -361,7 +402,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           >
             <img src="/blue-cart.svg" alt="cart" />
             <span className="text-[11px] sm:text-sm text-primary font-normal">
-              Add to cart
+              {/* Add to cart */}
+              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
             </span>
           </button>
           <button

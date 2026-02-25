@@ -73,6 +73,7 @@ export interface ProductState {
 }
 
 export interface NewProduct {
+  stockStatus: string | undefined;
   numReviews: number | undefined;
   discount: any;
   category: string;

@@ -21,6 +21,7 @@ export interface Product {
   discount?: number;
   numReviews?: number;
   displayPrice?: number;
+  stockStatus?: string;
 }
 
 const NewArrivals = () => {
@@ -36,6 +37,8 @@ const NewArrivals = () => {
   const newArrivals = useAppSelector(
     (state) => state.products.newArrivals ?? [],
   );
+
+  console.log("New Arrivals Data:", newArrivals);
 
   const loading = useAppSelector((state) => state.products.loading);
 
@@ -192,6 +195,7 @@ const NewArrivals = () => {
                       onAddToCart={handleAddToCart}
                       cartLoading={addingProductId !== null}
                       addingProductId={addingProductId}
+                      stockStatus={product.stockStatus}
                     />
                   </SwiperSlide>
                 );

@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
 import { FaStar } from "react-icons/fa";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
-import {useTrackProductView} from "../../../../hooks/useTrackProductView";
+import { useTrackProductView } from "../../../../hooks/useTrackProductView";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +32,6 @@ const ProductDetails = () => {
   const [quantityCount, setQuantityCount] = useState<number>(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalProductName, setModalProductName] = useState<string>("");
-  const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
 
   // Redux State
   useEffect(() => {
@@ -53,10 +52,10 @@ const ProductDetails = () => {
   }, [dispatch, id]);
 
   const product = useAppSelector(
-    (state) => state.products.product as Product | null
+    (state) => state.products.product as Product | null,
   );
   const relatedProducts = useAppSelector(
-    (state) => state.products.relatedProducts
+    (state) => state.products.relatedProducts,
   );
   const loading = useAppSelector((state) => state.products.loading);
   const error = useAppSelector((state) => state.products.error);
@@ -94,7 +93,7 @@ const ProductDetails = () => {
       pricePerUnit: Math.floor(pricePerUnit),
       regularPricePerUnit: Math.floor(regularPricePerUnit),
     };
-  }, [product?.salesPrice, product?.regularPrice, quantityCount]);
+  }, [quantityCount, product]);
 
   // Star Rating Calculation
   const starCount = useMemo(() => {
@@ -137,7 +136,7 @@ const ProductDetails = () => {
           category: product.category,
           maker: product.brand?.name || "Unknown",
         },
-      })
+      }),
     ).then(() => {
       setModalProductName(product.name);
       setShowSuccessModal(true);
@@ -163,7 +162,7 @@ const ProductDetails = () => {
           category: product.category,
           maker: product.brand?.name || "Unknown",
         },
-      })
+      }),
     ).then(() => {
       navigate("/cart");
     });
@@ -197,23 +196,11 @@ const ProductDetails = () => {
   const {
     name = "Unknown Product",
     brand,
-    category,
     briefDescription = "No description available",
-    fullDescription = "No description available",
     images = [],
-    packageSize,
-    weight = 0,
-    stockStatus = "Unknown",
     quantityInStock = 0,
-    rating = 0,
     numReviews = 0,
-    material = "Unknown",
-    minStock = 0,
-    minOrderQuantity = 1,
     store = "Unknown Store",
-    sku = "N/A",
-    partNumber = "N/A",
-    units = "units",
   } = product;
 
   return (
@@ -278,6 +265,7 @@ const ProductDetails = () => {
               onBuyNow={handleBuyNow}
               onAddToCart={handleAddToCart}
               cartLoading={cartLoading}
+              stockStatus={product.stockStatus}
             />
           </div>
         </div>
@@ -562,98 +550,115 @@ const DeliveryReturnsSection = () => (
   </div>
 );
 
-const OrderForm = ({ prices, onBuyNow, onAddToCart, cartLoading }: any) => (
-  <form className="py-6">
-    <div className="flex flex-col border-b pb-6">
-      <label htmlFor="address" className="text-sm text-customGray3 pb-3">
-        Choose your location
-      </label>
-      <div className="relative">
-        <img
-          src="/address-marker-outline.svg"
-          alt=""
-          className="w-4 absolute left-4 top-4"
-        />
-        <input
-          type="text"
-          id="address"
-          placeholder="Enter an address"
-          className="border h-12 px-10 w-full rounded-lg"
-        />
-        <img
-          src="/standardarrow.svg"
-          alt=""
-          className="w-4 absolute right-4 bottom-4"
-        />
+const OrderForm = ({
+  prices,
+  onBuyNow,
+  onAddToCart,
+  cartLoading,
+  stockStatus,
+}: any) => {
+  const isOutOfStock = stockStatus === "Out of Stock";
+  return (
+    <form className="py-6">
+      <div className="flex flex-col border-b pb-6">
+        <label htmlFor="address" className="text-sm text-customGray3 pb-3">
+          Choose your location
+        </label>
+        <div className="relative">
+          <img
+            src="/address-marker-outline.svg"
+            alt=""
+            className="w-4 absolute left-4 top-4"
+          />
+          <input
+            type="text"
+            id="address"
+            placeholder="Enter an address"
+            className="border h-12 px-10 w-full rounded-lg"
+          />
+          <img
+            src="/standardarrow.svg"
+            alt=""
+            className="w-4 absolute right-4 bottom-4"
+          />
+        </div>
       </div>
-    </div>
 
-    <div className="flex flex-col border-b pb-6 pt-6">
-      <label htmlFor="coupon" className="text-sm text-customGray3 pb-3">
-        COUPON
-      </label>
-      <div className="relative">
-        <img
-          src="/address-marker-outline.svg"
-          alt=""
-          className="w-4 absolute left-4 top-4"
-        />
-        <input
-          type="text"
-          id="coupon"
-          placeholder="Enter Code Here"
-          className="border h-12 px-10 w-full rounded-lg"
-        />
+      <div className="flex flex-col border-b pb-6 pt-6">
+        <label htmlFor="coupon" className="text-sm text-customGray3 pb-3">
+          COUPON
+        </label>
+        <div className="relative">
+          <img
+            src="/address-marker-outline.svg"
+            alt=""
+            className="w-4 absolute left-4 top-4"
+          />
+          <input
+            type="text"
+            id="coupon"
+            placeholder="Enter Code Here"
+            className="border h-12 px-10 w-full rounded-lg"
+          />
+          <button
+            type="button"
+            className="absolute right-4 bottom-4 text-xs text-customGold"
+          >
+            APPLY COUPON
+          </button>
+        </div>
+      </div>
+
+      <div className="pt-6 pb-4 border-b space-y-2">
+        <div className="flex justify-between">
+          <p className="text-sm text-customGray3">Subtotal:</p>
+          <span className="text-sm text-customBrown font-meduim">
+            ₦{prices.subtotal}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <p className="text-sm text-customGray3">Discount:</p>
+          <span className="text-sm text-green-600 font-meduim">
+            -₦{prices.totalDiscount}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <p className="text-sm text-customBrown font-medium">Total</p>
+          <span className="text-base text-customBrown font-meduim">
+            ₦{prices.total}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6">
         <button
           type="button"
-          className="absolute right-4 bottom-4 text-xs text-customGold"
+          onClick={onBuyNow}
+          disabled={cartLoading || isOutOfStock}
+          className="bg-primary rounded-lg h-[60px] w-full text-base text-white disabled:bg-gray-400"
         >
-          APPLY COUPON
+          {isOutOfStock
+            ? "Out of Stock"
+            : cartLoading
+              ? "Processing..."
+              : "Buy Now"}
+        </button>
+        <button
+          type="button"
+          onClick={onAddToCart}
+          disabled={cartLoading || isOutOfStock}
+          className="bg-white border border-primary rounded-lg h-[60px] w-full text-base text-primary disabled:bg-gray-100 disabled:text-gray-400"
+        >
+          {isOutOfStock
+            ? "Out of Stock"
+            : cartLoading
+              ? "Adding..."
+              : "Add to Cart"}
         </button>
       </div>
-    </div>
-
-    <div className="pt-6 pb-4 border-b space-y-2">
-      <div className="flex justify-between">
-        <p className="text-sm text-customGray3">Subtotal:</p>
-        <span className="text-sm text-customBrown font-meduim">
-          ₦{prices.subtotal}
-        </span>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-sm text-customGray3">Discount:</p>
-        <span className="text-sm text-green-600 font-meduim">
-          -₦{prices.totalDiscount}
-        </span>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-sm text-customBrown font-medium">Total</p>
-        <span className="text-base text-customBrown font-meduim">
-          ₦{prices.total}
-        </span>
-      </div>
-    </div>
-
-    <div className="space-y-6 pt-6">
-      <button
-        type="button"
-        onClick={onBuyNow}
-        disabled={cartLoading}
-        className="bg-primary rounded-lg h-[60px] w-full text-base text-white disabled:bg-gray-400"
-      >
-        {cartLoading ? "Processing..." : "Buy Now"}
-      </button>
-      <button
-        type="button"
-        onClick={onAddToCart}
-        disabled={cartLoading}
-        className="bg-white border border-primary rounded-lg h-[60px] w-full text-base text-primary disabled:bg-gray-100 disabled:text-gray-400"
-      >
-        {cartLoading ? "Adding..." : "Add to Cart"}
-      </button>
-    </div>
-  </form>
-);
+    </form>
+  );
+};
 
 const ProductTabs = ({
   activeTab,
@@ -675,10 +680,11 @@ const ProductTabs = ({
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`text-sm font-medium py-2 capitalize ${activeTab === tab
-              ? "text-primary border-b-2 border-primary"
-              : "text-shadeGray"
-              }`}
+            className={`text-sm font-medium py-2 capitalize ${
+              activeTab === tab
+                ? "text-primary border-b-2 border-primary"
+                : "text-shadeGray"
+            }`}
           >
             {tab === "specs" ? "Specifications" : tab}
           </button>
@@ -854,7 +860,7 @@ const SpecsSection = ({ product, isOpen, setIsOpen }: any) => (
                       <span>{header}</span>
                     </div>
                   </th>
-                )
+                ),
               )}
             </tr>
           </thead>

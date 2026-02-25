@@ -9,7 +9,6 @@ import ProductCard from "./ProductCard";
 import { featuredProducts } from "../../../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import LoaderSpinner from "../../../../components/LoaderSpinner";
-import { Link } from "react-router-dom";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
 import SuccessModal from "../../../../components/SuccessModal";
 
@@ -181,6 +180,7 @@ const FeaturedProducts = () => {
                       onAddToCart={handleAddToCart}
                       cartLoading={addingProductId !== null}
                       addingProductId={addingProductId}
+                       stockStatus={product.stockStatus} 
                     />
                   </SwiperSlide>
                 );

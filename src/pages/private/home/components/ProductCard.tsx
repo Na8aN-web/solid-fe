@@ -73,6 +73,7 @@ interface ProductCardProps {
   onAddToCart?: (productId: string, productName: string) => void;
   cartLoading?: boolean;
   addingProductId?: string | null;
+  stockStatus?: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -88,6 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart,
   cartLoading = false,
   addingProductId = null,
+  stockStatus,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -97,6 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+  const isOutOfStock = stockStatus === "Out of Stock";
 
   // Modal states
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -272,12 +275,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <div className="flex gap-3 pt-4">
           <button
             onClick={handleAddToCart}
-            disabled={isCartLoading}
+            disabled={isCartLoading || isOutOfStock}
+            //         className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full transition-colors text-sm font-semibold
+            // ${
+            //   isCartLoading
+            //     ? "bg-gray-400 text-gray-200 cursor-not-allowed border-gray-400"
+            //     : "bg-white text-primary hover:bg-primary hover:text-white"
+            // }
             className={`flex items-center justify-center gap-2 border rounded border-primary py-2 px-1 w-full transition-colors text-sm font-semibold
     ${
-      isCartLoading
-        ? "bg-gray-400 text-gray-200 cursor-not-allowed border-gray-400"
-        : "bg-white text-primary hover:bg-primary hover:text-white"
+      isOutOfStock
+        ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300"
+        : isCartLoading
+          ? "bg-gray-400 text-gray-200 cursor-not-allowed border-gray-400"
+          : "bg-white text-primary hover:bg-primary hover:text-white"
     }
   `}
           >
@@ -309,7 +320,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <>
                 {/* <img src="/blue-cart.svg" alt="cart" className="w-4 h-4" /> */}
                 <CartOutline className="h-4 w-4 font-semibold " />
-                <span className="">Add to cart</span>
+                <span className="">{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
               </>
             )}
           </button>
