@@ -139,7 +139,6 @@ const Checkout: React.FC = () => {
     if (paymentLink) {
       // Redirect to payment gateway or show payment modal
       window.open(paymentLink, "_blank");
-      window.open(paymentLink, "_blank");
 
       // Optional: Track payment initiation
       console.log("Payment initiated, redirecting to:", paymentLink);
@@ -157,6 +156,13 @@ const Checkout: React.FC = () => {
       dispatch(clearCheckoutError());
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddress) {
+      const defaultAddress = addresses.find((addr) => addr.isDefault) || addresses[0];
+      dispatch(setSelectedAddress(defaultAddress));
+    }
+  }, [addresses, selectedAddress, dispatch]);
 
   // Calculate totals with coupon discount
   const calculateTotals = () => {
@@ -228,6 +234,8 @@ const Checkout: React.FC = () => {
       message,
     });
   };
+
+
 
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) {
@@ -541,11 +549,10 @@ const Checkout: React.FC = () => {
                     {addresses.map((address) => (
                       <div
                         key={address._id}
-                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                          selectedAddress?._id === address._id
+                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedAddress?._id === address._id
                             ? "border-primary bg-blue-50"
                             : "border-gray-200 hover:border-primary"
-                        }`}
+                          }`}
                         onClick={() => handleAddressSelect(address._id)}
                       >
                         <div className="flex items-center gap-2 mb-2">
@@ -590,10 +597,9 @@ const Checkout: React.FC = () => {
                     key={deliveryType.type}
                     className={`
                       border rounded-lg p-4 cursor-pointer transition-all duration-300
-                      ${
-                        selectedDeliveryType === deliveryType.type
-                          ? "border-[#003366]"
-                          : "border-[#E3E6EA] hover:border-blue-300"
+                      ${selectedDeliveryType === deliveryType.type
+                        ? "border-[#003366]"
+                        : "border-[#E3E6EA] hover:border-blue-300"
                       }
                     `}
                     onClick={() => handleDeliveryTypeSelect(deliveryType.type)}
@@ -602,10 +608,9 @@ const Checkout: React.FC = () => {
                       <div
                         className={`
                           w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3
-                          ${
-                            selectedDeliveryType === deliveryType.type
-                              ? "border-[#003366] bg-[#003366] text-white"
-                              : "border-[#E3E6EA]"
+                          ${selectedDeliveryType === deliveryType.type
+                            ? "border-[#003366] bg-[#003366] text-white"
+                            : "border-[#E3E6EA]"
                           }
                         `}
                       >
@@ -615,11 +620,10 @@ const Checkout: React.FC = () => {
                       </div>
                       <div className="flex justify-between w-full">
                         <h3
-                          className={`font-normal text-sm ${
-                            selectedDeliveryType === deliveryType.type
+                          className={`font-normal text-sm ${selectedDeliveryType === deliveryType.type
                               ? "text-customBrown"
                               : "text-[#5E5E5E]"
-                          }`}
+                            }`}
                         >
                           ₦{deliveryType.price.toLocaleString()}{" "}
                           <span className="inline-block bg-gray-200 h-2 w-2 mb-[2px] rounded-full"></span>{" "}
@@ -635,11 +639,10 @@ const Checkout: React.FC = () => {
                       </div>
                     </div>
                     <p
-                      className={`text-sm mt-2 pl-8 ${
-                        selectedDeliveryType === deliveryType.type
+                      className={`text-sm mt-2 pl-8 ${selectedDeliveryType === deliveryType.type
                           ? "text-[#003366]"
                           : "text-[#5E5E5E]"
-                      }`}
+                        }`}
                     >
                       {deliveryType.description}
                     </p>
@@ -772,9 +775,8 @@ const Checkout: React.FC = () => {
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   disabled={couponLoading || !!couponDiscount}
-                  className={`border h-12 px-10 w-full rounded-lg ${
-                    couponDiscount ? "bg-green-50" : "bg-[#FFF8EE]"
-                  } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
+                  className={`border h-12 px-10 w-full rounded-lg ${couponDiscount ? "bg-green-50" : "bg-[#FFF8EE]"
+                    } text-base disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
                 <button
                   onClick={handleApplyCoupon}

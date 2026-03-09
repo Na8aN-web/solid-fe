@@ -1,8 +1,6 @@
-import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./LandingNavbar";
 // import Footer from "./Footer";
-
 
 const PrivateLayout = () => {
   return (

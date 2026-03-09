@@ -85,9 +85,9 @@ const SearchFilter: React.FC<Props> = ({
     >
       <div className="flex w-full">
         {/* Category Select */}
-        <div className="relative w-full md:w-[250px] hidden md:inline-block">
+        {/* <div className="relative w-full md:w-[250px] hidden md:inline-block">
           <select
-            className="appearance-none pl-[16px] h-12 border rounded-l-lg pr-[40px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-transparent text-white"
+            className="appearance-none pl-[16px] h-12 border rounded-l-lg pr-[40px] outline-none focus:ring-0 focus:border-gray-300 w-full bg-transparent text-black"
             value={selectedCatId}
             onChange={handleCategoryChange}
             disabled={loading}
@@ -109,7 +109,7 @@ const SearchFilter: React.FC<Props> = ({
             alt="arrow-down"
             className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3"
           />
-        </div>
+        </div> */}
 
         {/* Search input */}
         <div className="relative w-full">
@@ -119,7 +119,7 @@ const SearchFilter: React.FC<Props> = ({
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && goSearch()}
-            className="border h-12 w-full p-2 rounded-lg md:rounded-l-none text-base pl-12 bg-transparent text-white placeholder:text-white outline-none focus:ring-0 focus:border-gray-300"
+            className="border h-12 w-full p-2 rounded-lg md:rounded-l-none text-base pl-12 bg-transparent text-black placeholder:text-gray-500 outline-none focus:ring-0 focus:border-gray-300"
             placeholder="Search by part name"
           />
         </div>

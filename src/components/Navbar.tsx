@@ -157,7 +157,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="border h-12 w-full p-2 rounded-lg lg:rounded-r-lg text-sm pl-12 lg:hidden"
+            className="border h-12 w-full p-2 rounded-lg lg:rounded-r-lg text-sm pl-12 text-black lg:hidden"
             placeholder="Search by part name of OEM number"
           />
         </div>
