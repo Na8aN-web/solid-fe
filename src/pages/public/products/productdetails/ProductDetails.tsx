@@ -246,7 +246,7 @@ const ProductDetails = () => {
 
               <DeliveryWarrantyInfo />
 
-              <SellerInformation store={store} />
+              {/* <SellerInformation store={store} /> */}
             </div>
           </div>
 
@@ -439,27 +439,27 @@ const InfoRow = ({
   </div>
 );
 
-const SellerInformation = ({ store }: { store: string }) => (
-  <div className="space-y-3">
-    <h3 className="text-sm text-shadeGray">Seller Information</h3>
-    <div className="border rounded-xl flex justify-between items-center py-4 px-2">
-      <div className="flex gap-2">
-        <img src="/warehouse.svg" alt="Store" />
-        <div>
-          <p className="text-sm text-customBrown">{store}</p>
-          <p className="text-xs text-shadeGray">200 successful sales</p>
-        </div>
-      </div>
-      <div className="border border-primary py-2 px-4 rounded-lg">
-        <p className="text-primary text-xs">Visit Store</p>
-      </div>
-    </div>
-    <div className="space-y-3">
-      <ProgressBar label="Product Quality" percentage={80} />
-      <ProgressBar label="Delivery Rate" percentage={80} />
-    </div>
-  </div>
-);
+// const SellerInformation = ({ store }: { store: string }) => (
+//   <div className="space-y-3">
+//     <h3 className="text-sm text-shadeGray">Seller Information</h3>
+//     <div className="border rounded-xl flex justify-between items-center py-4 px-2">
+//       <div className="flex gap-2">
+//         <img src="/warehouse.svg" alt="Store" />
+//         <div>
+//           <p className="text-sm text-customBrown">{store}</p>
+//           <p className="text-xs text-shadeGray">200 successful sales</p>
+//         </div>
+//       </div>
+//       <div className="border border-primary py-2 px-4 rounded-lg">
+//         <p className="text-primary text-xs">Visit Store</p>
+//       </div>
+//     </div>
+//     <div className="space-y-3">
+//       <ProgressBar label="Product Quality" percentage={80} />
+//       <ProgressBar label="Delivery Rate" percentage={80} />
+//     </div>
+//   </div>
+// );
 
 const ProgressBar = ({
   label,

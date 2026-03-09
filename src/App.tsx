@@ -23,7 +23,7 @@ import Checkout from "./pages/private/shoppingcart/Checkout";
 import PrivateRoute from "./components/PrivateRoute";
 import { useAppDispatch } from "./store/hooks";
 import { setUser, setAuthenticated } from "./store/slices/authSlice";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ContactUs from "./pages/public/contactus/ContactUs";
 import RateReviewProduct from "./pages/private/accountinformation/components/rating/RateReviewProduct";
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
