@@ -68,10 +68,9 @@ const SearchFilter: React.FC<Props> = ({
   const goSearch = () => {
     const q = searchValue.trim();
     const qs = new URLSearchParams();
-
     if (q) qs.set("name", q);
+    if (selectedCatId) qs.set("categoryId", selectedCatId);
     qs.set("page", "1");
-
     navigate(`/products?${qs.toString()}`);
     onSearchDone?.();
   };

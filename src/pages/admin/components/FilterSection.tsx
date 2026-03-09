@@ -1,6 +1,6 @@
 // FilterSection.tsx
 import React from "react";
-import { ChevronDown, ArrowUpDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 type FilterOption = {
   label: string;

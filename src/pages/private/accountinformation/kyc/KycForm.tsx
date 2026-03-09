@@ -25,7 +25,7 @@ interface FormData {
 }
 
 const KycForm = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  // const dispatch = useDispatch<AppDispatch>();
 
   const [formData, setFormData] = useState<FormData>({
     businessName: "",
@@ -85,10 +85,6 @@ const KycForm = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  {errors.termsAccepted && (
-  <p className="text-red-500 text-sm mt-1">You must accept the terms and conditions</p>
-)}
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -347,9 +343,9 @@ const KycForm = () => {
                 className="ml-2 block text-sm text-gray-900"
               >
                 Yes, I understand and agree with Solid Spare Parts'
-                <a href="#" className="text-primary hover:underline ml-1">
+                <button className="text-primary hover:underline ml-1">
                   Terms of Service
-                </a>
+                </button>
                 , including the Privacy Policy*
               </label>
             </div>

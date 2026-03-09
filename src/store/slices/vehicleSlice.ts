@@ -1,7 +1,7 @@
 // src/store/slices/vehicleTypeSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
-import { VehicleType, VehicleTypesResponse, VehicleTypeState } from "../../services/vehicles/types";
+import { VehicleType, VehicleTypeState } from "../../services/vehicles/types";
 
 const initialState: VehicleTypeState = {
     vehicleTypes: [],

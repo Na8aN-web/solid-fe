@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { Package, Truck } from "lucide-react";
-import { Order, OrderListProps } from "../types/order";
+import { OrderListProps } from "../types/order";
 import { orderData } from "../data/orderData";
-import OrderStatsCard from "./OrderStatsCard";
 import OrderListItem from "./OrderListItem";
 import SearchInput from "./SearchInput";
 

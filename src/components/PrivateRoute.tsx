@@ -8,7 +8,7 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps): JSX.Element => {
-  const { isAuthenticated, user } = useAppSelector(
+  const { isAuthenticated } = useAppSelector(
     (state: RootState) => state.auth
   );
   

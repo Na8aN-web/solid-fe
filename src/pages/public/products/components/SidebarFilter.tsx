@@ -221,7 +221,7 @@ const SidebarFilter: React.FC<SidebarFilterProps> = ({
         categories: [categoryFromUrl],
       });
     }
-  }, [window.location.search]);
+  }, [filters, onFilterChange]);
 
   // Handler for category checkbox changes
   const handleCategoryChange = (categoryId: string, checked: boolean) => {

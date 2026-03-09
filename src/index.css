@@ -21,3 +21,11 @@
     @apply bg-red-500 text-white p-2 rounded;
   }
 }
+
+.hero-perspective-grid {
+  background-image: url("/src/assets/perspectiveGrid.svg");
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  max-height: 360px;
+}

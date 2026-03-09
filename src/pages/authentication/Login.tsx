@@ -12,13 +12,12 @@ interface LoginData {
 }
 
 const Login = () => {
-  const [formData, setFormData] = useState<LoginData>({
-    email: "",
-    phoneNumber: "",
-    password: "",
-  });
+  // const [formData, setFormData] = useState<LoginData>({
+  //   email: "",
+  //   phoneNumber: "",
+  //   password: "",
+  // });
   const [showPassword, setShowPassword] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 

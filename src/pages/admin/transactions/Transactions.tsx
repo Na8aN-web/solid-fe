@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Search, ChevronDown, ArrowUpDown, Upload } from "lucide-react";
+import { Search, Upload } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";
 import Pagination from "../components/Pagination";
@@ -97,7 +97,7 @@ const Transactions: React.FC = () => {
 
       return matchesSearch && matchesStatus && matchesUserType && matchesPaymentMethod;
     });
-  }, [allTransactions, searchTerm, selectedStatus]);
+  }, [allTransactions, searchTerm, selectedStatus, selectedPaymentMethod, selectedUserType]);
 
   // Paginate filtered transaction
   const paginatedTransaction = useMemo(() => {

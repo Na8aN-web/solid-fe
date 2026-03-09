@@ -1,40 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "../../../../store";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../../../store";
 import { fetchCategories } from "../../../../store/slices/categoriesSlice";
 import SearchFilter from "../../../../components/SearchFilter";
 import LandingNavbar from "../../../../components/LandingNavbar";
-import "./Hero.css";
 
 interface HeroSectionProps {
   onSearch?: (query: string, category: string) => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>("All Categories");
-  const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
+  // const [searchQuery, setSearchQuery] = useState<string>("");
+  // const [selectedCategory, setSelectedCategory] =
+  //   useState<string>("All Categories");
+  // const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { categories, loading, error } = useSelector(
-    (state: RootState) => state.categories
-  );
+  // const { categories, loading, error } = useSelector(
+  //   (state: RootState) => state.categories
+  // );
 
   // Fetch categories on component mount
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  const handleSearch = () => {
-    if (onSearch) {
-      onSearch(searchQuery, selectedCategory);
-    }
-  };
+  // const handleSearch = () => {
+  //   if (onSearch) {
+  //     onSearch(searchQuery, selectedCategory);
+  //   }
+  // };
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    setIsCategoryOpen(false);
-  };
+  // const handleCategorySelect = (category: string) => {
+  //   setSelectedCategory(category);
+  //   setIsCategoryOpen(false);
+  // };
 
   return (
     <div

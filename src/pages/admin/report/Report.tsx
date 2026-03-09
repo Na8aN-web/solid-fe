@@ -7,11 +7,6 @@ import {
   Package,
   ShoppingCart,
   Download,
-  Eye,
-  ShoppingBag,
-  CreditCard,
-  CheckCircle,
-  Info,
   UserPlus,
 } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
@@ -78,29 +73,29 @@ interface PieChartProps {
 }
 
 const ReportsAnalytics: FC = () => {
-  const [salesTab, setSalesTab] = useState<string>("Quarterly");
-  const [statsTab, setStatsTab] = useState<string>("Jan - Dec 2024");
-  const [retentionTab, setRetentionTab] = useState<string>("Jan - Dec 2024");
-  const [transactionTab, setTransactionTab] =
-    useState<string>("Jan - Dec 2024");
+  // const [salesTab, setSalesTab] = useState<string>("Quarterly");
+  // const [statsTab, setStatsTab] = useState<string>("Jan - Dec 2024");
+  // const [retentionTab, setRetentionTab] = useState<string>("Jan - Dec 2024");
+  // const [transactionTab, setTransactionTab] =
+  //   useState<string>("Jan - Dec 2024");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const pieSize = isDesktop ? 300 : 200;
 
-  // Sample data for charts
-  const salesData: SalesDataPoint[] = [
-    { month: "Dec 01", orders: 45, sales: 42 },
-    { month: "Dec 04", orders: 52, sales: 48 },
-    { month: "Dec 07", orders: 35, sales: 38 },
-    { month: "Dec 10", orders: 48, sales: 45 },
-    { month: "Dec 13", orders: 65, sales: 68 },
-    { month: "Dec 16", orders: 42, sales: 45 },
-    { month: "Dec 19", orders: 38, sales: 35 },
-    { month: "Dec 22", orders: 55, sales: 58 },
-    { month: "Dec 25", orders: 48, sales: 45 },
-    { month: "Dec 28", orders: 62, sales: 65 },
-    { month: "Dec 31", orders: 58, sales: 55 },
-  ];
+  // // Sample data for charts
+  // const salesData: SalesDataPoint[] = [
+  //   { month: "Dec 01", orders: 45, sales: 42 },
+  //   { month: "Dec 04", orders: 52, sales: 48 },
+  //   { month: "Dec 07", orders: 35, sales: 38 },
+  //   { month: "Dec 10", orders: 48, sales: 45 },
+  //   { month: "Dec 13", orders: 65, sales: 68 },
+  //   { month: "Dec 16", orders: 42, sales: 45 },
+  //   { month: "Dec 19", orders: 38, sales: 35 },
+  //   { month: "Dec 22", orders: 55, sales: 58 },
+  //   { month: "Dec 25", orders: 48, sales: 45 },
+  //   { month: "Dec 28", orders: 62, sales: 65 },
+  //   { month: "Dec 31", orders: 58, sales: 55 },
+  // ];
 
   const statsData: StatsDataPoint[] = [
     { month: "Jan", revenue: 45, expenses: 35 },
@@ -117,12 +112,12 @@ const ReportsAnalytics: FC = () => {
     { month: "Dec", revenue: 88, expenses: 65 },
   ];
 
-  const conversionData: ConversionDataPoint[] = [
-    { step: "Product views", value: 5495, percentage: 100 },
-    { step: "Add to cart", value: 3495, percentage: 64 },
-    { step: "Checkout initiated", value: 2495, percentage: 45 },
-    { step: "Completed purchases", value: 1495, percentage: 27 },
-  ];
+  // const conversionData: ConversionDataPoint[] = [
+  //   { step: "Product views", value: 5495, percentage: 100 },
+  //   { step: "Add to cart", value: 3495, percentage: 64 },
+  //   { step: "Checkout initiated", value: 2495, percentage: 45 },
+  //   { step: "Completed purchases", value: 1495, percentage: 27 },
+  // ];
 
   const MetricCard: FC<MetricCardProps> = ({
     title,
@@ -151,107 +146,107 @@ const ReportsAnalytics: FC = () => {
     </div>
   );
 
-  const TabButton: FC<TabButtonProps> = ({ active, onClick, children }) => (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-        active
-          ? "bg-white text-primary"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-      }`}
-    >
-      {children}
-    </button>
-  );
+  // const TabButton: FC<TabButtonProps> = ({ active, onClick, children }) => (
+  //   <button
+  //     onClick={onClick}
+  //     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+  //       active
+  //         ? "bg-white text-primary"
+  //         : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+  //     }`}
+  //   >
+  //     {children}
+  //   </button>
+  // );
 
-  const LineChart: FC<ChartProps> = ({ data, height = 200 }) => (
-    <div className="relative" style={{ height }}>
-      <svg width="100%" height="100%" viewBox="0 0 600 200">
-        {[0, 25, 50, 75, 100].map((y) => (
-          <line
-            key={y}
-            x1="0"
-            y1={y * 2}
-            x2="600"
-            y2={y * 2}
-            stroke="#f3f4f6"
-            strokeWidth="1"
-          />
-        ))}
+  // const LineChart: FC<ChartProps> = ({ data, height = 200 }) => (
+  //   <div className="relative" style={{ height }}>
+  //     <svg width="100%" height="100%" viewBox="0 0 600 200">
+  //       {[0, 25, 50, 75, 100].map((y) => (
+  //         <line
+  //           key={y}
+  //           x1="0"
+  //           y1={y * 2}
+  //           x2="600"
+  //           y2={y * 2}
+  //           stroke="#f3f4f6"
+  //           strokeWidth="1"
+  //         />
+  //       ))}
 
-        <path
-          d={`M ${(data as SalesDataPoint[]).map((d, i) => `${i * 60 + 30},${200 - d.orders * 2}`).join(" L ")}`}
-          fill="none"
-          stroke="#10b981"
-          strokeWidth="2"
-        />
+  //       <path
+  //         d={`M ${(data as SalesDataPoint[]).map((d, i) => `${i * 60 + 30},${200 - d.orders * 2}`).join(" L ")}`}
+  //         fill="none"
+  //         stroke="#10b981"
+  //         strokeWidth="2"
+  //       />
 
-        <path
-          d={`M ${(data as SalesDataPoint[]).map((d, i) => `${i * 60 + 30},${200 - d.sales * 2}`).join(" L ")}`}
-          fill="none"
-          stroke="#3b82f6"
-          strokeWidth="2"
-        />
+  //       <path
+  //         d={`M ${(data as SalesDataPoint[]).map((d, i) => `${i * 60 + 30},${200 - d.sales * 2}`).join(" L ")}`}
+  //         fill="none"
+  //         stroke="#3b82f6"
+  //         strokeWidth="2"
+  //       />
 
-        {(data as SalesDataPoint[]).map((d, i) => (
-          <g key={i}>
-            <circle
-              cx={i * 60 + 30}
-              cy={200 - d.orders * 2}
-              r="3"
-              fill="#10b981"
-            />
-            <circle
-              cx={i * 60 + 30}
-              cy={200 - d.sales * 2}
-              r="3"
-              fill="#3b82f6"
-            />
-          </g>
-        ))}
-      </svg>
+  //       {(data as SalesDataPoint[]).map((d, i) => (
+  //         <g key={i}>
+  //           <circle
+  //             cx={i * 60 + 30}
+  //             cy={200 - d.orders * 2}
+  //             r="3"
+  //             fill="#10b981"
+  //           />
+  //           <circle
+  //             cx={i * 60 + 30}
+  //             cy={200 - d.sales * 2}
+  //             r="3"
+  //             fill="#3b82f6"
+  //           />
+  //         </g>
+  //       ))}
+  //     </svg>
 
-      <div className="flex items-center gap-4 mt-4">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-          <span className="text-sm text-gray-600">Orders</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span className="text-sm text-gray-600">Sales</span>
-        </div>
-      </div>
-    </div>
-  );
+  //     <div className="flex items-center gap-4 mt-4">
+  //       <div className="flex items-center gap-2">
+  //         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+  //         <span className="text-sm text-gray-600">Orders</span>
+  //       </div>
+  //       <div className="flex items-center gap-2">
+  //         <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+  //         <span className="text-sm text-gray-600">Sales</span>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
 
-  const DonutChart: FC<DonutChartProps> = ({ percentage, label, color }) => (
-    <div className="relative w-32 h-32">
-      <svg width="128" height="128" viewBox="0 0 128 128">
-        <circle
-          cx="64"
-          cy="64"
-          r="56"
-          fill="none"
-          stroke="#f3f4f6"
-          strokeWidth="16"
-        />
-        <circle
-          cx="64"
-          cy="64"
-          r="56"
-          fill="none"
-          stroke={color}
-          strokeWidth="16"
-          strokeDasharray={`${(percentage / 100) * 351.86} 351.86`}
-          strokeDashoffset="0"
-          transform="rotate(-90 64 64)"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-gray-900">{label}</span>
-      </div>
-    </div>
-  );
+  // const DonutChart: FC<DonutChartProps> = ({ percentage, label, color }) => (
+  //   <div className="relative w-32 h-32">
+  //     <svg width="128" height="128" viewBox="0 0 128 128">
+  //       <circle
+  //         cx="64"
+  //         cy="64"
+  //         r="56"
+  //         fill="none"
+  //         stroke="#f3f4f6"
+  //         strokeWidth="16"
+  //       />
+  //       <circle
+  //         cx="64"
+  //         cy="64"
+  //         r="56"
+  //         fill="none"
+  //         stroke={color}
+  //         strokeWidth="16"
+  //         strokeDasharray={`${(percentage / 100) * 351.86} 351.86`}
+  //         strokeDashoffset="0"
+  //         transform="rotate(-90 64 64)"
+  //       />
+  //     </svg>
+  //     <div className="absolute inset-0 flex flex-col items-center justify-center">
+  //       <span className="text-lg font-bold text-gray-900">{label}</span>
+  //     </div>
+  //   </div>
+  // );
 
   const PieChart: FC<PieChartProps> = ({ data, size = 200 }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);

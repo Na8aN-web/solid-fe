@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import SidebarFilter from "./components/SidebarFilter";
 import ProductGrid from "./components/ProductGrid";
 import Recents from "./components/Recents";
@@ -38,17 +38,17 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   extraSection,
   pageTitle = "Products",
 }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const { search } = useLocation();
   const params = new URLSearchParams(search);
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  // const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const name = params.get("name");
   const dispatch = useAppDispatch();
   const { loading: cartLoading } = useAppSelector((state) => state.cart);
-  const { products, loading, error, currentPage, itemsPerPage, totalProducts } = useAppSelector((state) => state.products);
+  const { products, loading, currentPage, itemsPerPage, totalProducts } = useAppSelector((state) => state.products);
 
   const [filterLoading, setFilterLoading] = useState(false);
   const [activeFilterText, setActiveFilterText] = useState("");
@@ -264,7 +264,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
     };
 
     fetchInitialData();
-  }, [dispatch, search]);
+  }, [dispatch, search, itemsPerPage, sortOrder]);
 
   useEffect(() => {
     const params = new URLSearchParams(search);
@@ -303,12 +303,12 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   };
 
   const totalPages = Math.ceil(totalProducts / itemsPerPage);
-  const indexOfLastProduct = currentPage * itemsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
-  const currentProducts = products.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
+  // const indexOfLastProduct = currentPage * itemsPerPage;
+  // const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  // const currentProducts = products.slice(
+  //   indexOfFirstProduct,
+  //   indexOfLastProduct
+  // );
 
   const addToCart = (productId: string, quantity: number) => {
     dispatch(addProductToCart({ productId, quantity }))

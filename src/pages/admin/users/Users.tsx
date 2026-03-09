@@ -29,7 +29,7 @@ const Users: React.FC = () => {
     // const [currentPage, setCurrentPage] = useState(1);
     // const [searchTerm, setSearchTerm] = useState("");
     // const [selectedStatus, setSelectedStatus] = useState("All Status");
-    const itemsPerPage = 10;
+    // const itemsPerPage = 10;
   const dispatch = useAppDispatch();
 
   // --- UI state

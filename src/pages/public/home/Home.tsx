@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../../store";
 import { fetchCategories } from "../../../store/slices/categoriesSlice";
 import { fetchVehicleTypes } from "../../../store/slices/vehicleSlice";
 import HeroSection from "./components/Hero";
-import HowItWorks from "../howitworks/HowItWorks";
 import PopularCategories from "./components/PopularCategories";
 import WhyChooseSolidParts from "./components/WhyChooseSolid";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import Testimonial from "./components/Testimonial";
 import ManufacturersGrid from "./components/Manufacturers";
 import DealsOfTheDay from "./components/DealsOfTheDay";
@@ -18,14 +16,14 @@ import VehicleBlogPage from "./components/Blog";
 import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 // Import Swiper styles
-import "swiper/css";
-import "swiper/css/free-mode";
+// import "swiper/css";
+// import "swiper/css/free-mode";
 // import required modules
 import { Navigation, Grid } from "swiper/modules";
 import SectionHeading from "./components/SectionHeading";
 
 const Header = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
@@ -47,9 +45,9 @@ const Header = () => {
     dispatch(fetchVehicleTypes());
   }, [dispatch]);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  // const toggleDropdown = () => {
+  //   setIsDropdownOpen(!isDropdownOpen);
+  // };
 
   // Handle vehicle type click - redirect to products page with filter
   const handleVehicleTypeClick = (vehicleTypeId: string) => {
@@ -57,15 +55,15 @@ const Header = () => {
   };
 
   // Handle navigation for carousel buttons (optional functionality)
-  const handleNext = () => {
-    // You can implement carousel navigation logic here if needed
-    // console.log("Next vehicle types");
-  };
+  // const handleNext = () => {
+  //   // You can implement carousel navigation logic here if needed
+  //   // console.log("Next vehicle types");
+  // };
 
-  const handlePrev = () => {
-    // You can implement carousel navigation logic here if needed
-    // console.log("Previous vehicle types");
-  };
+  // const handlePrev = () => {
+  //   // You can implement carousel navigation logic here if needed
+  //   // console.log("Previous vehicle types");
+  // };
 
   return (
     <div>

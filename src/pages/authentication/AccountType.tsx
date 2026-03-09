@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
 import { useAppDispatch } from '../../store/hooks';
 import { setAccountType } from '../../store/slices/authSlice';
 
@@ -12,7 +11,6 @@ enum AccountType {
 
 const AccountTypeSelection: React.FC = () => {
   const [selectedType, setSelectedType] = useState<AccountType | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 

@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import Recents from "../../public/products/components/Recents";
 import { Outlet, useParams } from "react-router-dom";
 

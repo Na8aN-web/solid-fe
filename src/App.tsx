@@ -23,7 +23,7 @@ import Checkout from "./pages/private/shoppingcart/Checkout";
 import PrivateRoute from "./components/PrivateRoute";
 import { useAppDispatch } from "./store/hooks";
 import { setUser, setAuthenticated } from "./store/slices/authSlice";
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ContactUs from "./pages/public/contactus/ContactUs";
 import RateReviewProduct from "./pages/private/accountinformation/components/rating/RateReviewProduct";
 import AccountInformation from "./pages/private/accountinformation/components/AccountInformation";
@@ -60,7 +60,6 @@ import GoogleCallback from "./services/GoogleCallback";
 
 import { useAppSelector } from "./store/hooks";
 import { Navigate } from "react-router-dom";
-import Order from "./pages/private/accountinformation/components/orders/Orders";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -123,7 +122,7 @@ const UnauthorizedAccess: React.FC<UnauthorizedAccessProps> = ({
 const EmailVerificationRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { emailVerification, user } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
 
   // If user is already verified, redirect to home
   if (user?.verified) {
@@ -144,7 +143,6 @@ const DynamicLayout: React.FC = () => {
 function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Hide footer for all admin routes
   const shouldShowFooter = !location.pathname.startsWith("/admin");

@@ -3,7 +3,7 @@ import carTyre from "../../../assets/tyres.svg";
 import AdminLayout from "../components/AdminLayout";
 import remove from "../../../assets/cancel-rounded.svg";
 import modify from "../../../assets/modify.svg";
-import { Search, Plus, ArrowUpDown } from "lucide-react";
+import { Plus } from "lucide-react";
 import Profile from "./profile/Profile";
 import Password from "./password/Password";
 import AddNewUser from "../components/AddNewUser";

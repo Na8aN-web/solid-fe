@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import BusinessCard from "./components/BusinessCard";
@@ -21,7 +21,7 @@ interface StepsDataType {
 const BusinessInfo = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { submitting, error, userKYC } = useSelector((state: RootState) => state.kyc);
+  const { submitting, error } = useSelector((state: RootState) => state.kyc);
    const { user } = useSelector((state: RootState) => state.auth);
 
   const [businessCert, setBusinessCert] = useState<File | null>(null);
@@ -89,7 +89,7 @@ const BusinessInfo = () => {
     };
 
     try {
-      const result = await dispatch(submitKYC(kycData)).unwrap();
+      // const result = await dispatch(submitKYC(kycData)).unwrap();
 
       window.scrollTo({ top: 0, behavior: "smooth" });
       setIsCompleted(true);

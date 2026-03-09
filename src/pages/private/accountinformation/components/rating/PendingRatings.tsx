@@ -1,6 +1,5 @@
 import { Star } from "lucide-react";
-import React, { useState } from "react";
-import { FaStar } from "react-icons/fa";
+import { useState } from "react";
 
 // Define TypeScript interfaces
 interface Product {

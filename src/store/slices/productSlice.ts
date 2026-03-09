@@ -3,7 +3,6 @@ import {
   createSlice,
   createAsyncThunk,
   PayloadAction,
-  asyncThunkCreator,
 } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
 import {

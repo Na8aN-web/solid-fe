@@ -25,18 +25,18 @@ import {
 } from "../../../../store/slices/adminDashboardSlice";
 
 
-const handleEdit = (id: string) => {
-  // console.log("Editing product with ID:", id);
-};
+// const handleEdit = (id: string) => {
+//   // console.log("Editing product with ID:", id);
+// };
 
-const handleDelete = (id: string) => {
-  // console.log("Deleting product with ID:", id);
-};
+// const handleDelete = (id: string) => {
+//   // console.log("Deleting product with ID:", id);
+// };
 
 // product categories table
 const Categories = () => {
   const dispatch = useAppDispatch();
-  const { categories, loading, error } = useAppSelector(
+  const { categories } = useAppSelector(
     (s) => s.adminDashboard
   );
   const [editCategory, setEditCategory] = useState<ProductCategory | null>(
@@ -150,7 +150,7 @@ const Categories = () => {
 // brands table
 const Brands = () => {
   const dispatch = useAppDispatch();
-  const { brands, loading, error } = useAppSelector((s) => s.adminDashboard);
+  const { brands } = useAppSelector((s) => s.adminDashboard);
 
   const [editBrand, setEditBrand] = useState<ProductBrand | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -257,7 +257,7 @@ const Brands = () => {
 // vehicles table
 const Vehicles = () => {
   const dispatch = useAppDispatch();
-  const { vehicles, loading, error } = useAppSelector((s) => s.adminDashboard);
+  const { vehicles } = useAppSelector((s) => s.adminDashboard);
 
   const [editVehicle, setEditVehicle] = useState<ProductVehicleType | null>(
     null
@@ -377,7 +377,7 @@ const Vehicles = () => {
 
 const Departments = () => {
   const dispatch = useAppDispatch();
-  const { departments, loading, error } = useAppSelector((s) => s.adminDashboard);
+  const { departments } = useAppSelector((s) => s.adminDashboard);
   
 
   const [editDepartment, setEditDepartment] = useState<ProductDepartment | null>(null);

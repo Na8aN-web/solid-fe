@@ -11,12 +11,12 @@ interface TabData {
   label: string;
 }
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  oldPrice: number;
-}
+// interface Product {
+//   id: number;
+//   name: string;
+//   price: number;
+//   oldPrice: number;
+// }
 
 interface StepsDataType {
   [key: string]: Step[];
@@ -33,14 +33,14 @@ const HowItWorks: React.FC = () => {
     ];
 
     // Featured products data
-    const featuredProducts: Product[] = [
-        { id: 1, name: 'Shock Absorber', price: 182.00, oldPrice: 195.00 },
-        { id: 2, name: 'Fuel Pump', price: 269.00, oldPrice: 290.00 },
-        { id: 3, name: 'Micheline Tyres', price: 309.00, oldPrice: 330.00 },
-        { id: 4, name: 'Fuel Filter', price: 29.00, oldPrice: 35.00 },
-        { id: 5, name: 'Performance Exhaust System', price: 580.00, oldPrice: 610.00 },
-        { id: 6, name: 'Radiator', price: 259.00, oldPrice: 280.00 }
-    ];
+    // const featuredProducts: Product[] = [
+    //     { id: 1, name: 'Shock Absorber', price: 182.00, oldPrice: 195.00 },
+    //     { id: 2, name: 'Fuel Pump', price: 269.00, oldPrice: 290.00 },
+    //     { id: 3, name: 'Micheline Tyres', price: 309.00, oldPrice: 330.00 },
+    //     { id: 4, name: 'Fuel Filter', price: 29.00, oldPrice: 35.00 },
+    //     { id: 5, name: 'Performance Exhaust System', price: 580.00, oldPrice: 610.00 },
+    //     { id: 6, name: 'Radiator', price: 259.00, oldPrice: 280.00 }
+    // ];
 
     // Tab-specific steps
     const stepsData: StepsDataType = {
