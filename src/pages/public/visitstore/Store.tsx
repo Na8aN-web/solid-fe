@@ -1,13 +1,12 @@
-import { useState } from "react";
 import ProductPageLayout from "../products/ProductPageLayout";
 import { MapPin, Search } from "lucide-react";
 import { FaStar } from "react-icons/fa";
 
 const Store = () => {
-  const [rating, setRating] = useState<number | null>(4);
-  const [rateColor, setRateColor] = useState<number | null>(null);
+  const rating: number | null = 4;
+  const rateColor: number | null = null;
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <div>
       <section className="flex flex-col gap-6 lg:flex-row p-4 lg:gap-16 lg:px-16 bg-white lg:py-6">
@@ -47,14 +46,14 @@ const Store = () => {
               <p className="text-xs text-shadeGray">Product Quality</p>
               <span className="text-xs text-shadeGray">80%</span>
             </div>
-            <img src="/progressbar2.svg" alt="" className="w-full"/>
+            <img src="/progressbar2.svg" alt="" className="w-full" />
           </div>
           <div>
             <div className="flex justify-between pb-1">
               <p className="text-xs text-shadeGray">Delivery Rate</p>
               <span className="text-xs text-shadeGray">80%</span>
             </div>
-            <img src="/progressbar2.svg" alt="" className="w-full"/>
+            <img src="/progressbar2.svg" alt="" className="w-full" />
           </div>
 
           <div className="flex items-center gap-3">

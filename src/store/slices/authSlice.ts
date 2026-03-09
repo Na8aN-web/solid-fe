@@ -5,7 +5,6 @@ import {
   AuthResponse,
   LoginResponse,
   EmailVerificationResponse,
-  UserRole,
   accountTypeToUserRole,
 } from "../../services/auth/types";
 

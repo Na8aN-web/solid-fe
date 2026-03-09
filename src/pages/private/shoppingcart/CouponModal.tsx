@@ -1,5 +1,5 @@
 // components/CouponModal.tsx
-import React, { Fragment } from 'react';
+import React from 'react';
 
 interface CouponModalProps {
   isOpen: boolean;

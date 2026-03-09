@@ -1,5 +1,5 @@
 // pages/products.tsx
-import { useState, useEffect } from "react";
+
 import ProductPageLayout from "./ProductPageLayout";
 
 const ProductPage = () => {

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Search, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Search } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";
 import Pagination from "../components/Pagination";

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
@@ -9,9 +9,9 @@ import {
 
 const ChangeAddress = () => {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { addresses, loading } = useAppSelector((state) => state.address);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // const [editingId, setEditingId] = useState<string | null>(null);
   
   // Modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);

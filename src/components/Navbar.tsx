@@ -2,10 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../store/slices/authSlice";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
-import axiosInstance from "../services/api/axios";
-import { Category } from "../services/categories/types";
-import { useSelector } from "react-redux";
 import SearchFilter from "./SearchFilter";
+import { fetchCategories } from "../store/slices/categoriesSlice";
 
 interface NavProps {
   isMenuOpen: boolean;
@@ -23,10 +21,9 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const location = useLocation();
   const [isFixed, setIsFixed] = useState(false);
 
-  // NEW: categories
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [catLoading, setCatLoading] = useState(false);
-  const [selectedCat, setSelectedCat] = useState<string>("");
+  // const [categories, setCategories] = useState<Category[]>([]);
+  // const [catLoading, setCatLoading] = useState(false);
+  // const [selectedCat, setSelectedCat] = useState<string>("");
 
   // A) Clear search input whenever we leave /products
   useEffect(() => {
@@ -35,17 +32,15 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
     }
   }, [location.pathname]);
 
-  // D) search submit
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const q = searchValue.trim();
     if (!q) return;
-
-    const qs = new URLSearchParams();
-    qs.set("name", q);
-    if (selectedCat) qs.set("categoryId", selectedCat);
-    qs.set("page", "1");
-    navigate(`/products?${qs.toString()}`);
+    navigate(`/products?name=${q}&page=1`);
   };
 
   const getInitial = (name: string | undefined | null): string => {
@@ -168,11 +163,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         </div>
         {/* desktop */}
         <div className="hidden lg:flex w-full">
-          <SearchFilter
-            categoriesProp={categories}
-            loadingProp={catLoading}
-            onSearchDone={() => setIsMenuOpen(false)}
-          />
+          <SearchFilter onSearchDone={() => setIsMenuOpen(false)} />
 
           {/* User Options */}
           <div className="flex gap-4 items-center justify-end w-full">
@@ -238,7 +229,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                         setIsProfileOpen(false);
                       }}
                     >
-                      <img src="/profile.svg" className="w-4 h-4" />
+                      <img alt="profile" src="/profile.svg" className="w-4 h-4" />
                       Profile
                     </li>
                     <li
@@ -248,7 +239,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                         setIsProfileOpen(false);
                       }}
                     >
-                      <img src="/orders.svg" className="w-4 h-4" />
+                      <img alt="orders" src="/orders.svg" className="w-4 h-4" />
                       Orders
                     </li>
                     <li
@@ -258,7 +249,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                         setIsProfileOpen(false);
                       }}
                     >
-                      <img src="/favourite.svg" className="w-4 h-4" />
+                      <img alt="favourite" src="/favourite.svg" className="w-4 h-4" />
                       Saved Items
                     </li>
                     <li
@@ -268,7 +259,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                         setIsProfileOpen(false);
                       }}
                     >
-                      <img src="/track-orders.svg" className="w-4 h-4" />
+                      <img alt="track orders" src="/track-orders.svg" className="w-4 h-4" />
                       Track Order
                     </li>
                     <li
@@ -278,7 +269,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                         setIsProfileOpen(false);
                       }}
                     >
-                      <img src="/chat.svg" className="w-4 h-4" />
+                      <img alt="messages" src="/chat.svg" className="w-4 h-4" />
                       Messages
                     </li>
                     {userRole === "SubDistributor" && (
@@ -293,7 +284,7 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                       className="flex items-center gap-2 text-[#5E5E5E] cursor-pointer hover:text-red-600 border-t pt-2 mt-2"
                       onClick={handleLogOut}
                     >
-                      <img src="/logout-icon.png" className="w-4 h-4" />
+                      <img alt="log out" src="/logout-icon.png" className="w-4 h-4" />
                       Log out
                     </li>
                   </ul>
@@ -305,11 +296,10 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       </div>
       {/* mobile nav dropdown */}
       <section
-        className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen
-            ? "translate-y-0 opacity-100 visible"
-            : "-translate-y-10 opacity-0 invisible"
-        }`}
+        className={`fixed top-16 z-10 max-h-full pt-4 pb-40 overflow-y-auto bg-white w-full lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
+          ? "translate-y-0 opacity-100 visible"
+          : "-translate-y-10 opacity-0 invisible"
+          }`}
       >
         <div className="py-5 px-5">
           <div className="flex gap-3 items-center">

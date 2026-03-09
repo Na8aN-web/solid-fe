@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Search, Plus, ChevronDown, ArrowUpDown, Bell } from "lucide-react";
+import { Search, Plus, Bell } from "lucide-react";
 import carTyre from "../../../assets/tyres.svg";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";

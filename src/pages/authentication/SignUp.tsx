@@ -45,9 +45,7 @@ const SignupScreen: React.FC = () => {
     });
 
     const [showPassword, setShowPassword] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
-
     const dispatch = useAppDispatch();
     const {
         selectedAccountType,

@@ -82,13 +82,13 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ submission, onClose }) => {
   const dispatch = useDispatch();
   const { submitting } = useSelector((state: RootState) => state.kyc);
   const {
-    submissions,
-    counters,
-    loading,
-    error,
+    // submissions,
+    // counters,
+    // loading,
+    // error,
     currentPage,
     itemsPerPage,
-    totalSubmissions,
+    // totalSubmissions,
     filters
   } = useSelector((state: RootState) => state.kyc);
   const [documentError, setDocumentError] = useState<{ show: boolean; type: string }>({
@@ -422,7 +422,7 @@ const KycVerification: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchInput, dispatch]);
+  }, [searchInput, filters, dispatch]);
 
   // Load data on component mount
   useEffect(() => {

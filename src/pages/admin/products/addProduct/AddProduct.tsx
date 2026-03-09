@@ -1,7 +1,7 @@
 // src/pages/admin/products/addProduct/AddProduct.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import FileUploader from "../components/FileUploader";
-import { Plus, ArrowLeft, Ban, CalendarCheck } from "lucide-react";
+import { Plus, ArrowLeft, Ban } from "lucide-react";
 import circleX from "../../../../assets/circleX.svg";
 import AdminLayout from "../../components/AdminLayout";
 import { useNavigate, useParams } from "react-router-dom";
@@ -108,22 +108,22 @@ function useObjectURL(file: File | null) {
   return url;
 }
 
-function debugFormData(fd: FormData) {
-  const out: Record<string, any> = {};
-  fd.forEach((v, k) => {
-    const val =
-      v instanceof File
-        ? `{File name=${v.name} type=${v.type} size=${v.size}}`
-        : String(v);
-    if (k in out) {
-      if (Array.isArray(out[k])) out[k].push(val);
-      else out[k] = [out[k], val];
-    } else out[k] = val;
-  });
-  console.groupCollapsed("%cADD PRODUCT → FormData", "color:#0af");
-  Object.entries(out).forEach(([k, v]) => console.log(k, "→", v));
-  console.groupEnd();
-}
+// function debugFormData(fd: FormData) {
+//   const out: Record<string, any> = {};
+//   fd.forEach((v, k) => {
+//     const val =
+//       v instanceof File
+//         ? `{File name=${v.name} type=${v.type} size=${v.size}}`
+//         : String(v);
+//     if (k in out) {
+//       if (Array.isArray(out[k])) out[k].push(val);
+//       else out[k] = [out[k], val];
+//     } else out[k] = val;
+//   });
+//   console.groupCollapsed("%cADD PRODUCT → FormData", "color:#0af");
+//   Object.entries(out).forEach(([k, v]) => console.log(k, "→", v));
+//   console.groupEnd();
+// }
 
 // ---- Component ----
 const AddProduct: React.FC = () => {

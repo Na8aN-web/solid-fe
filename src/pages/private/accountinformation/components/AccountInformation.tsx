@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   UserCircle,
   BookOpen,
@@ -21,7 +21,6 @@ import Messages from "./messages/Messages";
 import Security from "./security/Security";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
-import { setUser } from "../../../../store/slices/authSlice";
 
 // Define the type for sidebar items
 type SidebarItem = {
@@ -35,7 +34,6 @@ const AccountInformation = () => {
   // const [activeItem, setActiveItem] = useState<string>("profile");
   const { section } = useParams(); // Get section from URL
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
 
   // Set activeItem based on URL param, default to 'profile'

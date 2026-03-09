@@ -1,7 +1,7 @@
 // src/store/slices/departmentSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
-import { Department, DepartmentsResponse, DepartmentState } from "../../services/departments/types";
+import { Department, DepartmentState } from "../../services/departments/types";
 
 const initialState: DepartmentState = {
     departments: [],

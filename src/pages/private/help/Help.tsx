@@ -189,13 +189,13 @@ const HelpCenter = () => {
       <nav className="bg-[#F5F5F5] p-4 border-b hidden md:block">
         <div className="mx-auto flex items-center">
           <div className="flex space-x-6 ml-[50px]">
-            <a href="#" className="text-gray-500 hover:text-gray-700">
+            <button className="text-gray-500 hover:text-gray-700">
               Home
-            </a>
+            </button>
             <img src="/arrow-right.svg" alt="arrow facing right" />
-            <a href="#" className="text-gray-900 font-semibold">
+            <button className="text-gray-900 font-semibold">
               Help
-            </a>
+            </button>
           </div>
         </div>
       </nav>

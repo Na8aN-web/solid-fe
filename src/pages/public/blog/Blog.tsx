@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Navbar from './components/LandingNavbar';
 import Sidebar from './components/Sidebar';
 import BlogPostCard from './components/BlogPostCard';
 import BlogPostDetail from './components/BlogPostDetail';

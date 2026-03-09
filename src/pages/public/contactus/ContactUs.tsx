@@ -1,5 +1,3 @@
-import React from "react";
-import Navbar from "../../../components/LandingNavbar";
 
 const ContactUs = () => {
   return (

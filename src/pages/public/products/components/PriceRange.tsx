@@ -76,7 +76,7 @@ const PriceRange: React.FC<PriceRangeSliderProps> = ({
     
     // Handle mouse movement
     const handleMouseMove = (event: MouseEvent): void => {
-        if (!isDraggingMin.current && !isDraggingMax.current || !sliderRef.current) return;
+        if ((!isDraggingMin.current && !isDraggingMax.current) || !sliderRef.current) return;
         
         const sliderRect = sliderRef.current.getBoundingClientRect();
         const percent = Math.min(Math.max(((event.clientX - sliderRect.left) / sliderRect.width) * 100, 0), 100);
@@ -86,7 +86,7 @@ const PriceRange: React.FC<PriceRangeSliderProps> = ({
     
     // Handle touch movement
     const handleTouchMove = (event: TouchEvent): void => {
-        if (!isDraggingMin.current && !isDraggingMax.current || !sliderRef.current) return;
+        if ((!isDraggingMin.current && !isDraggingMax.current) || !sliderRef.current) return;
         
         const touch = event.touches[0];
         const sliderRect = sliderRef.current.getBoundingClientRect();

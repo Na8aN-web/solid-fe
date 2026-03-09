@@ -1,5 +1,5 @@
 // src/store/slices/modelSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
 
 // Model type based on Swagger schema

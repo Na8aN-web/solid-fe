@@ -259,6 +259,7 @@ const Products: React.FC = () => {
     selectedCategory,
     selectedBrand,
     sortBy,
+    fetchProductsWithFilters
   ]);
 
   // Filter products by stock status on frontend

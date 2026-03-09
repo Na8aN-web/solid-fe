@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Navbar from './components/LandingNavbar';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import CoreValues from './components/CoreValues';
 
 export default function About() {
@@ -8,12 +6,12 @@ export default function About() {
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
 
-    const handleSubscribe = (e: React.FormEvent) => {
-        e.preventDefault();
-        setModalMessage(`Thank you for subscribing with ${email}!`);
-        setShowModal(true);
-        setEmail('');
-    };
+    // const handleSubscribe = (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     setModalMessage(`Thank you for subscribing with ${email}!`);
+    //     setShowModal(true);
+    //     setEmail('');
+    // };
 
     const closeModal = () => {
         setShowModal(false);
@@ -87,7 +85,7 @@ export default function About() {
                     <div className="absolute inset-0 bg-black opacity-50"></div>
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="flex flex-col space-y-2">
-                            <p className="text-sm bg-[#FFC300] md:w-[400px] p-[20px] text-[18px] text-center font-semibold"><a href="#">About Us</a> - Solid Spare Parts</p>
+                            <p className="text-sm bg-[#FFC300] md:w-[400px] p-[20px] text-[18px] text-center font-semibold"><button>About Us</button> - Solid Spare Parts</p>
                             <h1 className="text-3xl py-6 md:text-[40px] font-semibold text-white">Driving Reliability: Your Trusted Partner for Quality <span className='text-[#FFC300]'> Spare Parts</span></h1>
                         </div>
                     </div>

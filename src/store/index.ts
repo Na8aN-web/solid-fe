@@ -11,7 +11,6 @@ import cartReducer from './slices/cartSlice'
 import kycReducer from './slices/kycSlice'
 import departmentReducer from './slices/departmentSlice'
 import adminDashboardReducer from './slices/adminDashboardSlice'
-import { deprecate } from 'util';
 import addressReducer from './slices/addressSlice'
 import modelReducer from './slices/modelSlice';
 import makerReducer from './slices/makerSlice';

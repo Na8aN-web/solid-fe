@@ -8,19 +8,14 @@ import {
     RefreshCw,
     AlertTriangle,
 } from 'lucide-react';
-import AdminCard from '../../../assets/admincard.png';
 import AdminLayout from '../components/AdminLayout';
 import SalesChart from './components/SalesChart';
 import RevenueChart from './components/RevenueChart';
-import StockAlertSection from './components/StockAlerts';
 import { 
   fetchDashboardMetrics, 
   fetchRecentOrders, 
   fetchLowStockProducts,
   clearDashboardErrors,
-  type Order,
-  type LowStockProduct,
-  type DashboardMetrics,
   type AdminDashboardState
 } from '../../../store/slices/adminDashboardSlice';
 import type { RootState, AppDispatch } from '../../../store';
@@ -72,7 +67,7 @@ const LoadingSpinner: React.FC = () => (
 
 const Dashboard: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const [activeTab, setActiveTab] = useState('Quarterly');
+    // const [activeTab, setActiveTab] = useState('Quarterly');
 
     // Redux state with explicit typing
     const {

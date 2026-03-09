@@ -1,5 +1,4 @@
 import React from 'react';
-import FeaturesBg from '../../../../assets/features-bg.png'
 
 // TypeScript interfaces
 interface FeatureProps {

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 const RateReviewProduct = () => {
   const [rating, setRating] = useState<number | null>(null);
-  const [rateColor, setRateColor] = useState<number | null>(null);
+  
   const Star = FaStar as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
 
   return (
@@ -39,11 +39,7 @@ const RateReviewProduct = () => {
                       className="cursor-pointer"
                     >
                       <Star
-                        color={
-                          currentRate <= (rateColor ?? rating ?? 0)
-                            ? "gold"
-                            : "lightgrey"
-                        }
+                        color={currentRate <= (rating ?? 0) ? "gold" : "lightgrey"}
                       />
                     </div>
                   );

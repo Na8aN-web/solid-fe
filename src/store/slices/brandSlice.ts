@@ -1,7 +1,7 @@
 // src/store/slices/brandSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/api/axios";
-import { Brand, BrandsResponse, BrandState } from "../../services/brands/types";
+import { Brand, BrandState } from "../../services/brands/types";
 
 const initialState: BrandState = {
     brands: [],

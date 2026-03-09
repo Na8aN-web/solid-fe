@@ -772,12 +772,12 @@ export const addProductDepartment = createAsyncThunk(
 );
 
 // Helper: unwrap either { category: {...} } or plain {...}
-function extractCategory(data: any): ProductCategory | null {
-  const c = data?.category ?? data?.data?.category ?? data?.data ?? data;
-  return c && typeof c._id === "string" && typeof c.name === "string"
-    ? c
-    : null;
-}
+// function extractCategory(data: any): ProductCategory | null {
+//   const c = data?.category ?? data?.data?.category ?? data?.data ?? data;
+//   return c && typeof c._id === "string" && typeof c.name === "string"
+//     ? c
+//     : null;
+// }
 
 // update product category
 export interface UpdateProductCategory {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
 import {
   ListFilter,
@@ -175,7 +175,7 @@ const SendNotifications = () => {
                         setOpenTimer(true);
                       }}
                     >
-                      Tomorrow, 8:00pm
+                      {scheduledTime ? scheduledTime : "Scheduled for later"}
                     </p>
                   </div>
                 </div>

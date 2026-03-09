@@ -134,9 +134,9 @@ const DealsCard: React.FC<DealsCardProps> = ({
   };
 
   // Format time with leading zeros
-  const formatTime = (value: number): string => {
-    return value.toString().padStart(2, "0");
-  };
+  // const formatTime = (value: number): string => {
+  //   return value.toString().padStart(2, "0");
+  // };
 
   return (
     <article

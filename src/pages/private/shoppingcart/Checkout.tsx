@@ -18,7 +18,6 @@ import {
   InitiatePaymentRequest,
 } from "../../../store/slices/checkoutSlice";
 import { CartItem } from "../../../services/cart/types";
-import { Address } from "../../../store/slices/addressSlice";
 
 const Checkout: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -209,7 +208,6 @@ const Checkout: React.FC = () => {
     couponDiscount: couponDiscountAmount,
     deliveryFee,
     total,
-    totalDiscount,
   } = calculateTotals();
 
   const handleDeliveryTypeSelect = (type: DeliveryType) => {
