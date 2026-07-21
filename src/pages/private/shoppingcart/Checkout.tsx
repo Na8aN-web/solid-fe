@@ -306,14 +306,15 @@ const Checkout: React.FC = () => {
 
       // Step 2: Initiate FirstChekout transaction — backend returns ref + confirmed amount
       const initiateRes = await axiosInstance.post("/checkout/fc/initiate", { orderId });
-      const transactionReference: string = initiateRes.data.paymentReference;
+      const paymentReference: string = initiateRes.data.paymentReference;       // UUID — widget ref
+      const transactionReference: string = initiateRes.data.transactionReference; // TX-... — status check
       const paymentAmount: number = initiateRes.data.amount ?? serverAmount;
 
       // Step 3: Open the widget — poll status endpoint when it closes successfully
       await FBNCheckout.initiateTransactionAsync(
         {
           live: process.env.REACT_APP_FIRSTBANK_LIVE === "true",
-          ref: transactionReference,
+          ref: paymentReference,
           amount: paymentAmount,
           customer: {
             firstname: selectedAddress.firstName,
