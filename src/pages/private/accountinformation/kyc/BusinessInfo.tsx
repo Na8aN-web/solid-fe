@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import BusinessCard from "./components/BusinessCard";
 import UploadCard from "./components/UploadCard";
 import { ArrowLeft } from "lucide-react";
-import SuccessMessage from "../../../../components/SuccessMessage";
 import { AppDispatch, RootState } from "../../../../store";
 import { submitKYC, clearError } from "../../../../store/slices/kycSlice";
 import { KYCFormData } from "../../../../services/kyc/types";
+import { useToast } from "../../../../components/Toast";
 
 interface Step {
   id: number;
@@ -22,16 +22,14 @@ const BusinessInfo = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { submitting, error } = useSelector((state: RootState) => state.kyc);
-   const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { toast } = useToast();
 
   const [businessCert, setBusinessCert] = useState<File | null>(null);
   const [proofOfAddress, setProofOfAddress] = useState<File | null>(null);
   const [proofOfSourcing, setProofOfSourcing] = useState<File | null>(null);
-  // const [idCard, setIdCard] = useState<File | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [buttonLabel, setButtonLabel] = useState("Continue");
   const [isCompleted, setIsCompleted] = useState(false);
-  const [submitError, setSubmitError] = useState<string>("");
   const [fileErrors, setFileErrors] = useState<{ [key: string]: string }>({});
 
   // Get form data from previous step
@@ -43,21 +41,16 @@ const BusinessInfo = () => {
     if (savedFormData) {
       setFormData(JSON.parse(savedFormData));
     } else {
-      // Redirect back to form if no data found
       navigate('/kyc-form');
     }
   }, [navigate]);
 
   useEffect(() => {
     if (error) {
-      setSubmitError(error);
-      // Clear error after showing it
-      setTimeout(() => {
-        dispatch(clearError());
-        setSubmitError("");
-      }, 5000);
+      toast(error, "error");
+      dispatch(clearError());
     }
-  }, [error, dispatch]);
+  }, [error, toast, dispatch]);
 
   const validateFiles = () => {
     const errors: { [key: string]: string } = {};
@@ -93,17 +86,16 @@ const BusinessInfo = () => {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
       setIsCompleted(true);
-      setShowSuccess(true);
       sessionStorage.removeItem('kycFormData');
+      toast("Your documents have been uploaded successfully.", "success", 6000);
 
       setTimeout(() => {
-        setShowSuccess(false);
         setButtonLabel("Go to Dashboard");
         navigate("/account-information/profile");
       }, 2000);
 
     } catch (error) {
-      console.error('KYC submission failed:', error);
+      toast("KYC submission failed. Please try again.", "error");
     }
   };
 
@@ -141,21 +133,6 @@ const BusinessInfo = () => {
   return (
     <div className="flex justify-center items-center py-12 px-6">
       <section className="border w-[1100px] rounded-[16px] p-6 md:p-10">
-        <div>
-          {showSuccess && (
-            <SuccessMessage
-              message="Your documents have been uploaded successfully"
-              onClose={() => setShowSuccess(false)}
-            />
-          )}
-          {submitError && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              <p className="font-semibold">Submission Error:</p>
-              <p>{submitError}</p>
-            </div>
-          )}
-        </div>
-
         <ArrowLeft
           className="cursor-pointer mb-4"
           onClick={() => navigate('/kyc-form')}

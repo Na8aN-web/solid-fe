@@ -7,6 +7,7 @@ import {
 import { addProductToCart } from "../../../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import LoaderSpinner from "../../../../../components/LoaderSpinner";
+import { useToast } from "../../../../../components/Toast";
 
 const SavedItems = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const SavedItems = () => {
   const wishlist = useAppSelector((state) => state.wishlist.wishlist);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
+  const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const hasFetchedWishlist = useRef(false);
@@ -77,7 +79,7 @@ const SavedItems = () => {
         })
       ).unwrap();
     } catch (error) {
-      console.error("Failed to add product to cart:", error);
+      toast("Failed to add product to cart. Please try again.", "error");
     } finally {
       setAddingToCart(null);
     }

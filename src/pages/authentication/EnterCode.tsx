@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { verifyOTP, requestPasswordResetOTP, clearError } from "../../store/slices/authSlice";
 import { RootState, AppDispatch } from "../../store";
+import { useToast } from "../../components/Toast";
 
 const EnterCode = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -10,32 +11,33 @@ const EnterCode = () => {
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
   const [resetEmail, setResetEmail] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  
+
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  
+  const { toast } = useToast();
+
   const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Get email from session storage
     const email = sessionStorage.getItem("resetEmail");
     if (!email) {
-      // If no email is found, redirect back to recovery page
       navigate("/recover-password");
       return;
     }
     setResetEmail(email);
-    
-    // Clear any previous errors
     dispatch(clearError());
-    
-    // Check if we have the otpToken from the previous step
     if (!passwordReset.otpToken) {
-      // If no otpToken, redirect back to recovery page
       navigate("/recover-password");
       return;
     }
   }, [dispatch, navigate, passwordReset.otpToken]);
+
+  useEffect(() => {
+    if (error) {
+      toast(error, "error");
+      dispatch(clearError());
+    }
+  }, [error, toast, dispatch]);
 
   useEffect(() => {
     // If OTP is verified, navigate to create new password page
@@ -143,12 +145,6 @@ const EnterCode = () => {
           <span className="text-base text-shadeGray font-semibold">
             {resetEmail}
           </span>
-          
-          {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
           
           <form className="space-y-10 pt-4">
             <div className={`flex gap-1 ${isLoading ? 'opacity-50' : ''}`}>

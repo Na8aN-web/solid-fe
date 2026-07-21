@@ -11,23 +11,29 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { CartItem } from "../../../services/cart/types";
 import CheckoutAuthModal from "./CheckoutAuthModal";
-import CouponModal from "./CouponModal";
+import { useToast } from "../../../components/Toast";
 
 const ShoppingCart = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
+  const { toast } = useToast();
   const [initialLoad, setInitialLoad] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     discount: number;
   } | null>(null);
   const [couponError, setCouponError] = useState("");
-  const [showCouponModal, setShowCouponModal] = useState(false);
-  const [couponModalMessage, setCouponModalMessage] = useState("");
-  const [couponModalType, setCouponModalType] = useState<"success" | "error">("success");
+
+  useEffect(() => {
+    if (error) {
+      toast(error, "error");
+      dispatch(clearCartError());
+    }
+  }, [error, toast, dispatch]);
 
   const handleApplyCoupon = () => {
     const code = couponCode.trim().toUpperCase();
@@ -47,15 +53,11 @@ const ShoppingCart = () => {
     if (validCoupons[code]) {
       setAppliedCoupon({ code, discount: validCoupons[code] });
       setCouponError("");
-      setCouponModalMessage(`Coupon "${code}" applied! ${validCoupons[code] * 100}% discount`);
-      setCouponModalType("success");
-      setShowCouponModal(true);
+      toast(`Coupon "${code}" applied! ${validCoupons[code] * 100}% discount`, "success");
     } else {
       setCouponError("Invalid coupon code");
       setAppliedCoupon(null);
-      setCouponModalMessage("Invalid coupon code. Please try again.");
-      setCouponModalType("error");
-      setShowCouponModal(true);
+      toast("Invalid coupon code. Please try again.", "error");
     }
   };
 
@@ -207,13 +209,16 @@ const ShoppingCart = () => {
   };
 
   // Clear entire cart
-  const handleClearCart = async () => {
-    if (window.confirm("Are you sure you want to clear your cart?")) {
-      try {
-        await dispatch(removeAllProductFromCart()).unwrap();
-      } catch (error) {
-        console.error("Failed to clear cart:", error);
-      }
+  const handleClearCart = () => {
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearCart = async () => {
+    setShowClearConfirm(false);
+    try {
+      await dispatch(removeAllProductFromCart()).unwrap();
+    } catch (error) {
+      toast("Failed to clear cart. Please try again.", "error");
     }
   };
 
@@ -268,19 +273,6 @@ const ShoppingCart = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-5">
-          <span className="block sm:inline">{error}</span>
-          <button
-            onClick={() => dispatch(clearCartError())}
-            className="absolute top-0 bottom-0 right-0 px-4 py-3"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Guest User Notice */}
       {!isAuthenticated() && hasProducts && (
         <div className="bg-amber-50 border border-amber-200 px-4 py-3 mx-5 mt-4 rounded-lg">
@@ -595,12 +587,29 @@ const ShoppingCart = () => {
         </div>
       </section>
 
-      <CouponModal
-        isOpen={showCouponModal}
-        onClose={() => setShowCouponModal(false)}
-        message={couponModalMessage}
-        type={couponModalType}
-      />
+      {/* Clear Cart Confirmation */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-semibold mb-3">Clear Cart</h3>
+            <p className="text-customGray3 mb-6">Are you sure you want to remove all items from your cart?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClearCart}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Clear Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Authentication Modal */}
       <CheckoutAuthModal

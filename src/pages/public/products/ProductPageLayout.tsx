@@ -14,6 +14,7 @@ import {
 import { addProductToCart } from "../../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { useLocation } from "react-router-dom";
+import { useToast } from "../../../components/Toast";
 
 export interface FilterState {
   maker: string;
@@ -39,6 +40,7 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   pageTitle = "Products",
 }) => {
   // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { toast } = useToast();
   const [isMobile, setIsMobile] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -313,10 +315,8 @@ const ProductPageLayout: React.FC<ProductPageLayoutProps> = ({
   const addToCart = (productId: string, quantity: number) => {
     dispatch(addProductToCart({ productId, quantity }))
       .unwrap()
-      .then(() => {
-      })
-      .catch((error) => {
-        console.error('Failed to add product to cart:', error);
+      .catch(() => {
+        toast("Failed to add product to cart. Please try again.", "error");
       });
   };
 

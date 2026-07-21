@@ -3,23 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { requestPasswordResetOTP, clearError } from "../../store/slices/authSlice";
 import { RootState, AppDispatch } from "../../store";
+import { useToast } from "../../components/Toast";
 
 const RecoverPassword = () => {
   const [email, setEmail] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  
+  const { toast } = useToast();
+
   const { isLoading, error, passwordReset } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Clear any previous errors
     dispatch(clearError());
   }, [dispatch]);
 
   useEffect(() => {
-    // If OTP was successfully requested, navigate to the code verification page
+    if (error) {
+      toast(error, "error");
+      dispatch(clearError());
+    }
+  }, [error, toast, dispatch]);
+
+  useEffect(() => {
     if (passwordReset.otpRequested) {
-      // Store email in session storage for next component
       sessionStorage.setItem("resetEmail", email);
       navigate("/enter-code");
     }
@@ -40,11 +46,6 @@ const RecoverPassword = () => {
           <p className="text-base text-shadeGray">
             Enter your account's email to receive a 6-digit code
           </p>
-          {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
           <form onSubmit={handleSubmit} className="space-y-10 pt-4">
             <div>
               <label

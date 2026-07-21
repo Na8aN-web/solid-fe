@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { syncGuestCartToBackend } from "../../store/slices/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { loginUser, clearError, initiateGoogleLogin } from "../../store/slices/authSlice";
+import { useToast } from "../../components/Toast";
 
 interface LoginData {
   email: string;
@@ -20,6 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const dispatch = useAppDispatch();
   const { isLoading, error, isAuthenticated } = useAppSelector(
@@ -27,9 +29,15 @@ const Login = () => {
   );
 
   useEffect(() => {
-    // Clear previous errors when component mounts
     dispatch(clearError());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast(error, "error");
+      dispatch(clearError());
+    }
+  }, [error, toast, dispatch]);
 
   useEffect(() => {
     if (isAuthenticated && !isSyncing) {
@@ -137,11 +145,6 @@ const Login = () => {
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
-              {error && (
-                <div className="text-red-700 p-3 rounded text-sm">
-                  {error}
-                </div>
-              )}
               <Link to="/recover-password">
                 <p className="text-right cursor-pointer py-2  text-sm text-shadeGray font-normal">
                   Forgot Password?

@@ -6,19 +6,16 @@ import {
   deleteAddress,
   updateAddress,
 } from "../../../store/slices/addressSlice";
+import { useToast } from "../../../components/Toast";
 
 const ChangeAddress = () => {
   const dispatch = useAppDispatch();
   // const navigate = useNavigate();
   const { addresses, loading } = useAppSelector((state) => state.address);
-  // const [editingId, setEditingId] = useState<string | null>(null);
-  
-  // Modal states
+  const { toast } = useToast();
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
     dispatch(fetchAllAddresses());
@@ -34,13 +31,10 @@ const ChangeAddress = () => {
       try {
         await dispatch(deleteAddress(selectedAddressId)).unwrap();
         setShowDeleteModal(false);
-        setModalMessage("Address deleted successfully");
-        setShowSuccessModal(true);
+        toast("Address deleted successfully.", "success");
       } catch (err) {
-        console.error("Failed to delete address:", err);
         setShowDeleteModal(false);
-        setModalMessage("Failed to delete address");
-        setShowErrorModal(true);
+        toast("Failed to delete address. Please try again.", "error");
       }
     }
   };
@@ -48,14 +42,10 @@ const ChangeAddress = () => {
   const handleSetDefault = async (id: string) => {
     try {
       await dispatch(updateAddress({ id, addressData: { isDefault: true } })).unwrap();
-      // Refresh addresses to update other defaults
       dispatch(fetchAllAddresses());
-      setModalMessage("Default address updated");
-      setShowSuccessModal(true);
+      toast("Default address updated.", "success");
     } catch (err) {
-      console.error("Failed to update default address:", err);
-      setModalMessage("Failed to update default address");
-      setShowErrorModal(true);
+      toast("Failed to update default address. Please try again.", "error");
     }
   };
 
@@ -204,51 +194,6 @@ const ChangeAddress = () => {
         </div>
       )}
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Success</h3>
-              <p className="text-customGray3 mb-6">{modalMessage}</p>
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error Modal */}
-      {showErrorModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Error</h3>
-              <p className="text-customGray3 mb-6">{modalMessage}</p>
-              <button
-                onClick={() => setShowErrorModal(false)}
-                className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

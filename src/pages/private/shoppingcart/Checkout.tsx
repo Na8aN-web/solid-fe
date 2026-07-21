@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import FBNCheckout from "firstchekout";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   fetchUserCart,
@@ -11,17 +12,17 @@ import {
 } from "../../../store/slices/addressSlice";
 import {
   applyCoupon,
-  initiatePayment,
   clearCoupon,
-  clearPaymentLink,
   clearCheckoutError,
-  InitiatePaymentRequest,
 } from "../../../store/slices/checkoutSlice";
+import axiosInstance from "../../../services/api/axios";
 import { CartItem } from "../../../services/cart/types";
+import { useToast } from "../../../components/Toast";
 
 const Checkout: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const { cart, loading: cartLoading } = useAppSelector((state) => state.cart);
   const {
@@ -33,27 +34,16 @@ const Checkout: React.FC = () => {
     couponLoading,
     couponError,
     couponDiscount,
-    paymentLoading,
-    paymentError,
-    paymentLink,
     appliedCouponCode,
   } = useAppSelector((state) => state.checkout);
+  const [widgetLoading, setWidgetLoading] = useState(false);
+  const [userId, setUserId] = useState<string>("");
 
   const [selectedDeliveryType, setSelectedDeliveryType] =
     useState<DeliveryType | null>(null);
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [couponCode, setCouponCode] = useState("");
-  const [userId, setUserId] = useState<string>("");
-  const [alertModal, setAlertModal] = useState<{
-    show: boolean;
-    title?: string;
-    message: string;
-  }>({
-    show: false,
-    title: "",
-    message: "",
-  });
 
   enum DeliveryType {
     FastDelivery = "fast-delivery",
@@ -123,8 +113,9 @@ const Checkout: React.FC = () => {
 
     if (outOfStockItems.length === 0) return;
 
-    alert(
-      "Some items in your cart are out of stock and have been removed. Please review your cart.",
+    toast(
+      "Some items in your cart are out of stock and have been removed.",
+      "warning",
     );
 
     outOfStockItems.forEach((item) => {
@@ -132,23 +123,7 @@ const Checkout: React.FC = () => {
     });
 
     navigate("/cart");
-  }, [cart?.products, dispatch, navigate]);
-
-  // Handle payment link redirection
-  useEffect(() => {
-    if (paymentLink) {
-      // Redirect to payment gateway or show payment modal
-      window.open(paymentLink, "_blank");
-
-      // Optional: Track payment initiation
-      console.log("Payment initiated, redirecting to:", paymentLink);
-
-      // Clear payment link after use
-      setTimeout(() => {
-        dispatch(clearPaymentLink());
-      }, 3000);
-    }
-  }, [paymentLink, dispatch]);
+  }, [cart?.products, dispatch, navigate, toast]);
 
   // Clear errors on component unmount
   useEffect(() => {
@@ -163,6 +138,14 @@ const Checkout: React.FC = () => {
       dispatch(setSelectedAddress(defaultAddress));
     }
   }, [addresses, selectedAddress, dispatch]);
+
+  // Surface Redux coupon errors as toasts instead of blocking modals
+  useEffect(() => {
+    if (couponError) {
+      toast(couponError, "error");
+      dispatch(clearCheckoutError());
+    }
+  }, [couponError, toast, dispatch]);
 
   // Calculate totals with coupon discount
   const calculateTotals = () => {
@@ -227,36 +210,12 @@ const Checkout: React.FC = () => {
       setShowAddressModal(false);
     }
   };
-  const showAlert = (message: string, title: string = "Notice") => {
-    setAlertModal({
-      show: true,
-      title,
-      message,
-    });
-  };
-
-
-
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) {
-      showAlert("Please enter a coupon code");
+      toast("Please enter a coupon code", "warning");
       return;
     }
 
-    if (!userId) {
-      showAlert(
-        "User ID not found. Please log in again.",
-        "Authentication Error",
-      );
-      return;
-    }
-
-    dispatch(
-      applyCoupon({
-        code: couponCode.trim(),
-        userId: userId,
-      }),
-    );
     dispatch(
       applyCoupon({
         code: couponCode.trim(),
@@ -270,24 +229,52 @@ const Checkout: React.FC = () => {
     dispatch(clearCoupon());
   };
 
+  const pollPaymentStatus = async (transactionReference: string): Promise<void> => {
+    const MAX_ATTEMPTS = 10;
+    const INTERVAL_MS = 3000;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, INTERVAL_MS));
+      try {
+        const res = await axiosInstance.get(`/checkout/fc/status/${transactionReference}`);
+        const { status } = res.data;
+
+        if (status === "success") {
+          toast("Payment successful! Your order is being processed.", "success", 6000);
+          return;
+        }
+        if (status === "failed") {
+          toast("Payment failed. Please try again or use a different method.", "error");
+          return;
+        }
+        // still pending — keep polling
+      } catch {
+        if (attempt === MAX_ATTEMPTS - 1) {
+          toast("Could not verify payment. Please check your orders.", "warning");
+        }
+      }
+    }
+
+    // timed out without success or failure
+    toast("Payment is still being processed. Check your orders shortly.", "warning");
+  };
+
   const handleCheckout = async () => {
     if (!selectedAddress) {
-      showAlert("Please select a delivery address");
+      toast("Please select a delivery address", "warning");
       return;
     }
     if (!selectedDeliveryType) {
-      showAlert("Please select a delivery method");
+      toast("Please select a delivery method", "warning");
       return;
     }
     if (!cart?.products || cart.products.length === 0) {
-      showAlert("Your cart is empty");
+      toast("Your cart is empty", "warning");
       return;
     }
     if (!userId) {
-      showAlert(
-        "User ID not found. Please log in again.",
-        "Authentication Error",
-      );
+      toast("Session expired — please log in again.", "error");
+      navigate("/login");
       return;
     }
 
@@ -296,33 +283,72 @@ const Checkout: React.FC = () => {
     );
 
     if (hasOutOfStockItems) {
-      alert("Remove out-of-stock items before checkout");
+      toast("Remove out-of-stock items before checking out.", "warning");
       navigate("/cart");
       return;
     }
 
-    // Prepare payment data
-    const paymentData: InitiatePaymentRequest = {
-      provider: "opay" as const,
-      amount: total * 100, // Convert to kobo/pesewas
-      orderId: `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      email: selectedAddress.email,
-      phone: selectedAddress.phone,
-      user: {
-        id: userId,
-        firstName: selectedAddress.firstName,
-        lastName: selectedAddress.lastName,
-        address: {
-          street: selectedAddress.street,
-          city: selectedAddress.city,
-          state: selectedAddress.state,
-          country: "Nigeria", // Add if available
-        },
-      },
-    };
+    setWidgetLoading(true);
 
-    // Dispatch payment initiation
-    dispatch(initiatePayment(paymentData));
+    try {
+      // Step 1: Create order — backend resolves all pricing server-side
+      const orderRes = await axiosInstance.post("/orders", {
+        items: cart!.products.map((item: CartItem) => ({
+          productId: item.product._id,
+          quantity: item.quantity,
+        })),
+        deliveryAddress: selectedAddress._id,
+        ...(appliedCouponCode && { couponCode: appliedCouponCode }),
+        ...(deliveryInstructions.trim() && { instruction: deliveryInstructions.trim() }),
+      });
+      const orderId: string = orderRes.data.order._id;
+      const serverAmount: number = orderRes.data.order.totalAmount;
+
+      // Step 2: Initiate FirstChekout transaction — backend returns ref + confirmed amount
+      const initiateRes = await axiosInstance.post("/checkout/fc/initiate", { orderId });
+      const transactionReference: string = initiateRes.data.paymentReference;
+      const paymentAmount: number = initiateRes.data.amount ?? serverAmount;
+
+      // Step 3: Open the widget — poll status endpoint when it closes successfully
+      await FBNCheckout.initiateTransactionAsync(
+        {
+          live: process.env.REACT_APP_FIRSTBANK_LIVE === "true",
+          ref: transactionReference,
+          amount: paymentAmount,
+          customer: {
+            firstname: selectedAddress.firstName,
+            lastname: selectedAddress.lastName,
+            email: selectedAddress.email,
+            id: userId,
+          },
+          fees: [],
+          meta: { orderId },
+          publicKey: process.env.REACT_APP_FIRSTBANK_PUBLIC_KEY || "",
+          description: `Payment for order ${orderId}`,
+          currency: "NGN",
+          callback: async () => {
+            // Widget signals payment was attempted — poll backend to confirm outcome
+            await pollPaymentStatus(transactionReference);
+            setWidgetLoading(false);
+          },
+          onClose: () => {
+            setWidgetLoading(false);
+          },
+          options: ["CARD", "QR", "WALLET", "ACCOUNT"],
+        },
+        {
+          BaseFrame: process.env.REACT_APP_FIRSTBANK_BASE_FRAME || "",
+          InitiatePaymentURI: process.env.REACT_APP_FIRSTBANK_INITIATE_URI || "",
+          ImageLogoURL: process.env.REACT_APP_FIRSTBANK_LOGO_URL || undefined,
+        },
+      );
+    } catch (error: any) {
+      setWidgetLoading(false);
+      toast(
+        error?.response?.data?.message || "Something went wrong. Please try again.",
+        "error",
+      );
+    }
   };
 
   const ProductReview = () => (
@@ -407,57 +433,6 @@ const Checkout: React.FC = () => {
 
   return (
     <div>
-      {/* Error Modals */}
-      {(couponError || paymentError) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-red-600">Error</h3>
-              <button
-                onClick={() => dispatch(clearCheckoutError())}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="text-gray-700 mb-4">{couponError || paymentError}</p>
-            <button
-              onClick={() => dispatch(clearCheckoutError())}
-              className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {alertModal.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 animate-fadeIn">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-customBrown">
-                {alertModal.title}
-              </h3>
-              <button
-                onClick={() => setAlertModal({ ...alertModal, show: false })}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="text-gray-700 mb-6">{alertModal.message}</p>
-
-            <button
-              onClick={() => setAlertModal({ ...alertModal, show: false })}
-              className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
       <section className="p-5 sm:px-8 lg:px-10 lg:bg-[#F5F5F5]">
         <h2 className="text-xl text-customBrown font-semibold lg:hidden">
           Checkout
@@ -810,13 +785,13 @@ const Checkout: React.FC = () => {
                   !selectedAddress ||
                   !selectedDeliveryType ||
                   cartLoading ||
-                  paymentLoading ||
+                  widgetLoading ||
                   !cart?.products ||
                   cart.products.length === 0
                 }
                 className="bg-primary py-4 text-white text-sm rounded w-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex items-center justify-center"
               >
-                {paymentLoading ? (
+                {widgetLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Processing...
@@ -826,11 +801,6 @@ const Checkout: React.FC = () => {
                 )}
               </button>
 
-              {paymentLoading && (
-                <p className="text-center text-sm text-blue-600 mt-2">
-                  Redirecting to payment gateway...
-                </p>
-              )}
             </div>
           </section>
         </section>

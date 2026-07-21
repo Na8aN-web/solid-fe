@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { toggleProductInWishlist } from "../../../../store/slices/wishlistSlice";
 import { addProductToCart } from "../../../../store/slices/cartSlice";
 import { IoCartOutline } from "react-icons/io5";
+import { useToast } from "../../../../components/Toast";
 
 // Modal Component
 interface ModalProps {
@@ -100,11 +101,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const isOutOfStock = stockStatus === "Out of Stock";
+  const { toast } = useToast();
 
-  // Modal states
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const formatCurrency = (amount?: number) => {
     if (typeof amount !== "number") return "₦0";
@@ -172,8 +171,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }),
       ).unwrap();
     } catch (error) {
-      setErrorMessage("Failed to add to cart");
-      setShowErrorModal(true);
+      toast("Failed to add to cart. Please try again.", "error");
     } finally {
       setIsAddingToCart(false);
     }
@@ -198,8 +196,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     } catch (error: any) {
       // Only show error for real errors, not "already in wishlist"
       if (error !== "ALREADY_IN_WISHLIST") {
-        setErrorMessage("Failed to update wishlist");
-        setShowErrorModal(true);
+        toast("Failed to update wishlist. Please try again.", "error");
       }
     } finally {
       setIsTogglingWishlist(false);
@@ -385,23 +382,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
       </Modal>
 
-      {/* Error Modal */}
-      <Modal
-        isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
-        title="Error"
-      >
-        <div className="p-6 text-center">
-          <p className="text-gray-600 mb-6">{errorMessage}</p>
-          <button
-            onClick={() => setShowErrorModal(false)}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-          >
-            {/* OK */}
-            <p>{errorMessage}</p>
-          </button>
-        </div>
-      </Modal>
     </>
   );
 };

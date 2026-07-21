@@ -11,6 +11,7 @@ import { toggleProductInWishlist } from "../../../../store/slices/wishlistSlice"
 import { FilterState } from "../ProductPageLayout";
 import SuccessModal from "../../../../components/SuccessModal";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
+import { useToast } from "../../../../components/Toast";
 
 interface Product {
   _id: string;
@@ -94,6 +95,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     name: string;
   } | null>(null);
 
+  const { toast } = useToast();
   const dispatch = useAppDispatch();
   const { cart } = useAppSelector((state) => state.cart);
   const { wishlist } = useAppSelector((state) => state.wishlist);
@@ -182,7 +184,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       setLastAddedProduct({ id: productId, name: productName });
       setShowSuccessModal(true);
     } catch (error) {
-      console.error("Failed to add product to cart:", error);
+      toast("Failed to add product to cart. Please try again.", "error");
     } finally {
       setAddingProductId(null);
     }
@@ -205,7 +207,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       await dispatch(toggleProductInWishlist(productId)).unwrap();
     } catch (error: any) {
       if (error !== "ALREADY_IN_WISHLIST") {
-        console.error("Failed to toggle wishlist:", error);
+        toast("Failed to update wishlist. Please try again.", "error");
       }
     } finally {
       setTogglingWishlistId(null);
