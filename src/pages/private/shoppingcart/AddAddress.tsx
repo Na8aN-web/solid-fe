@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { createAddress } from "../../../store/slices/addressSlice";
+import { useToast } from "../../../components/Toast";
 
 // Nigerian states with their popular cities (for suggestions only)
 const nigerianStatesWithCities: Record<string, string[]> = {
@@ -48,6 +49,7 @@ const AddAddress = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { loading, error } = useAppSelector((state) => state.address);
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -62,18 +64,12 @@ const AddAddress = () => {
   });
 
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [modalConfig, setModalConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    type: 'error' | 'success' | 'warning';
-    onConfirm?: () => void;
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    type: 'error',
-  });
+
+  useEffect(() => {
+    if (error) {
+      toast(error, "error");
+    }
+  }, [error, toast]);
 
   // Get suggested cities for selected state
   const suggestedCities = useMemo(() => {
@@ -122,35 +118,20 @@ const AddAddress = () => {
     setShowCitySuggestions(false);
   };
 
-  const closeModal = () => {
-    setModalConfig(prev => ({ ...prev, isOpen: false }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.state) {
-      setModalConfig({
-        isOpen: true,
-        title: 'Validation Error',
-        message: 'Please select a state',
-        type: 'warning',
-      });
+      toast("Please select a state.", "warning");
       return;
     }
 
     if (!formData.city.trim()) {
-      setModalConfig({
-        isOpen: true,
-        title: 'Validation Error',
-        message: 'Please enter a city',
-        type: 'warning',
-      });
+      toast("Please enter a city.", "warning");
       return;
     }
 
     try {
-      // Transform the form data to match backend expectations
       const addressData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -164,26 +145,10 @@ const AddAddress = () => {
       };
 
       await dispatch(createAddress(addressData)).unwrap();
-      
-      // Show success modal
-      setModalConfig({
-        isOpen: true,
-        title: 'Success',
-        message: 'Address saved successfully!',
-        type: 'success',
-        onConfirm: () => {
-          closeModal();
-          navigate("/checkout");
-        }
-      });
+      toast("Address saved successfully!", "success");
+      navigate("/checkout");
     } catch (err: any) {
-      console.error("Failed to save address:", err);
-      setModalConfig({
-        isOpen: true,
-        title: 'Error',
-        message: err?.message || 'Failed to save address',
-        type: 'error',
-      });
+      toast(err?.message || "Failed to save address. Please try again.", "error");
     }
   };
 
@@ -192,12 +157,6 @@ const AddAddress = () => {
       <section className="sm:flex sm:justify-center sm:items-center sm:min-h-screen">
         <div className="sm:w-[606px] sm:flex sm:flex-col sm:justify-center sm:rounded-2xl">
           <h2>Add Delivery Address</h2>
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
-              {error}
-            </div>
-          )}
 
           <form className="space-y-4 pt-4" onSubmit={handleSubmit}>
             <div className="sm:flex sm:gap-6 justify-between w-full">
@@ -397,43 +356,6 @@ const AddAddress = () => {
         </div>
       </section>
 
-      {/* Modal Component */}
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="mb-4">
-              <h3 className={`text-lg font-semibold ${
-                modalConfig.type === 'error' ? 'text-red-600' : 
-                modalConfig.type === 'success' ? 'text-green-600' : 
-                'text-yellow-600'
-              }`}>
-                {modalConfig.title}
-              </h3>
-            </div>
-            <div className="mb-6">
-              <p className="text-gray-600">{modalConfig.message}</p>
-            </div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => {
-                  if (modalConfig.onConfirm) {
-                    modalConfig.onConfirm();
-                  } else {
-                    closeModal();
-                  }
-                }}
-                className={`px-4 py-2 rounded-lg text-white font-semibold ${
-                  modalConfig.type === 'error' ? 'bg-red-600 hover:bg-red-700' : 
-                  modalConfig.type === 'success' ? 'bg-green-600 hover:bg-green-700' : 
-                  'bg-yellow-600 hover:bg-yellow-700'
-                }`}
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

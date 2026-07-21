@@ -26,6 +26,7 @@
     "@types/react-dom": "^19.0.4",
     "axios": "^1.8.4",
     "emoji-picker-react": "^4.13.2",
+    "firstchekout": "^1.5.52-3.6",
     "lucide-react": "^0.482.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

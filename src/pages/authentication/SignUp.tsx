@@ -4,6 +4,7 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { registerUser, prepareSignupData, clearError, initiateGoogleLogin } from '../../store/slices/authSlice';
 import { syncGuestCartToBackend } from '../../store/slices/cartSlice';
+import { useToast } from '../../components/Toast';
 
 interface SignupFormData {
     // Personal/Individual fields
@@ -47,6 +48,7 @@ const SignupScreen: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { toast } = useToast();
     const {
         selectedAccountType,
         isLoading,
@@ -63,14 +65,18 @@ const SignupScreen: React.FC = () => {
     });
 
     useEffect(() => {
-        // Clear previous errors when component mounts
         dispatch(clearError());
-
-        // Redirect if no account type is selected
         if (!selectedAccountType) {
             navigate('/account-type');
         }
     }, [dispatch, navigate, selectedAccountType]);
+
+    useEffect(() => {
+        if (error) {
+            toast(error, "error");
+            dispatch(clearError());
+        }
+    }, [error, toast, dispatch]);
 
     // Handle navigation after successful registration
     useEffect(() => {
@@ -383,12 +389,6 @@ const SignupScreen: React.FC = () => {
                             </span>
                         )}
                     </div>
-
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                            {error}
-                        </div>
-                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Render different forms based on account type */}

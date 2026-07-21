@@ -10,6 +10,7 @@ import { dealsOfTheDay } from "../../../../store/slices/productSlice";
 import SuccessModal from "../../../../components/SuccessModal";
 import { RootState } from "../../../../store";
 import SectionHeading from "../../../public/home/components/SectionHeading";
+import { useToast } from "../../../../components/Toast";
 
 const DealsOfTheDay = () => {
   const dispatch = useAppDispatch();
@@ -26,6 +27,7 @@ const DealsOfTheDay = () => {
   );
 
   // Local State
+  const { toast } = useToast();
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastAddedProduct, setLastAddedProduct] = useState<{
@@ -81,7 +83,7 @@ const DealsOfTheDay = () => {
         setLastAddedProduct({ id: productId, name: productName });
         setShowSuccessModal(true);
       } catch (error) {
-        console.error("Failed to add product to cart:", error);
+        toast("Failed to add product to cart. Please try again.", "error");
       } finally {
         setAddingProductId(null); // Clear loading state
       }

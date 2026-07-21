@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { toggleProductInWishlist } from "../../../../store/slices/wishlistSlice";
+import { useToast } from "../../../../components/Toast";
 
 interface DealsCardProps {
   productId: string;
@@ -39,9 +40,10 @@ const DealsCard: React.FC<DealsCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
   const FavouriteOutline = MdFavoriteBorder as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
   const FavouriteFilled = MdFavorite as unknown as React.FC<React.SVGProps<SVGSVGElement>>;
-  
+
   const { wishlist } = useAppSelector((state) => state.wishlist);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   
@@ -122,7 +124,7 @@ const DealsCard: React.FC<DealsCardProps> = ({
       await dispatch(toggleProductInWishlist(productId)).unwrap();
     } catch (error: any) {
       if (error !== "ALREADY_IN_WISHLIST") {
-        console.error("Failed to toggle wishlist:", error);
+        toast("Failed to update wishlist. Please try again.", "error");
       }
     } finally {
       setIsTogglingWishlist(false);

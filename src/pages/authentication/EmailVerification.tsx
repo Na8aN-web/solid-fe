@@ -8,6 +8,7 @@ import {
     clearEmailVerificationError,
     resetRedirectToLogin // Import the reset action
 } from '../../store/slices/authSlice';
+import { useToast } from '../../components/Toast';
 
 const EmailVerification: React.FC = () => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -18,6 +19,7 @@ const EmailVerification: React.FC = () => {
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { toast } = useToast();
 
     const {
         user,
@@ -45,6 +47,13 @@ const EmailVerification: React.FC = () => {
     useEffect(() => {
         dispatch(clearEmailVerificationError());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (error) {
+            toast(error, "error");
+            dispatch(clearEmailVerificationError());
+        }
+    }, [error, toast, dispatch]);
 
     // Handle successful verification and redirect
     useEffect(() => {
@@ -204,12 +213,6 @@ const EmailVerification: React.FC = () => {
                             </>
                         )}
                     </div>
-
-                    {error && !showSuccess && (
-                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     {!showSuccess ? (
                         <form onSubmit={handleSubmit}>

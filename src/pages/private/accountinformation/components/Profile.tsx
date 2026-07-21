@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
 import { setUser } from "../../../../store/slices/authSlice";
+import { useToast } from "../../../../components/Toast";
 import ionwarning from "../../../../assets/ion_warning.svg";
 import annoucement from "../../../../assets/announcement.svg";
 import { Link } from "react-router-dom";
@@ -22,6 +23,7 @@ type UserProfile = {
 
 const Profile = () => {
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
   const { user: authUser } = useAppSelector((state) => state.auth);
   const { user: profileUser, userLoading } = useAppSelector(
@@ -39,9 +41,6 @@ const Profile = () => {
   });
 
   const [isSaving, setIsSaving] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const isWholesaler = authUser?.role === "Wholesaler";
 
@@ -158,22 +157,12 @@ const Profile = () => {
       // Sync auth slice so navbar etc update
       dispatch(setUser(updatedUser));
 
-      setShowSuccessModal(true);
+      toast("Profile updated successfully.", "success");
     } catch (error) {
-      setErrorMessage("Failed to update profile.");
-      setShowErrorModal(true);
+      toast("Failed to update profile. Please try again.", "error");
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleCloseSuccessModal = () => {
-    setShowSuccessModal(false);
-  };
-
-  const handleCloseErrorModal = () => {
-    setShowErrorModal(false);
-    setErrorMessage("");
   };
 
   // Get user initials for avatar
@@ -284,91 +273,6 @@ const Profile = () => {
         </button>
       </div>
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={handleCloseSuccessModal}
-          />
-
-          {/* Modal Content */}
-          <div className="relative bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <svg
-                  className="h-6 w-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Profile Updated Successfully
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Your profile information has been updated successfully.
-              </p>
-              <button
-                onClick={handleCloseSuccessModal}
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error Modal */}
-      {showErrorModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={handleCloseErrorModal}
-          />
-
-          {/* Modal Content */}
-          <div className="relative bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg
-                  className="h-6 w-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Error</h3>
-              <p className="text-gray-600 mb-6">
-                {errorMessage || "An error occurred. Please try again."}
-              </p>
-              <button
-                onClick={handleCloseErrorModal}
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
