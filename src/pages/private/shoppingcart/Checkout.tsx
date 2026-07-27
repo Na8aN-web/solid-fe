@@ -306,9 +306,11 @@ const Checkout: React.FC = () => {
 
       // Step 2: Initiate FirstChekout transaction — backend returns ref + confirmed amount
       const initiateRes = await axiosInstance.post("/checkout/fc/initiate", { orderId });
+      console.log("[Checkout] initiate response:", initiateRes.data);
       const paymentReference: string = initiateRes.data.paymentReference;       // UUID — widget ref
       const transactionReference: string = initiateRes.data.transactionReference; // TX-... — status check
       const paymentAmount: number = initiateRes.data.amount ?? serverAmount;
+      console.log("[Checkout] paymentReference:", paymentReference, "| transactionReference:", transactionReference);
 
       // Step 3: Open the widget — poll status endpoint when it closes successfully
       await FBNCheckout.initiateTransactionAsync(
@@ -327,9 +329,17 @@ const Checkout: React.FC = () => {
           publicKey: process.env.REACT_APP_FIRSTBANK_PUBLIC_KEY || "",
           description: `Payment for order ${orderId}`,
           currency: "NGN",
-          callback: async () => {
-            // Widget signals payment was attempted — poll backend to confirm outcome
-            await pollPaymentStatus(transactionReference);
+          callback: async (data: any) => {
+            console.log("[Checkout] widget callback:", data);
+            // Widget SDK failed to reach FirstBank (CORS / network error)
+            if (data?.status === "error") {
+              toast("Payment could not be started. Please try again.", "error");
+              setWidgetLoading(false);
+              return;
+            }
+            // On success the iframe provides the TX-... reference; fall back to what we have
+            const ref = data?.reference || transactionReference || paymentReference;
+            await pollPaymentStatus(ref);
             setWidgetLoading(false);
           },
           onClose: () => {
