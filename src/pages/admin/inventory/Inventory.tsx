@@ -4,6 +4,7 @@ import carTyre from "../../../assets/tyres.svg";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";
 import Pagination from "../components/Pagination";
+import { useToast } from "../../../components/Toast";
 
 interface InventoryItem {
   id: string;
@@ -17,6 +18,7 @@ interface InventoryItem {
 }
 
 const Inventory: React.FC = () => {
+  const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
@@ -98,13 +100,13 @@ const Inventory: React.FC = () => {
       return (
         <div className="flex items-center gap-2">
           <button
-            onClick={() => handleRestock(item.id)}
+            onClick={() => handleRestock(item)}
             className="px-3 py-1 bg-[#003366] text-white text-xs font-medium rounded-[4px] hover:bg-[#002244]"
           >
             Restock
           </button>
           <button
-            onClick={() => handleNotify(item.id)}
+            onClick={() => handleNotify(item)}
             className="px-3 py-1 bg-[#00336626] text-primary text-xs font-medium rounded-[4px] hover:bg-gray-50"
           >
             Notify
@@ -115,13 +117,13 @@ const Inventory: React.FC = () => {
       return (
         <div className="flex items-center gap-2">
           <button
-            onClick={() => handleRestock(item.id)}
+            onClick={() => handleRestock(item)}
             className="px-3 py-1 bg-[#6C757D] text-white text-xs font-medium rounded-[4px] hover:bg-[#5A6268]"
           >
             Restock
           </button>
           <button
-            onClick={() => handleNotify(item.id)}
+            onClick={() => handleNotify(item)}
             className="px-3 py-1 bg-[#00336626] text-primary text-xs font-medium rounded-[4px] hover:bg-gray-50"
           >
             Notify
@@ -131,12 +133,12 @@ const Inventory: React.FC = () => {
     }
   };
 
-  const handleRestock = (id: string) => {
-    // console.log("Restocking item with ID:", id);
+  const handleRestock = (item: InventoryItem) => {
+    toast(`Restock request sent for ${item.productName}.`, "success");
   };
 
-  const handleNotify = (id: string) => {
-    // console.log("Notifying about item with ID:", id);
+  const handleNotify = (item: InventoryItem) => {
+    toast(`Store notified about ${item.productName}.`, "success");
   };
 
   const handlePageChange = (page: number) => {
@@ -171,7 +173,12 @@ const Inventory: React.FC = () => {
 
             {/* Right: Buttons */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
-              <button className="flex gap-2 justify-center items-center px-4 py-3 w-full min-w-[140px] bg-[#003366] rounded-[6px] text-white text-sm font-medium">
+              <button
+                onClick={() =>
+                  toast("Store notified about low and out-of-stock items.", "success")
+                }
+                className="flex gap-2 justify-center items-center px-4 py-3 w-full min-w-[140px] bg-[#003366] rounded-[6px] text-white text-sm font-medium"
+              >
                 <Bell className="w-4 h-4" />
                 Notify Store
               </button>
