@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductIcon from "../../../assets/productIcon.svg";
 import edit from "../../../assets/edit.svg";
@@ -200,7 +200,7 @@ const Products: React.FC = () => {
   };
 
   // Function to fetch products with filters
-  const fetchProductsWithFilters = () => {
+  const fetchProductsWithFilters = useCallback(() => {
     const filters: any = {
       page: currentPage,
       limit: itemsPerPage,
@@ -234,7 +234,16 @@ const Products: React.FC = () => {
     } else {
       dispatch(fetchProducts(filters));
     }
-  };
+  }, [
+    dispatch,
+    currentPage,
+    searchTerm,
+    selectedCategory,
+    selectedBrand,
+    sortBy,
+    categories,
+    brands,
+  ]);
 
   // Fetch categories and brands on mount
   useEffect(() => {
@@ -252,15 +261,7 @@ const Products: React.FC = () => {
     );
 
     return () => clearTimeout(timeoutId);
-  }, [
-    dispatch,
-    currentPage,
-    searchTerm,
-    selectedCategory,
-    selectedBrand,
-    sortBy,
-    fetchProductsWithFilters
-  ]);
+  }, [searchTerm, fetchProductsWithFilters]);
 
   // Filter products by stock status on frontend
   const filteredProducts = React.useMemo(() => {
@@ -494,7 +495,7 @@ const Products: React.FC = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={9} className="text-center py-12 text-gray-500">
+                    <td colSpan={8} className="text-center py-12 text-gray-500">
                       <div className="flex flex-col items-center">
                         <img
                           src={ProductIcon}
