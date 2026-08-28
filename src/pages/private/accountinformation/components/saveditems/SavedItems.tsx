@@ -184,7 +184,7 @@ const SavedItems = () => {
                     : product.image) || placeholderImage
                 }
                 alt={product.name}
-                className="w-full h-[110px] lg:h-[200px] object-contain"
+                className="w-full h-[110px] lg:h-[200px] object-cover"
                 onError={handleImageError}
               />
             </div>

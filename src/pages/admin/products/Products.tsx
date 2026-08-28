@@ -436,11 +436,11 @@ const Products: React.FC = () => {
                         </td>
                         <td className="p-4 text-sm">
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 bg-[#FAF9F9] rounded-lg overflow-hidden flex-shrink-0">
                               <img
                                 src={product.image || ProductIcon}
                                 alt={product.name}
-                                className="w-[36px] h-[36px] object-contain"
+                                className="w-full h-full object-cover"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src =
                                     ProductIcon;

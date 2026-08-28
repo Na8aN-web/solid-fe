@@ -53,7 +53,7 @@ const PendingRatings = () => {
             <img
               src={product.image}
               alt={product.name}
-              className="w-[140px] md:w-[160px] h-[134px] md:h-[153px]"
+              className="w-[140px] md:w-[160px] h-[134px] md:h-[153px] object-cover"
             />
             <div className="flex flex-col justify-between h-full max-h-[125px] md:max-h-[140px]">
               <h2 className="text-xs lg:text-xl text-customBrown font-normal lg:font-semibold">
@@ -104,7 +104,7 @@ const PendingRatings = () => {
               <img
                 src={selectedProduct.image}
                 alt={selectedProduct.name}
-                className="w-[140px] md:w-[160px] h-[134px] md:h-[153px]"
+                className="w-[140px] md:w-[160px] h-[134px] md:h-[153px] object-cover"
               />
               <div className="flex flex-col justify-between h-full max-h-[125px] md:max-h-[140px]">
                 <h2 className="text-xs lg:text-xl text-customBrown font-normal lg:font-semibold">

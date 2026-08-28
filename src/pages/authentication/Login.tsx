@@ -33,6 +33,15 @@ const Login = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    const sessionExpiredMessage = sessionStorage.getItem("sessionExpiredMessage");
+    if (sessionExpiredMessage) {
+      sessionStorage.removeItem("sessionExpiredMessage");
+      toast(sessionExpiredMessage, "warning");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (error) {
       toast(error, "error");
       dispatch(clearError());

@@ -4,6 +4,7 @@ import carTyre from "../../../assets/tyres.svg";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";
 import Pagination from "../components/Pagination";
+import { useToast } from "../../../components/Toast";
 
 interface Order {
   id: string;
@@ -16,10 +17,20 @@ interface Order {
   status: "Shipped" | "Pending" | "Cancelled" | "Delivered";
 }
 
+const ORDER_STATUSES: Order["status"][] = [
+  "Pending",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
+
 const Orders: React.FC = () => {
+  const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [orderToUpdate, setOrderToUpdate] = useState<Order | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<Order["status"]>("Pending");
   const itemsPerPage = 10;
 
   // const orders: Order[] = [
@@ -95,18 +106,20 @@ const Orders: React.FC = () => {
   //   },
   // ];
 
-  const allOrders: Order[] = Array.from({ length: 48 }, (_, i) => ({
-    id: `${i + 1}`,
-    productName: `Product ${i + 1}`,
-    buyerName: `Buyer ${i + 1}`,
-    orderId: `${2563823270 + i}`,
-    orderDate: "25th July, 2024",
-    orderAmount: `₦${(250000 + i * 1000).toLocaleString()}`,
-    image: carTyre,
-    status: ["Shipped", "Pending", "Cancelled", "Delivered"][
-      i % 4
-    ] as Order["status"],
-  }));
+  const [allOrders, setAllOrders] = useState<Order[]>(() =>
+    Array.from({ length: 48 }, (_, i) => ({
+      id: `${i + 1}`,
+      productName: `Product ${i + 1}`,
+      buyerName: `Buyer ${i + 1}`,
+      orderId: `${2563823270 + i}`,
+      orderDate: "25th July, 2024",
+      orderAmount: `₦${(250000 + i * 1000).toLocaleString()}`,
+      image: carTyre,
+      status: ["Shipped", "Pending", "Cancelled", "Delivered"][
+        i % 4
+      ] as Order["status"],
+    }))
+  );
 
   const filterOptions = [
     {
@@ -163,12 +176,24 @@ const Orders: React.FC = () => {
     }
   };
 
-  const handleUpdate = (id: string) => {
-    // console.log("Updating order with ID:", id);
+  const handleUpdate = (order: Order) => {
+    setOrderToUpdate(order);
+    setPendingStatus(order.status);
   };
 
-  const handleNotify = (id: string) => {
-    // console.log("Notifying order with ID:", id);
+  const confirmUpdate = () => {
+    if (!orderToUpdate) return;
+    setAllOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderToUpdate.id ? { ...o, status: pendingStatus } : o
+      )
+    );
+    toast(`Order ${orderToUpdate.orderId} status updated to ${pendingStatus}.`, "success");
+    setOrderToUpdate(null);
+  };
+
+  const handleNotify = (order: Order) => {
+    toast(`${order.buyerName} was notified about order ${order.orderId}.`, "success");
   };
 
   const handlePageChange = (page: number) => {
@@ -203,11 +228,21 @@ const Orders: React.FC = () => {
 
             {/* Right: Buttons */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
-              <button className="flex gap-2 justify-center items-center px-4 py-2 md:min-w-[195px] min-h-[50px] bg-[#003366] rounded-[6px] text-white text-sm font-medium">
+              <button
+                onClick={() =>
+                  toast("Select an order from the list below to update its status.", "info")
+                }
+                className="flex gap-2 justify-center items-center px-4 py-2 md:min-w-[195px] min-h-[50px] bg-[#003366] rounded-[6px] text-white text-sm font-medium"
+              >
                 <Plus className="w-4 h-4" />
                 Update Order Status
               </button>
-              <button className="flex gap-2 justify-center items-center px-4 py-2 md:min-w-[175px] min-h-[50px] text-[#003366] border border-[#003366] rounded-[6px] bg-white text-sm font-medium">
+              <button
+                onClick={() =>
+                  toast("Buyers with pending orders were notified.", "success")
+                }
+                className="flex gap-2 justify-center items-center px-4 py-2 md:min-w-[175px] min-h-[50px] text-[#003366] border border-[#003366] rounded-[6px] bg-white text-sm font-medium"
+              >
                 <Bell className="w-4 h-4" />
                 Notify Buyer
               </button>
@@ -300,13 +335,13 @@ const Orders: React.FC = () => {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleUpdate(order.id)}
+                          onClick={() => handleUpdate(order)}
                           className="px-3 py-1 bg-[#003366] text-white text-xs font-medium rounded-[4px] hover:bg-[#002244]"
                         >
                           Update
                         </button>
                         <button
-                          onClick={() => handleNotify(order.id)}
+                          onClick={() => handleNotify(order)}
                           className="px-3 py-1 bg-white text-[#003366] border border-[#003366] text-xs font-medium rounded-[4px] hover:bg-gray-50"
                         >
                           Notify
@@ -341,6 +376,42 @@ const Orders: React.FC = () => {
           itemLabel="Orders"
         />
       </div>
+
+      {orderToUpdate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg w-[400px] p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Update Order Status</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Order {orderToUpdate.orderId} — {orderToUpdate.buyerName}
+            </p>
+            <select
+              value={pendingStatus}
+              onChange={(e) => setPendingStatus(e.target.value as Order["status"])}
+              className="w-full p-3 border rounded-md text-sm mb-6"
+            >
+              {ORDER_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setOrderToUpdate(null)}
+                className="px-4 py-2 border rounded-md text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUpdate}
+                className="px-4 py-2 bg-[#003366] text-white rounded-md text-sm hover:bg-[#002244]"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };

@@ -379,7 +379,7 @@ const Checkout: React.FC = () => {
                   <img
                     src={item.product.images[0] || "/tyres.svg"}
                     alt={item.product.name}
-                    className="w-[80px] h-[80px]"
+                    className="w-[80px] h-[80px] object-cover"
                   />
                 </div>
                 <div className="lg:flex lg:justify-between w-full space-y-1">
