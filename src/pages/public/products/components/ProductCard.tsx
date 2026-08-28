@@ -369,7 +369,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <img
             src={image}
             alt={title}
-            className="px-4 w-32 m-auto lg:w-36 object-contain"
+            className="px-4 w-[100px] h-[100px] m-auto lg:w-[140px] lg:h-[130px] object-cover"
           />
         </div>
         <p className="text-[10px] font-semibold text-customGray2 truncate leading-normal uppercase">

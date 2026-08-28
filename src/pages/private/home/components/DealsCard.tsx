@@ -162,7 +162,7 @@ const DealsCard: React.FC<DealsCardProps> = ({
             <img
               src={image}
               alt={title}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               loading="lazy"
             />
           </figure>
@@ -178,7 +178,7 @@ const DealsCard: React.FC<DealsCardProps> = ({
               <img
                 src={image}
                 alt={`${title} view ${index}`}
-                className="w-full min-w-10 h-10 object-contain"
+                className="w-full min-w-10 h-10 object-cover"
                 loading="lazy"
               />
             </figure>

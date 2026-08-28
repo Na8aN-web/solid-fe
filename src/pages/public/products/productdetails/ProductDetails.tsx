@@ -314,7 +314,7 @@ const ProductImageGallery = ({
         <img
           src={images[0]}
           alt={name}
-          className="w-[220px] h-[220px] object-fill"
+          className="w-[220px] h-[220px] object-cover"
         />
       ) : (
         <div className="w-[220px] h-[220px] flex items-center justify-center bg-gray-100">
@@ -331,7 +331,7 @@ const ProductImageGallery = ({
           <img
             src={images[index] || images[0]}
             alt={`${name} thumbnail ${i + 1}`}
-            className="w-[65px] h-[65px] object-fill"
+            className="w-[65px] h-[65px] object-cover"
           />
         </div>
       ))}

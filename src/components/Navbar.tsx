@@ -72,6 +72,8 @@ const Navbar: React.FC<NavProps> = ({ isMenuOpen, setIsMenuOpen }) => {
 
   const handleLogOut = () => {
     dispatch(logout());
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 

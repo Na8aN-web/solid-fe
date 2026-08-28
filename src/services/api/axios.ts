@@ -41,8 +41,17 @@ axiosInstance.interceptors.response.use(
   (error) => {
     const { response } = error;
     if (response && response.status === 401) {
+      const wasLoggedIn = !!localStorage.getItem('authToken');
       localStorage.removeItem('authToken');
-      // Optionally redirect to login
+      localStorage.removeItem('user');
+
+      if (wasLoggedIn && !window.location.pathname.startsWith('/login')) {
+        sessionStorage.setItem(
+          'sessionExpiredMessage',
+          'Your session has expired. Please log in again.'
+        );
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

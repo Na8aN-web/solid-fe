@@ -498,7 +498,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       <img
                         src={product.image}
                         alt={product.name}
-                        className={`${viewType === "list" ? "w-full h-full max-h-[200px] px-10 py-6" : "w-full h-[158px] px-2 pt-10"} mx-auto object-contain`}
+                        className={`${viewType === "list" ? "w-full h-full max-h-[200px] px-10 py-6" : "w-full h-[158px] px-2 pt-10"} mx-auto object-cover`}
                       />
                     </div>
 

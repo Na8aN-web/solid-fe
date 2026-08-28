@@ -32,7 +32,7 @@ const Messages = () => {
             <img
               src={product.image}
               alt={product.title}
-              className="w-[100px] h-[105px]"
+              className="w-[100px] h-[105px] object-cover"
             />
             <div className="flex flex-col justify-between ">
               <h2 className="text-base text-customGray3 font-normal leading-tight pb-2">
