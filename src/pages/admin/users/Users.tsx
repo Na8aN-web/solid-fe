@@ -6,8 +6,10 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   fetchAllUsers,
   fetchUserById,
+  updateUserAccount,
 } from "../../../store/slices/adminDashboardSlice";
 import LoaderSpinner from "../../../components/LoaderSpinner";
+import { useToast } from "../../../components/Toast";
 
 // Backend model (export this type from your slice)
 import type { User as ApiUser } from "../../../store/slices/adminDashboardSlice";
@@ -22,6 +24,7 @@ type TableUser = {
   email: string;
   accountType: "Personal" | "Wholesaler" | "Importer" | "Manufacturer";
   status: "Active" | "Inactive";
+  isActive: boolean;
   dateJoined: string;
 };
 
@@ -31,6 +34,7 @@ const Users: React.FC = () => {
     // const [selectedStatus, setSelectedStatus] = useState("All Status");
     // const itemsPerPage = 10;
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
   // --- UI state
   const [activeFilter, setActiveFilter] = useState<string>("All Users");
@@ -42,6 +46,9 @@ const Users: React.FC = () => {
   const userList: ApiUser[] = useAppSelector((s) => s.adminDashboard.users);
   const usersLoading = useAppSelector((s) => s.adminDashboard.loading.users);
   const usersError = useAppSelector((s) => s.adminDashboard.error.users);
+  const updatingAccount = useAppSelector(
+    (s) => s.adminDashboard.loading.updateUserAccount
+  );
 
   // used by the modal (populated by fetchUserById)
   const userDetails = useAppSelector((s) => s.adminDashboard.userDetails);
@@ -70,6 +77,7 @@ const Users: React.FC = () => {
       else if (roleStr.includes("manufact")) accountType = "Manufacturer";
 
       const createdAt = (u as any).createdAt;
+      const isActive = (u as any).isActive !== false;
 
       return {
         id: id || Math.random().toString(36).slice(2),
@@ -77,7 +85,8 @@ const Users: React.FC = () => {
         name: fullName || email || "—",
         email,
         accountType,
-        status: "Active",
+        status: isActive ? "Active" : "Inactive",
+        isActive,
         dateJoined: createdAt ? new Date(createdAt).toLocaleDateString() : "—",
       };
     });
@@ -122,6 +131,17 @@ const Users: React.FC = () => {
     setShowModal(false);
     setSelectedUserId("");
   };
+
+  const toggleActive = async (id: string, name: string, makeActive: boolean) => {
+    try {
+      await dispatch(updateUserAccount({ id, isActive: makeActive })).unwrap();
+      toast(`${name} was ${makeActive ? "activated" : "suspended"}.`, "success");
+    } catch (error: any) {
+      toast(`Failed to update user: ${error?.message || error}`, "error");
+    }
+  };
+
+  const modalIsActive = (userDetails as any)?.isActive !== false;
 
   return (
     <AdminLayout pageTitle="">
@@ -234,8 +254,18 @@ const Users: React.FC = () => {
                     >
                       View
                     </button>
-                    <button className="px-3 py-1 bg-[#F248221A] text-[#F24822] text-xs font-medium rounded-[4px]">
-                      Suspend
+                    <button
+                      onClick={() =>
+                        toggleActive(user.id, user.name, !user.isActive)
+                      }
+                      disabled={updatingAccount}
+                      className={`px-3 py-1 text-xs font-medium rounded-[4px] disabled:opacity-50 ${
+                        user.isActive
+                          ? "bg-[#F248221A] text-[#F24822]"
+                          : "bg-[#E8F5E8] text-[#4CAF50]"
+                      }`}
+                    >
+                      {user.isActive ? "Suspend" : "Activate"}
                     </button>
                   </div>
                 </td>
@@ -283,10 +313,34 @@ const Users: React.FC = () => {
             </div>
 
             <div className="p-4 flex justify-between gap-2">
-              <button className="px-4 py-4 rounded-md bg-[#D9D9D9] text-white border-gray-300 text-sm w-full">
+              <button
+                onClick={() =>
+                  selectedUserId &&
+                  toggleActive(
+                    selectedUserId,
+                    `${userDetails?.firstName ?? ""} ${userDetails?.lastName ?? ""}`.trim() ||
+                      "User",
+                    true
+                  )
+                }
+                disabled={!userDetails || modalIsActive || updatingAccount}
+                className="px-4 py-4 rounded-md bg-[#D9D9D9] text-white border-gray-300 text-sm w-full disabled:opacity-50"
+              >
                 Activate
               </button>
-              <button className="px-4 py-4 rounded-md bg-[#003366] text-[#F24822] text-sm w-full bg-[#F248221A]">
+              <button
+                onClick={() =>
+                  selectedUserId &&
+                  toggleActive(
+                    selectedUserId,
+                    `${userDetails?.firstName ?? ""} ${userDetails?.lastName ?? ""}`.trim() ||
+                      "User",
+                    false
+                  )
+                }
+                disabled={!userDetails || !modalIsActive || updatingAccount}
+                className="px-4 py-4 rounded-md bg-[#003366] text-[#F24822] text-sm w-full bg-[#F248221A] disabled:opacity-50"
+              >
                 Suspend
               </button>
             </div>

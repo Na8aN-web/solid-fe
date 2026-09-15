@@ -89,6 +89,27 @@ export const updateUser = createAsyncThunk<
   }
 });
 
+// self update (PATCH /users/me) — only firstName, lastName, phoneNumber, email are accepted
+export const updateOwnProfile = createAsyncThunk<
+  User,
+  { firstName?: string; lastName?: string; phoneNumber?: string; email?: string },
+  { rejectValue: string }
+>("users/updateOwnProfile", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.patch("/users/me", data);
+    return response.data.user;
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(
+        error.response.data?.errors?.[0]?.message ||
+          error.response.data?.message ||
+          "Failed to update profile",
+      );
+    }
+    return rejectWithValue("Network error. Please try again.");
+  }
+});
+
 // delete user
 export const deleteUser = createAsyncThunk<
   User,
@@ -207,6 +228,20 @@ const userSlice = createSlice({
       state.user = action.payload;
     });
     builder.addCase(updateUser.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "Something went wrong";
+    });
+
+    // self update (PATCH /users/me)
+    builder.addCase(updateOwnProfile.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updateOwnProfile.fulfilled, (state, action) => {
+      state.loading = false;
+      state.user = action.payload;
+    });
+    builder.addCase(updateOwnProfile.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload || "Something went wrong";
     });
