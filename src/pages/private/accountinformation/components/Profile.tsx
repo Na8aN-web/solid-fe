@@ -11,6 +11,7 @@ import {
   clearUser,
   getUserById,
   updateUser,
+  updateOwnProfile,
 } from "../../../../store/slices/userSlice";
 
 type UserProfile = {
@@ -141,21 +142,34 @@ const Profile = () => {
     try {
       setIsSaving(true);
 
-      const payload = {
+      // PATCH /users/me only accepts firstName, lastName, phoneNumber, email
+      const selfUpdatePayload = {
         firstName: isWholesaler ? undefined : userProfile.firstName,
         lastName: isWholesaler ? undefined : userProfile.lastName,
         phoneNumber: userProfile.phoneNumber,
         email: userProfile.emailAddress,
-        companyName: isWholesaler ? userProfile.companyName : undefined,
-        role: authUser.role,
       };
 
       const updatedUser = await dispatch(
-        updateUser({ id: authUser._id, data: payload }),
+        updateOwnProfile(selfUpdatePayload),
       ).unwrap();
 
+      let mergedUser: any = { ...authUser, ...updatedUser };
+
+      // companyName isn't accepted by /users/me — fall back to the general
+      // update endpoint for wholesalers editing their company name.
+      if (isWholesaler) {
+        const companyUpdatedUser = await dispatch(
+          updateUser({
+            id: authUser._id,
+            data: { companyName: userProfile.companyName, role: authUser.role },
+          }),
+        ).unwrap();
+        mergedUser = { ...mergedUser, ...companyUpdatedUser };
+      }
+
       // Sync auth slice so navbar etc update
-      dispatch(setUser(updatedUser));
+      dispatch(setUser(mergedUser));
 
       toast("Profile updated successfully.", "success");
     } catch (error) {

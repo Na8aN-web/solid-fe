@@ -1,130 +1,108 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Search, Plus, Bell } from "lucide-react";
-import carTyre from "../../../assets/tyres.svg";
+import ProductIcon from "../../../assets/productIcon.svg";
 import AdminLayout from "../components/AdminLayout";
 import FilterSection from "../components/FilterSection";
 import Pagination from "../components/Pagination";
 import { useToast } from "../../../components/Toast";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import {
+  fetchAdminOrders,
+  updateOrderStatus,
+  AdminOrder,
+  OrderStatus,
+} from "../../../store/slices/adminDashboardSlice";
+import LoaderSpinner from "../../../components/LoaderSpinner";
+import ErrorButton from "../../../components/ErrorButton";
 
-interface Order {
-  id: string;
-  productName: string;
-  buyerName: string;
-  orderId: string;
-  orderDate: string;
-  orderAmount: string;
-  image: string;
-  status: "Shipped" | "Pending" | "Cancelled" | "Delivered";
-}
-
-const ORDER_STATUSES: Order["status"][] = [
+const ORDER_STATUSES: OrderStatus[] = [
   "Pending",
+  "Processing",
   "Shipped",
   "Delivered",
   "Cancelled",
 ];
 
+// View-model so the table doesn't have to care whether user/product refs
+// came back populated (objects) or as raw ObjectId strings.
+type TableOrder = {
+  id: string;
+  orderRef: string;
+  productName: string;
+  extraItemsCount: number;
+  buyerName: string;
+  orderDate: string;
+  orderAmount: string;
+  image: string;
+  status: OrderStatus;
+};
+
+const getBuyerName = (user: any): string => {
+  if (!user) return "—";
+  if (typeof user === "string") return user.slice(-8).toUpperCase();
+  const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+  return name || user.email || "—";
+};
+
+const getFirstProductName = (item: any): string => {
+  const product = item?.product;
+  if (!product) return "Product";
+  if (typeof product === "string") return "Product";
+  return product.name || "Product";
+};
+
+const getFirstProductImage = (item: any): string => {
+  const product = item?.product;
+  if (product && typeof product === "object" && Array.isArray(product.images)) {
+    return product.images[0] || ProductIcon;
+  }
+  return ProductIcon;
+};
+
 const Orders: React.FC = () => {
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
+
+  const adminOrders = useAppSelector((s) => s.adminDashboard.adminOrders);
+  const ordersLoading = useAppSelector((s) => s.adminDashboard.loading.adminOrders);
+  const ordersError = useAppSelector((s) => s.adminDashboard.error.adminOrders);
+  const updatingStatus = useAppSelector((s) => s.adminDashboard.loading.updateOrderStatus);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
-  const [orderToUpdate, setOrderToUpdate] = useState<Order | null>(null);
-  const [pendingStatus, setPendingStatus] = useState<Order["status"]>("Pending");
+  const [orderToUpdate, setOrderToUpdate] = useState<TableOrder | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<OrderStatus>("Pending");
   const itemsPerPage = 10;
 
-  // const orders: Order[] = [
-  //   {
-  //     id: "1",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Shipped",
-  //   },
-  //   {
-  //     id: "2",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Pending",
-  //   },
-  //   {
-  //     id: "3",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Cancelled",
-  //   },
-  //   {
-  //     id: "4",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Delivered",
-  //   },
-  //   {
-  //     id: "5",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Cancelled",
-  //   },
-  //   {
-  //     id: "6",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Delivered",
-  //   },
-  //   {
-  //     id: "7",
-  //     productName: "Michellene Tyre",
-  //     buyerName: "Michellene Tyre",
-  //     orderId: "2563823270",
-  //     orderDate: "25th July, 2024",
-  //     orderAmount: "₦250,000.00",
-  //     image: carTyre,
-  //     status: "Delivered",
-  //   },
-  // ];
+  useEffect(() => {
+    dispatch(fetchAdminOrders());
+  }, [dispatch]);
 
-  const [allOrders, setAllOrders] = useState<Order[]>(() =>
-    Array.from({ length: 48 }, (_, i) => ({
-      id: `${i + 1}`,
-      productName: `Product ${i + 1}`,
-      buyerName: `Buyer ${i + 1}`,
-      orderId: `${2563823270 + i}`,
-      orderDate: "25th July, 2024",
-      orderAmount: `₦${(250000 + i * 1000).toLocaleString()}`,
-      image: carTyre,
-      status: ["Shipped", "Pending", "Cancelled", "Delivered"][
-        i % 4
-      ] as Order["status"],
-    }))
-  );
+  const tableOrders: TableOrder[] = useMemo(() => {
+    if (!Array.isArray(adminOrders)) return [];
+    return adminOrders.map((order: AdminOrder): TableOrder => {
+      const firstItem = order.orderItems?.[0];
+      return {
+        id: order._id,
+        orderRef: order._id ? order._id.slice(-8).toUpperCase() : "—",
+        productName: getFirstProductName(firstItem),
+        extraItemsCount: Math.max((order.orderItems?.length ?? 1) - 1, 0),
+        buyerName: getBuyerName(order.user),
+        orderDate: order.createdAt
+          ? new Date(order.createdAt).toLocaleDateString()
+          : "—",
+        orderAmount: `₦${(order.totalAmount ?? 0).toLocaleString()}`,
+        image: getFirstProductImage(firstItem),
+        status: order.status,
+      };
+    });
+  }, [adminOrders]);
 
   const filterOptions = [
     {
       label: "Status",
-      options: ["All Status", "Shipped", "Pending", "Cancelled", "Delivered"],
+      options: ["All Status", ...ORDER_STATUSES],
       value: selectedStatus,
       onChange: setSelectedStatus,
     },
@@ -139,18 +117,18 @@ const Orders: React.FC = () => {
 
   // Filter orders based on search and status
   const filteredOrders = useMemo(() => {
-    return allOrders.filter((order) => {
+    return tableOrders.filter((order) => {
       const matchesSearch =
         order.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.buyerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.orderId.includes(searchTerm);
+        order.orderRef.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
         selectedStatus === "All Status" || order.status === selectedStatus;
 
       return matchesSearch && matchesStatus;
     });
-  }, [allOrders, searchTerm, selectedStatus]);
+  }, [tableOrders, searchTerm, selectedStatus]);
 
   // Paginate filtered orders
   const paginatedOrders = useMemo(() => {
@@ -165,6 +143,8 @@ const Orders: React.FC = () => {
     switch (status) {
       case "Shipped":
         return "bg-[#E3F2FD] text-[#1976D2]";
+      case "Processing":
+        return "bg-[#EDE7F6] text-[#5E35B1]";
       case "Pending":
         return "bg-[#FFF3E0] text-[#F57C00]";
       case "Cancelled":
@@ -176,24 +156,26 @@ const Orders: React.FC = () => {
     }
   };
 
-  const handleUpdate = (order: Order) => {
+  const handleUpdate = (order: TableOrder) => {
     setOrderToUpdate(order);
     setPendingStatus(order.status);
   };
 
-  const confirmUpdate = () => {
+  const confirmUpdate = async () => {
     if (!orderToUpdate) return;
-    setAllOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderToUpdate.id ? { ...o, status: pendingStatus } : o
-      )
-    );
-    toast(`Order ${orderToUpdate.orderId} status updated to ${pendingStatus}.`, "success");
-    setOrderToUpdate(null);
+    try {
+      await dispatch(
+        updateOrderStatus({ id: orderToUpdate.id, status: pendingStatus })
+      ).unwrap();
+      toast(`Order ${orderToUpdate.orderRef} status updated to ${pendingStatus}.`, "success");
+      setOrderToUpdate(null);
+    } catch (error: any) {
+      toast(`Failed to update order: ${error?.message || error}`, "error");
+    }
   };
 
-  const handleNotify = (order: Order) => {
-    toast(`${order.buyerName} was notified about order ${order.orderId}.`, "success");
+  const handleNotify = (order: TableOrder) => {
+    toast(`${order.buyerName} was notified about order ${order.orderRef}.`, "success");
   };
 
   const handlePageChange = (page: number) => {
@@ -290,7 +272,24 @@ const Orders: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedOrders.length > 0 ? (
+              {ordersLoading && (
+                <tr>
+                  <td colSpan={8} className="p-4">
+                    <LoaderSpinner txt="Orders" />
+                  </td>
+                </tr>
+              )}
+              {ordersError && !ordersLoading && (
+                <tr>
+                  <td colSpan={8} className="p-4">
+                    <ErrorButton
+                      error={ordersError}
+                      fetch={() => dispatch(fetchAdminOrders())}
+                    />
+                  </td>
+                </tr>
+              )}
+              {!ordersLoading && !ordersError && paginatedOrders.length > 0 ? (
                 paginatedOrders.map((order) => (
                   <tr
                     key={order.id}
@@ -301,23 +300,28 @@ const Orders: React.FC = () => {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                           <img
                             src={order.image}
                             alt={order.productName}
-                            className="w-6 h-6"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = ProductIcon;
+                            }}
                           />
                         </div>
                         <span className="text-sm font-medium text-gray-900">
                           {order.productName}
+                          {order.extraItemsCount > 0 &&
+                            ` +${order.extraItemsCount} more`}
                         </span>
                       </div>
                     </td>
                     <td className="p-4 text-sm text-gray-700">
                       {order.buyerName}
                     </td>
-                    <td className="p-4 text-sm text-gray-700">
-                      {order.orderId}
+                    <td className="p-4 text-sm text-gray-700 font-mono">
+                      {order.orderRef}
                     </td>
                     <td className="p-4 text-sm text-gray-700">
                       {order.orderDate}
@@ -350,7 +354,8 @@ const Orders: React.FC = () => {
                     </td>
                   </tr>
                 ))
-              ) : (
+              ) : null}
+              {!ordersLoading && !ordersError && paginatedOrders.length === 0 && (
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-gray-500">
                     <p className="text-lg font-medium mb-1">No orders found</p>
@@ -367,7 +372,7 @@ const Orders: React.FC = () => {
         </div>
 
         {/* Pagination */}
-           <Pagination
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           totalItems={filteredOrders.length}
@@ -382,11 +387,11 @@ const Orders: React.FC = () => {
           <div className="bg-white rounded-lg w-[400px] p-6 shadow-lg">
             <h2 className="text-lg font-semibold mb-4">Update Order Status</h2>
             <p className="text-sm text-gray-600 mb-4">
-              Order {orderToUpdate.orderId} — {orderToUpdate.buyerName}
+              Order {orderToUpdate.orderRef} — {orderToUpdate.buyerName}
             </p>
             <select
               value={pendingStatus}
-              onChange={(e) => setPendingStatus(e.target.value as Order["status"])}
+              onChange={(e) => setPendingStatus(e.target.value as OrderStatus)}
               className="w-full p-3 border rounded-md text-sm mb-6"
             >
               {ORDER_STATUSES.map((status) => (
@@ -398,15 +403,17 @@ const Orders: React.FC = () => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setOrderToUpdate(null)}
-                className="px-4 py-2 border rounded-md text-sm"
+                disabled={updatingStatus}
+                className="px-4 py-2 border rounded-md text-sm disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmUpdate}
-                className="px-4 py-2 bg-[#003366] text-white rounded-md text-sm hover:bg-[#002244]"
+                disabled={updatingStatus}
+                className="px-4 py-2 bg-[#003366] text-white rounded-md text-sm hover:bg-[#002244] disabled:opacity-50"
               >
-                Update
+                {updatingStatus ? "Updating..." : "Update"}
               </button>
             </div>
           </div>

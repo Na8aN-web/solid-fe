@@ -23,6 +23,7 @@ export interface User {
   email: number;
   coompanyName: number;
   role: string;
+  isActive?: boolean;
 }
 
 // Helpers to parse variable backend shapes safely
@@ -52,6 +53,46 @@ export interface Order {
   status: "Delivered" | "Processing" | "Returned";
   productImage?: string;
   createdAt: string;
+}
+
+// Real admin order, per GET /orders/admin and PATCH /orders/admin/{id}
+export type OrderStatus =
+  | "Pending"
+  | "Processing"
+  | "Shipped"
+  | "Delivered"
+  | "Cancelled";
+
+export interface AdminOrder {
+  _id: string;
+  user: any;
+  orderItems: Array<{
+    product: any;
+    quantity: number;
+    price: number;
+  }>;
+  deliveryAddress?: any;
+  shippingFee?: number;
+  itemsPrice?: number;
+  discount?: number;
+  totalAmount: number;
+  paymentStatus?: "pending" | "paid" | "failed" | "flagged";
+  status: OrderStatus;
+  createdAt: string;
+}
+
+function parseAdminOrdersList(data: any): AdminOrder[] {
+  if (Array.isArray(data)) return data as AdminOrder[];
+  if (Array.isArray(data?.orders)) return data.orders as AdminOrder[];
+  if (Array.isArray(data?.data?.orders)) return data.data.orders as AdminOrder[];
+  if (Array.isArray(data?.data)) return data.data as AdminOrder[];
+  throw new Error("Invalid orders payload");
+}
+
+function parseAdminOrder(data: any): AdminOrder {
+  if (data?.order && data.order._id) return data.order as AdminOrder;
+  if (data && data._id) return data as AdminOrder;
+  throw new Error("Invalid order payload");
 }
 
 export interface LowStockProduct {
@@ -212,14 +253,6 @@ export interface ProductDepartment {
 }
 
 // API Response Types (matching Swagger)
-interface UsersCountResponse {
-  userCount: number;
-}
-
-interface ProductsCountResponse {
-  productCount: number;
-}
-
 interface ProductsResponse {
   products: Product[];
 }
@@ -255,6 +288,7 @@ export interface AdminDashboardState {
   users: User[];
   userDetails: User | null;
   recentOrders: Order[];
+  adminOrders: AdminOrder[];
   lowStockProducts: LowStockProduct[];
   products: Product[];
   categories: ProductCategory[];
@@ -265,7 +299,10 @@ export interface AdminDashboardState {
     metrics: boolean;
     users: boolean;
     user: boolean;
+    updateUserAccount: boolean;
     orders: boolean;
+    adminOrders: boolean;
+    updateOrderStatus: boolean;
     lowStock: boolean;
     products: boolean;
     fetchProductById: boolean;
@@ -290,7 +327,10 @@ export interface AdminDashboardState {
     metrics: string | null;
     users: string | null;
     user: string | null;
+    updateUserAccount: string | null;
     orders: string | null;
+    adminOrders: string | null;
+    updateOrderStatus: string | null;
     lowStock: string | null;
     products: string | null;
     fetchProductById: string | null;
@@ -317,6 +357,7 @@ export interface AdminDashboardState {
 const initialState: AdminDashboardState = {
   metrics: null,
   recentOrders: [],
+  adminOrders: [],
   lowStockProducts: [],
   products: [],
   categories: [],
@@ -328,6 +369,8 @@ const initialState: AdminDashboardState = {
   loading: {
     metrics: false,
     orders: false,
+    adminOrders: false,
+    updateOrderStatus: false,
     lowStock: false,
     products: false,
     deleteProduct: false,
@@ -346,6 +389,7 @@ const initialState: AdminDashboardState = {
     departments: false,
     users: false,
     user: false,
+    updateUserAccount: false,
     fetchProductById: false,
     updateProduct: false,
     selectedProduct: false,
@@ -354,6 +398,8 @@ const initialState: AdminDashboardState = {
     error: null,
     metrics: null,
     orders: null,
+    adminOrders: null,
+    updateOrderStatus: null,
     lowStock: null,
     products: null,
     deleteProduct: null,
@@ -372,6 +418,7 @@ const initialState: AdminDashboardState = {
     departments: null,
     users: null,
     user: null,
+    updateUserAccount: null,
     fetchProductById: null,
     updateProduct: null,
     selectedProduct: null,
@@ -379,36 +426,31 @@ const initialState: AdminDashboardState = {
 };
 
 // Async Thunks
+// GET /admin/dashboard/summary -> { totalUsers, totalProducts, totalOrders, totalRevenue }
 export const fetchDashboardMetrics = createAsyncThunk(
   "adminDashboard/fetchMetrics",
   async (_, { rejectWithValue }) => {
     try {
-      // Fetch multiple endpoints in parallel
-      const [usersResponse, productsResponse] = await Promise.all([
-        axiosInstance.get<UsersCountResponse>("/users/count"),
-        axiosInstance.get<ProductsCountResponse>("/products/count"),
-      ]);
+      const response = await axiosInstance.get<{
+        totalUsers: number;
+        totalProducts: number;
+        totalOrders: number;
+        totalRevenue: number;
+      }>("/admin/dashboard/summary");
 
-      // Extract counts from the proper response structure
-      const totalCustomers = usersResponse.data.userCount || 0;
-      const totalProducts = productsResponse.data.productCount || 0;
+      const { totalUsers, totalProducts, totalOrders, totalRevenue } =
+        response.data;
 
-      // Mock data for revenue and orders - replace with real API calls when available
-      // You might need to create additional endpoints like:
-      // - /orders/count for totalOrders
-      // - /orders/revenue or /analytics/revenue for totalRevenue
-      const totalRevenue = 250000;
-      const totalOrders = 1250;
-
+      // No change/trend figures are provided by this endpoint yet.
       const metrics: DashboardMetrics = {
-        totalRevenue,
-        totalCustomers,
-        totalProducts,
-        totalOrders,
-        revenueChange: 24.1,
-        customersChange: 12.1,
-        productsChange: -10.2,
-        ordersChange: 28.8,
+        totalRevenue: totalRevenue || 0,
+        totalCustomers: totalUsers || 0,
+        totalProducts: totalProducts || 0,
+        totalOrders: totalOrders || 0,
+        revenueChange: 0,
+        customersChange: 0,
+        productsChange: 0,
+        ordersChange: 0,
       };
 
       return metrics;
@@ -477,6 +519,48 @@ export const fetchRecentOrders = createAsyncThunk(
       }
       return rejectWithValue(
         "Failed to fetch recent orders. Please try again."
+      );
+    }
+  }
+);
+
+// GET /orders/admin -> all orders (admin only)
+export const fetchAdminOrders = createAsyncThunk<
+  AdminOrder[],
+  void,
+  { rejectValue: string }
+>("adminDashboard/fetchAdminOrders", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get("/orders/admin");
+    return parseAdminOrdersList(response.data);
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to fetch orders."
+    );
+  }
+});
+
+// PATCH /orders/{id}/delivery-status -> update delivery status (admin/wholesaler)
+export const updateOrderStatus = createAsyncThunk<
+  AdminOrder,
+  { id: string; status: OrderStatus },
+  { rejectValue: string }
+>(
+  "adminDashboard/updateOrderStatus",
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.patch(
+        `/orders/${id}/delivery-status`,
+        { deliveryStatus: status }
+      );
+      return parseAdminOrder(response.data);
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to update order status."
       );
     }
   }
@@ -572,6 +656,30 @@ export const fetchUserById = createAsyncThunk<
     return rejectWithValue(msg);
   }
 });
+
+// PATCH /users/{id} -> admin updates a user's role and/or active status.
+// Only `role` and `isActive` are accepted by the backend; other fields are ignored.
+export const updateUserAccount = createAsyncThunk<
+  Partial<User> & { _id: string },
+  { id: string; role?: string; isActive?: boolean },
+  { rejectValue: string }
+>(
+  "adminDashboard/updateUserAccount",
+  async ({ id, ...data }, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.patch(`/users/${id}`, data);
+      return parseSingleUser(res.data);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.errors?.[0]?.message ||
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Failed to update user.";
+      return rejectWithValue(msg);
+    }
+  }
+);
 
 // fetch categories thunk
 export const fetchAllCategories = createAsyncThunk(
@@ -1134,7 +1242,10 @@ const adminDashboardSlice = createSlice({
         metrics: null,
         users: null,
         user: null,
+        updateUserAccount: null,
         orders: null,
+        adminOrders: null,
+        updateOrderStatus: null,
         lowStock: null,
         products: null,
         fetchProductById: null,
@@ -1163,7 +1274,10 @@ const adminDashboardSlice = createSlice({
         metrics: true,
         users: true,
         user: true,
+        updateUserAccount: true,
         orders: true,
+        adminOrders: true,
+        updateOrderStatus: true,
         lowStock: true,
         products: true,
         fetchProductById: true,
@@ -1224,6 +1338,37 @@ const adminDashboardSlice = createSlice({
       state.error.orders = action.payload as string;
     });
 
+    // Fetch admin orders (real list)
+    builder.addCase(fetchAdminOrders.pending, (state) => {
+      state.loading.adminOrders = true;
+      state.error.adminOrders = null;
+    });
+    builder.addCase(fetchAdminOrders.fulfilled, (state, action) => {
+      state.loading.adminOrders = false;
+      state.adminOrders = action.payload;
+    });
+    builder.addCase(fetchAdminOrders.rejected, (state, action) => {
+      state.loading.adminOrders = false;
+      state.error.adminOrders = action.payload || "Something went wrong";
+    });
+
+    // Update order status
+    builder.addCase(updateOrderStatus.pending, (state) => {
+      state.loading.updateOrderStatus = true;
+      state.error.updateOrderStatus = null;
+    });
+    builder.addCase(updateOrderStatus.fulfilled, (state, action) => {
+      state.loading.updateOrderStatus = false;
+      const index = state.adminOrders.findIndex(
+        (o) => o._id === action.payload._id
+      );
+      if (index !== -1) state.adminOrders[index] = action.payload;
+    });
+    builder.addCase(updateOrderStatus.rejected, (state, action) => {
+      state.loading.updateOrderStatus = false;
+      state.error.updateOrderStatus = action.payload || "Something went wrong";
+    });
+
     // Fetch low stock products
     builder.addCase(fetchLowStockProducts.pending, (state) => {
       state.loading.lowStock = true;
@@ -1268,6 +1413,23 @@ const adminDashboardSlice = createSlice({
       state.loading.user = false;
       state.error.user = (action.payload as string) ?? "Failed to fetch user.";
     });
+
+    // Admin update user (role / active status)
+    builder.addCase(updateUserAccount.pending, (state) => {
+      state.loading.updateUserAccount = true;
+      state.error.updateUserAccount = null;
+    });
+    builder.addCase(updateUserAccount.fulfilled, (state, action) => {
+      state.loading.updateUserAccount = false;
+      const idx = state.users.findIndex((u) => u._id === action.payload._id);
+      if (idx !== -1) state.users[idx] = { ...state.users[idx], ...action.payload };
+    });
+    builder.addCase(updateUserAccount.rejected, (state, action) => {
+      state.loading.updateUserAccount = false;
+      state.error.updateUserAccount =
+        (action.payload as string) ?? "Failed to update user.";
+    });
+
     // Fetch all categories
     builder.addCase(fetchAllCategories.pending, (state) => {
       state.loading.categories = true;
@@ -1356,7 +1518,7 @@ const adminDashboardSlice = createSlice({
       state.loading.updateProduct = false;
       // Optionally update products list if you store them
       if (state.products && Array.isArray(state.products)) {
-        const updated = action.payload.data || action.payload;
+        const updated = action.payload.product || action.payload;
         const index = state.products.findIndex(
           (p: any) => p._id === updated._id
         );

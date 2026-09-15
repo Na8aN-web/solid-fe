@@ -8,7 +8,10 @@ import Profile from "./profile/Profile";
 import Password from "./password/Password";
 import AddNewUser from "../components/AddNewUser";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { fetchAllUsers } from "../../../store/slices/adminDashboardSlice";
+import {
+  fetchAllUsers,
+  updateUserAccount,
+} from "../../../store/slices/adminDashboardSlice";
 import { deleteUser } from "../../../store/slices/userSlice";
 import { useToast } from "../../../components/Toast";
 import LoaderSpinner from "../../../components/LoaderSpinner";
@@ -16,6 +19,8 @@ import ErrorButton from "../../../components/ErrorButton";
 
 const capitalize = (value: string) =>
   value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+
+const USER_ROLES = ["Admin", "Individual", "Wholesaler"];
 
 const AdminAccounts = () => {
   const { toast } = useToast();
@@ -27,6 +32,9 @@ const AdminAccounts = () => {
 
   const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [userToModify, setUserToModify] = useState<{ id: string; name: string; role: string } | null>(null);
+  const [newRole, setNewRole] = useState<string>(USER_ROLES[0]);
+  const updatingRole = useAppSelector((s) => s.adminDashboard.loading.updateUserAccount);
 
   useEffect(() => {
     dispatch(fetchAllUsers());
@@ -39,13 +47,27 @@ const AdminAccounts = () => {
       name,
       email: String(user.email ?? "—"),
       image: carTyre,
-      role: capitalize(String(user.role ?? "")) || "—",
+      role: String(user.role ?? ""),
+      roleDisplay: capitalize(String(user.role ?? "")) || "—",
     };
   });
 
-  const handleEdit = (id: string) => {
-    // console.log("Editing product with ID:", id);
-    // Navigate to edit form or open modal
+  const handleEdit = (id: string, name: string, role: string) => {
+    setUserToModify({ id, name, role });
+    setNewRole(USER_ROLES.includes(role) ? role : USER_ROLES[0]);
+  };
+
+  const confirmModifyRole = async () => {
+    if (!userToModify) return;
+    try {
+      await dispatch(
+        updateUserAccount({ id: userToModify.id, role: newRole })
+      ).unwrap();
+      toast(`${userToModify.name}'s role was changed to ${newRole}.`, "success");
+      setUserToModify(null);
+    } catch (error: any) {
+      toast(`Failed to update role: ${error?.message || error}`, "error");
+    }
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -69,11 +91,11 @@ const AdminAccounts = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Manager":
-        return "bg-[#00336626] text-[#003366]";
       case "Admin":
         return "bg-[#FFC30026] text-[#FFC300]";
-      case "Auditor":
+      case "Wholesaler":
+        return "bg-[#00336626] text-[#003366]";
+      case "Individual":
         return "bg-[#E1F1E0] text-[#15B70D]";
       default:
         return "bg-gray-100 text-gray-800";
@@ -143,16 +165,16 @@ const AdminAccounts = () => {
                 <td className="p-4">
                   <div className="flex gap-4 flex-wrap">
                     <span
-                      className={`px-2 py-[6px] rounded-[4px] text-xs font-normal ${getStatusColor(user.role)}`}
+                      className={`px-2 py-[6px] rounded-[4px] text-xs font-normal ${getStatusColor(user.roleDisplay)}`}
                     >
-                      {user.role}
+                      {user.roleDisplay}
                     </span>
                   </div>
                 </td>
                 <td className="p-4">
                   <div className="flex items-center gap-6">
                     <button
-                      onClick={() => handleEdit(user.id)}
+                      onClick={() => handleEdit(user.id, user.name, user.role)}
                       className="flex items-center gap-2"
                     >
                       <img src={modify} alt="" />
@@ -193,6 +215,44 @@ const AdminAccounts = () => {
                 className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 disabled:opacity-50"
               >
                 {deleting ? "Removing..." : "Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {userToModify && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg w-[400px] p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Modify Role</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {userToModify.name}
+            </p>
+            <select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+              className="w-full p-3 border rounded-md text-sm mb-6"
+            >
+              {USER_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setUserToModify(null)}
+                disabled={updatingRole}
+                className="px-4 py-2 border rounded-md text-sm disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmModifyRole}
+                disabled={updatingRole}
+                className="px-4 py-2 bg-[#003366] text-white rounded-md text-sm hover:bg-[#002244] disabled:opacity-50"
+              >
+                {updatingRole ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
